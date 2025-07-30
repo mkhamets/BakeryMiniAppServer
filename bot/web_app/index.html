@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Меню пекарни Дражина</title>
+    <!-- Подключение стилей с сайта drazhin.by -->
+    <link rel="stylesheet" href="/bot-app/main.min.css">
+    <!-- Подключение вашего кастомного CSS файла (для переопределений, если нужно) -->
+    <link rel="stylesheet" href="/bot-app/style.css">
+    <!-- Подключение Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- div с id="app-content" будет содержать все динамические контейнеры -->
+        <div id="app-content">
+            <!-- Welcome Screen Content будет динамически вставляться сюда из script.js -->
+            <!-- Welcome Container - будет создаваться динамически в script.js -->
+            <div id="welcome-container" class="welcome-container hidden">
+                <h1 class="welcome-title">Добро пожаловать в пекарню Дражина!</h1>
+                <p class="welcome-text">
+                    Нажмите кнопку ниже, чтобы начать общение с нашим ботом и ознакомиться с меню.
+                </p>
+                <button class="start-shopping-button" id="start-shopping-button">Начать покупки</button>
+            </div>
+
+            <!-- Existing Products, Cart, Checkout containers -->
+            <h2 class="category-title" id="main-category-title">Загрузка...</h2>
+            <div class="products-grid hidden" id="products-container">
+                <!-- Карточки товаров будут вставляться сюда -->
+            </div>
+            <div class="cart-container hidden" id="cart-container">
+                <!-- Заголовок "Ваша корзина" управляется category-title выше -->
+                <div id="cart-items-list">
+                    <!-- Элементы корзины будут вставляться сюда -->
+                </div>
+                <div class="cart-total" id="cart-total">
+                    Общая сумма: 0.00 р.
+                </div>
+                <div class="cart-actions">
+                    <button class="checkout-button" id="proceed-to-checkout-webapp">Выбрать способ доставки</button>
+                    <button class="clear-cart-button" id="clear-cart-webapp">Очистить корзину</button>
+                    <button class="back-to-menu-button" id="back-to-main-menu-webapp">Назад в Главное меню</button>
+                </div>
+            </div>
+
+            <div class="checkout-container hidden" id="checkout-container">
+                <!-- Заголовок "Оформление заказа" управляется category-title выше -->
+                <form id="checkout-form">
+                    <h3>Данные получателя</h3>
+                    <div class="form-group">
+                        <label for="last-name">Фамилия <span class="required">*</span></label>
+                        <input type="text" id="last-name" name="lastName" maxlength="50" required>
+                        <div class="error-message" id="lastName-error">Пожалуйста, введите фамилию.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="first-name">Имя <span class="required">*</span></label>
+                        <input type="text" id="first-name" name="firstName" maxlength="50" required>
+                        <div class="error-message" id="firstName-error">Пожалуйста, введите имя.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="middle-name">Отчество <span class="required">*</span></label>
+                        <input type="text" id="middle-name" name="middleName" maxlength="50" required>
+                        <div class="error-message" id="middleName-error">Пожалуйста, введите отчество.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-number">Телефон <span class="required">*</span></label>
+                        <input type="tel" id="phone-number" name="phoneNumber" placeholder="+375 (XX) XXX-XX-XX" maxlength="50" required>
+                        <div class="error-message" id="phoneNumber-error">Пожалуйста, введите корректный номер телефона.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" maxlength="50" required>
+                        <div class="error-message" id="email-error">Пожалуйста, введите корректный Email.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Способ доставки:</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="deliveryMethod" value="courier" checked> Доставка курьером
+                            </label>
+                            <label>
+                                <input type="radio" name="deliveryMethod" value="pickup"> Самовывоз
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="courier-delivery-fields" class="delivery-address-fields">
+                        <div class="form-group">
+                            <label for="city">Город <span class="required">*</span></label>
+                            <select id="city" name="city"> <!-- required будет управляться JS -->
+                                <option value="">Выберите город</option>
+                                <option value="Минск">Минск</option>
+                                <option value="Заславль">Заславль</option>
+                                <option value="Тарасово">Тарасово</option>
+                                <option value="Ратомка">Ратомка</option>
+                            </select>
+                            <div class="error-message" id="city-error">Пожалуйста, выберите город.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="address-line">Адрес <span class="required">*</span></label>
+                            <input type="text" id="address-line" name="addressLine" placeholder="Улица, дом, квартира, подъезд, этаж, домофон" maxlength="50" > <!-- required будет управляться JS -->
+                            <div class="error-message" id="addressLine-error">Пожалуйста, введите адрес доставки.</div>
+                        </div>
+                    </div>
+
+                    <div id="pickup-addresses" class="delivery-address-fields hidden">
+                        <label>Выберите адрес самовывоза:</label>
+                        <div class="radio-group" id="pickup-radio-group">
+                            <!-- Адреса самовывоза будут загружены динамически -->
+                            <label><input type="radio" name="pickupAddress" value="ТЦ Green City"> ТЦ "Green City", ул. Притыцкого, 156</label>
+                            <label><input type="radio" name="pickupAddress" value="ТЦ Замок"> ТЦ "Замок", пр‑т Победителей, 65</label>
+                            <label><input type="radio" name="pickupAddress" value="ул. Л. Беды, 26"> ул. Л. Беды, 26</label>
+                            <label><input type="radio" name="pickupAddress" value="ул. Мстиславца, 8"> ул. Мстиславца, 8</label>
+                            <label><input type="radio" name="pickupAddress" value="ул. Лученка, 1"> ул. Лученка, 1</label>
+                            <label><input type="radio" name="pickupAddress" value="ул. Авиационная, 8"> ул. Авиационная, 8</label>
+                            <label><input type="radio" name="pickupAddress" value="ул. Нововиленская, 45"> ул. Нововиленская, 45</label>
+                            <label><input type="radio" name="pickupAddress" value="ул. Морской риф 1/4"> ул. Морской риф 1/4</label>
+                            <label><input type="radio" name="pickupAddress" value="г. Заславль, ул. Вокзальная, 11"> г. Заславль, ул. Вокзальная, 11</label>
+                            <div class="error-message" id="pickupAddress-error">Пожалуйста, выберите адрес самовывоза.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="delivery-date">Дата доставки <span class="required">*</span></label>
+                        <input type="date" id="delivery-date" name="deliveryDate" required>
+                        <div class="error-message" id="deliveryDate-error">Пожалуйста, выберите дату доставки.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="comment">Комментарий к заказу:</label>
+                        <textarea id="comment" name="comment" rows="3" maxlength="250"></textarea>
+                    </div>
+
+                    <!-- Новые текстовые блоки для условий доставки -->
+                    <div id="courier-text" class="delivery-info-text hidden">
+                        <p class="courier-info-black">Минимальная сумма заказа для доставки курьером - 70 рублей.</p>
+                        <p class="courier-info-red">В праздничные и предпраздничные дни - 200 рублей.</p>
+                        <p class="courier-info-red">Доставка осуществляется ежедневно во временном промежутке с 12.30 до 17.00 за исключением праздничных дней.</p>
+                    </div>
+
+                    <div id="pickup-text" class="delivery-info-text hidden">
+                        <p class="pickup-info-black">Заказ на самовывоз оформляется в день покупки и формируется после произведения оплаты посредством системы ЕРИП. Время готовности заказа и его поступление в пункт самовывоза можно уточнить по телефону <a href="tel:+375291172577">+375 (29) 117-25-77</a></p>
+                    </div>
+
+                    <button type="submit" class="submit-order-button">Сделать заказ</button>
+                </form>
+                <div class="cart-actions-checkout" style="margin-top: 20px;">
+                    <button class="back-from-checkout-button" id="back-from-checkout-to-cart">Назад к корзине</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключение внешнего JavaScript файла -->
+    <script src="/bot-app/script.js"></script>
+</body>
+</html>
