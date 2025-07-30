@@ -4,77 +4,68 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // --- ВРЕМЕННО ДЛЯ ОТЛАДКИ: ОЧИСТИТЬ LOCAL STORAGE ПРИ КАЖДОМ ЗАПУСКЕ ---
 // УДАЛИТЕ ЭТУ СТРОКУ ПОСЛЕ ЗАВЕРШЕНИЯ ОТЛАДКИ!
-// localStorage.clear(); // <-- ЭТА СТРОКА УДАЛЕНА ИЛИ ЗАКОММЕНТИРОВАНА
+// localStorage.clear();
 // ---------------------------------------------------------------------
 
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Reset the flag when the DOM is loaded (i.e., Web App is opened/reloaded)
-    // This flag is now primarily for programmatic calls, not the 'closing' event.
-    let isClosingHandledProgrammatically = false; 
-
+    const mainPageContainer = document.getElementById('main-page-container'); // NEW: The main .container element
     const welcomeContainer = document.getElementById('welcome-container');
+    const categoriesContainer = document.getElementById('categories-container');
+    const categoriesMainTitle = document.getElementById('categories-main-title');
     const productsContainer = document.getElementById('products-container');
     const cartContainer = document.getElementById('cart-container');
     const checkoutContainer = document.getElementById('checkout-container');
-    const categoryTitle = document.getElementById('main-category-title'); // Главный заголовок
+    const categoryTitle = document.getElementById('main-category-title'); // Main title for products/cart/checkout
+
+    const courierInfoText = document.getElementById('courier-text'); // These might be null if not in current HTML, need to check
+    const pickupInfoText = document.getElementById('pickup-text'); // These might be null if not in current HTML, need to check
+
     const cartItemsList = document.getElementById('cart-items-list');
     const cartTotalDisplay = document.getElementById('cart-total');
     const checkoutForm = document.getElementById('checkout-form');
     const courierDeliveryFields = document.getElementById('courier-delivery-fields');
     const pickupAddresses = document.getElementById('pickup-addresses');
     const deliveryMethodRadios = document.querySelectorAll('input[name="deliveryMethod"]');
-    const mainAppContent = document.getElementById('app-content');
     const startShoppingButton = document.getElementById('start-shopping-button');
-
-    // Новые элементы для текста условий доставки
-    const courierInfoText = document.getElementById('courier-text');
-    const pickupInfoText = document.getElementById('pickup-text');
-
 
     // Локальное хранилище корзины в Web App
     let cart = JSON.parse(localStorage.getItem('drazhin_bakery_cart')) || {};
 
     // Глобальная переменная для хранения данных о продуктах, загруженных через API
-    let productsDataCache = {}; // Изменено на productsDataCache для ясности
+    let productsDataCache = {};
 
     // Функция для сохранения корзины в localStorage
     function saveCart() {
         localStorage.setItem('drazhin_bakery_cart', JSON.stringify(cart));
-        updateMainButtonVisibility();
-    }
-
-    // Функция для обновления видимости главной кнопки Telegram Web App
-    function updateMainButtonVisibility() {
-        const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-        if (totalItems > 0 && Telegram.WebApp.MainButton) {
-            Telegram.WebApp.MainButton.setText(`Корзина (${totalItems} товаров) - ${calculateCartTotal().toFixed(2)} р.`);
-            Telegram.WebApp.MainButton.show();
-        } else if (Telegram.WebApp.MainButton) {
-            Telegram.WebApp.MainButton.hide();
-        }
-    }
-
-    // Обработчик для главной кнопки Telegram Web App (Корзина)
-    if (Telegram.WebApp.MainButton) {
-        Telegram.WebApp.MainButton.onClick(() => {
-            displayView('cart');
-        });
-        updateMainButtonVisibility(); // Инициализация при загрузке
+        // Больше не обновляем MainButton здесь, так как она убрана
     }
 
     // Global BackButton setup
-    if (Telegram.WebApp.BackButton) {
+    if (Telegram.WebApp.BackButton && Telegram.WebApp.version && parseFloat(Telegram.WebApp.version) >= 6.1) {
         Telegram.WebApp.BackButton.onClick(() => {
             console.log("DEBUG: Telegram Web App BackButton clicked.");
-            // Send data and then close, similar to 'back-to-main-menu-webapp'
-            sendCartUpdateToBotProgrammatic();
-            setTimeout(() => {
-                Telegram.WebApp.close();
-            }, 50); // Small delay to allow sendData to initiate
+            // Определяем, куда вернуться
+            const currentView = getUrlParameter('view');
+            const currentCategory = getUrlParameter('category');
+
+            if (currentView === 'checkout') {
+                displayView('cart'); // Из чекаута всегда в корзину
+            } else if (currentView === 'cart') { // If current view is cart
+                displayView('categories'); // From cart, go to categories
+            } else if (currentView === 'products' && currentCategory) {
+                displayView('categories'); // Из продуктов на экран категорий
+            } else if (currentView === 'categories') {
+                Telegram.WebApp.close(); // С экрана категорий закрываем Web App
+            } else {
+                Telegram.WebApp.close(); // По умолчанию закрываем
+            }
         });
+    } else {
+        console.log("DEBUG: Telegram Web App BackButton not supported or version is too old.");
     }
+
 
     // Функция для получения параметров URL
     function getUrlParameter(name) {
@@ -84,49 +75,69 @@ document.addEventListener('DOMContentLoaded', () => {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
-    // Функция для отображения нужного вида (каталог, корзина, оформление, приветствие)
+    // Function to display the correct view (categories, products, cart, checkout, welcome)
     function displayView(viewName, category = null) {
         console.log(`DEBUG: displayView called with viewName: ${viewName}, category: ${category}`);
+
+        // Hide all main content containers and titles
         welcomeContainer.classList.add('hidden');
+        categoriesContainer.classList.add('hidden');
         productsContainer.classList.add('hidden');
         cartContainer.classList.add('hidden');
         checkoutContainer.classList.add('hidden');
-        categoryTitle.classList.add('hidden'); // Скрываем заголовок по умолчанию
+        categoryTitle.classList.add('hidden');
+        categoriesMainTitle.classList.add('hidden');
 
-        // Manage BackButton visibility
-        if (Telegram.WebApp.BackButton) {
-            if (viewName === 'welcome') {
+        // Manage the main .container visibility
+        if (viewName === 'welcome') {
+            mainPageContainer.classList.add('hidden'); // Hide the white background container for welcome screen
+            welcomeContainer.classList.remove('hidden');
+        } else {
+            mainPageContainer.classList.remove('hidden'); // Show the white background container for other views
+            if (viewName === 'categories') {
+                categoriesMainTitle.classList.remove('hidden');
+                categoriesContainer.classList.remove('hidden');
+                loadCategories();
+            } else if (viewName === 'products' && category) {
+                categoryTitle.textContent = getCategoryDisplayName(category);
+                categoryTitle.classList.remove('hidden');
+                productsContainer.classList.remove('hidden');
+                loadProducts(category);
+            } else if (viewName === 'cart') {
+                categoryTitle.textContent = 'Ваша корзина';
+                categoryTitle.classList.remove('hidden');
+                cartContainer.classList.remove('hidden');
+                displayCart();
+            } else if (viewName === 'checkout') {
+                categoryTitle.textContent = 'Оформление заказа';
+                categoryTitle.classList.remove('hidden');
+                checkoutContainer.classList.remove('hidden');
+                setupCheckoutForm();
+            }
+        }
+
+        // Update BackButton visibility based on the current view
+        if (Telegram.WebApp.BackButton && Telegram.WebApp.version && parseFloat(Telegram.WebApp.version) >= 6.1) {
+            if (viewName === 'welcome' || viewName === 'categories') {
                 Telegram.WebApp.BackButton.hide();
             } else {
                 Telegram.WebApp.BackButton.show();
             }
         }
 
-        if (viewName === 'welcome') {
-            console.log('DEBUG: Displaying welcome view.');
-            welcomeContainer.classList.remove('hidden');
-            Telegram.WebApp.MainButton.hide(); // Скрываем кнопку корзины на приветственном экране
-        } else if (viewName === 'products' && category) {
-            console.log(`DEBUG: Displaying products view for category: ${category}`);
-            categoryTitle.textContent = getCategoryDisplayName(category);
-            categoryTitle.classList.remove('hidden');
-            productsContainer.classList.remove('hidden');
-            loadProducts(category);
-            updateMainButtonVisibility(); // Показываем/скрываем кнопку корзины
-        } else if (viewName === 'cart') {
-            console.log('DEBUG: Displaying cart view.');
-            categoryTitle.textContent = 'Ваша корзина';
-            categoryTitle.classList.remove('hidden');
-            cartContainer.classList.remove('hidden');
-            displayCart(); // Вызываем displayCart без await, так как она теперь синхронна
-            updateMainButtonVisibility(); // Показываем/скрываем кнопку корзины
-        } else if (viewName === 'checkout') {
-            console.log('DEBUG: Displaying checkout view.');
-            categoryTitle.textContent = 'Оформление заказа';
-            categoryTitle.classList.remove('hidden');
-            checkoutContainer.classList.remove('hidden');
-            setupCheckoutForm();
-            Telegram.WebApp.MainButton.hide(); // Скрываем кнопку корзины на экране оформления заказа
+        // Update MainButton (Cart) visibility
+        const totalItemsInCart = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+        if (Telegram.WebApp.MainButton) {
+            if (viewName === 'products' || viewName === 'categories') {
+                if (totalItemsInCart > 0) {
+                    Telegram.WebApp.MainButton.setText(`Корзина (${totalItemsInCart} товаров) - ${calculateCartTotal().toFixed(2)} р.`);
+                    Telegram.WebApp.MainButton.show();
+                } else {
+                    Telegram.WebApp.MainButton.hide();
+                }
+            } else {
+                Telegram.WebApp.MainButton.hide();
+            }
         }
     }
 
@@ -137,14 +148,15 @@ document.addEventListener('DOMContentLoaded', () => {
             'croissants': 'Круассаны',
             'artisan_bread': 'Ремесленный хлеб',
             'desserts': 'Десерты',
-            'cart': 'Корзина'
+            'cart': 'Корзина', // This key is for internal use, not a product category
+            'categories': 'Наше меню' // Added for the categories view title
         };
         return map[categoryKey] || 'Каталог товаров';
     }
 
-    // Функция для получения данных о продуктах с API
+    // Function to fetch product data from API
     async function fetchProductsData(category) {
-        const apiUrl = `/api/products?category=${category}`; // Используем относительный путь, category уже должен быть правильным
+        const apiUrl = `/api/products?category=${category}`;
         try {
             const response = await fetch(apiUrl);
             if (!response.ok) {
@@ -159,13 +171,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // NEW FUNCTION: Load and display categories
+    async function loadCategories() {
+        categoriesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка категорий...</div>';
+        const apiUrl = `/api/categories`; // Assuming you'll add a /api/categories endpoint
+        let categories = [];
 
-    // Функция для загрузки и отображения продуктов
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            categories = await response.json();
+            console.log("DEBUG: Загружены категории:", categories);
+        } catch (error) {
+            console.error("Ошибка при получении данных о категориях с API:", error);
+            Telegram.WebApp.showAlert("Не удалось загрузить категории товаров. Пожалуйста, попробуйте позже.");
+            categoriesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Не удалось загрузить категории.</div>';
+            return;
+        }
+
+        categoriesContainer.innerHTML = ''; // Clear "Loading..."
+
+        if (categories.length === 0) {
+            categoriesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Категории не найдены.</div>';
+            return;
+        }
+
+        categories.forEach(category => {
+            const categoryCard = document.createElement('div');
+            categoryCard.className = 'col-12 col-sm-6 col-lg-3 catalog-item mb-200'; // Using classes from drazhin.by
+            categoryCard.innerHTML = `
+                <a href="#" data-category-key="${category.key}">
+                    <div class="catalog-item__wrapper h-fx-item pos-r">
+                        <div class="catalog-item__image-wrapper pos-r ovfl-h">
+                            <img src="${category.image_url}" alt="${category.name}" class="catalog-item__image fade-box w-100p h-auto of-c h-fx-item__img lazyloaded" width="300" height="200" onerror="this.onerror=null;this.src='https://placehold.co/300x200/e0e0e0/555?text=Нет+фото';">
+                            <div class="catalog-item__image-filter pos-a trbl-0 bgc-gr-1"></div>
+                        </div>
+                        <div class="catalog-item__text-wrapper h-fx-item__text pos-a trbl-0 ptb-125 plr-150 d-flex flex-column justify-content-end">
+                            <h3 class="first-line fz-150 fc-wh ff-2 pt-100 dec-line-top-short dec-color-wh">${category.name}</h3>
+                            <div class="second-line btn-arrow mt-75 d-flex align-items-center">
+                                <span class="fc-wh fz-75 fw-500 h-fc-wh tt-u ls-7 mr-875">перейти в каталог</span>
+                                <svg class="svg svg-arrow-right-white" style="margin-bottom: 0.15rem" viewBox="0 0 24 24" fill="white">
+                                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            `;
+            categoriesContainer.appendChild(categoryCard);
+        });
+
+        // Add click handlers to category cards
+        categoriesContainer.querySelectorAll('.catalog-item a').forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default link behavior
+                const categoryKey = event.currentTarget.dataset.categoryKey;
+                console.log(`DEBUG: Category clicked: ${categoryKey}`);
+                displayView('products', categoryKey); // Go to products screen for selected category
+            });
+        });
+    }
+
+
+    // Function to load and display products
     async function loadProducts(category) {
         productsContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка товаров...</div>';
-        const products = await fetchProductsData(category); // category уже будет "category_bakery" или "bakery"
-        productsDataCache[category] = products; // Кэшируем данные
-        productsContainer.innerHTML = ''; // Очищаем "Загрузка..."
+        const products = await fetchProductsData(category);
+        productsDataCache[category] = products; // Cache the data
+        productsContainer.innerHTML = ''; // Clear "Loading..."
 
         if (products.length === 0) {
             productsContainer.innerHTML = '<div style="text-align: center; padding: 20px;">В этой категории пока нет товаров.</div>';
@@ -173,8 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         products.forEach((product, index) => {
-            // Используем category_index в качестве productId для уникальности
-            // productId будет, например, "bakery_0", "artisan_bread_1"
+            // Use category_index as productId for uniqueness
+            // productId will be, for example, "bakery_0", "artisan_bread_1"
             const productId = `${category}_${index}`;
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
 
@@ -206,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
             productsContainer.appendChild(productCard);
         });
 
-        // Добавляем обработчики событий для кнопок +/-
+        // Add event listeners for +/- buttons
         productsContainer.querySelectorAll('.quantity-controls button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const productId = event.target.dataset.productId;
@@ -216,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Функция для обновления количества товара в корзине
+    // Function to update product quantity in cart
     function updateCartQuantity(productId, action) {
         let currentQuantity = cart[productId] ? cart[productId].quantity : 0;
 
@@ -250,35 +325,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             } else {
                 console.warn(`Продукт с ID ${productId} не найден в кэше при обновлении корзины. Возможно, старая запись.`);
-                // Если продукт не найден в кэше, сохраняем только ID и количество
-                // В этом случае, image_url будет отсутствовать, и отобразится "Нет фото"
+                // If product not found in cache, save only ID and quantity
+                // In this case, image_url will be missing, and "Нет фото" will be displayed
                 cart[productId] = { id: productId, quantity: currentQuantity, name: "Неизвестный товар", price: 0 };
             }
         }
 
-        // Обновляем отображение количества на карточке товара
+        // Update quantity display on product card
         const qtyDisplay = document.getElementById(`qty-${productId}`);
         if (qtyDisplay) {
             qtyDisplay.textContent = currentQuantity;
         }
-        saveCart(); // Сохраняем корзину
+        saveCart(); // Save cart
+        updateMainButtonCartInfo(); // Update info on main button
     }
 
-    // Функция для расчета общей суммы корзины
+    // Function to update info on Telegram Web App's Main Button
+    function updateMainButtonCartInfo() {
+        const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+        const totalAmount = calculateCartTotal();
+
+        if (Telegram.WebApp.MainButton) {
+            if (totalItems > 0) {
+                Telegram.WebApp.MainButton.setText(`Корзина (${totalItems} товаров) - ${totalAmount.toFixed(2)} р.`);
+                Telegram.WebApp.MainButton.show();
+            } else {
+                Telegram.WebApp.MainButton.hide();
+            }
+        }
+    }
+
+    // Function to calculate total cart amount
     function calculateCartTotal() {
         let total = 0;
         for (const productId in cart) {
-            if (cart[productId] && cart[productId].price) { // Проверяем, что цена существует
+            if (cart[productId] && cart[productId].price) { // Check that price exists
                 total += cart[productId].price * cart[productId].quantity;
             }
         }
         return total;
     }
 
-    // Функция для отображения корзины
+    // Function to display cart
     async function displayCart() {
         console.log('DEBUG: Entering displayCart function.');
-        cartItemsList.innerHTML = ''; // Очищаем список товаров в корзине
+        cartItemsList.innerHTML = ''; // Clear item list in cart
         let totalPrice = 0;
 
         // Clean up cart from potentially malformed productIds
@@ -289,8 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Check for valid format: at least two parts, last part is a number
             if (parts.length >= 2 && /^\d+$/.test(parts[parts.length - 1])) {
                 const categoryPart = parts.slice(0, parts.length - 1).join('_');
-                // Ensure the category part is not 'cart' or 'checkout' or other non-product categories
-                if (categoryPart !== 'cart' && categoryPart !== 'checkout' && categoryPart !== 'welcome') {
+                // Ensure the category part is NOT 'cart' or 'checkout' or other non-product categories
+                if (categoryPart !== 'cart' && categoryPart !== 'checkout' && categoryPart !== 'welcome' && categoryPart !== 'categories') {
                     cleanedCart[productId] = itemInCart;
                 } else {
                     console.warn(`WARN: Invalid category '${categoryPart}' found in productId '${productId}'. Skipping item.`);
@@ -307,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('DEBUG: Cart is empty after cleaning.');
             cartItemsList.innerHTML = '<p style="text-align: center; color: #666;">Ваша корзина пуста.</p>';
             cartTotalDisplay.textContent = 'Общая сумма: 0.00 р.';
-            Telegram.WebApp.MainButton.hide(); // Скрываем кнопку корзины если она пуста
+            Telegram.WebApp.MainButton.hide(); // Hide cart button if empty
             return;
         }
 
@@ -315,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const categoriesToFetch = new Set();
         for (const productId in cart) {
             const itemInCart = cart[productId];
-            // Check if essential product details are missing (e.g., if loaded from localStorage from a previous session)
+            // Correctly extract category key from productId
             const parts = productId.split('_');
             const categoryFromId = parts.slice(0, parts.length - 1).join('_'); // Get full category name
             const indexFromId = parseInt(parts[parts.length - 1]);
@@ -390,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         cartTotalDisplay.textContent = `Общая сумма: ${totalPrice.toFixed(2)} р.`;
 
-        // Добавляем обработчики событий для кнопок корзины
+        // Add event listeners for cart buttons
         cartItemsList.querySelectorAll('.cart-item-controls button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const productId = event.target.dataset.productId;
@@ -398,25 +489,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (action === 'remove') {
                     delete cart[productId];
                     saveCart();
-                    displayCart(); // Перерисовываем корзину
+                    displayCart(); // Re-render cart
                 } else {
                     updateCartQuantity(productId, action);
-                    displayCart(); // Перерисовываем корзину, чтобы обновились суммы
+                    displayCart(); // Re-render cart to update totals
                 }
             });
         });
         console.log('DEBUG: Exiting displayCart function.');
     }
 
-    // Функция для очистки корзины
+    // Function to clear cart
     document.getElementById('clear-cart-webapp').addEventListener('click', () => {
         cart = {};
         saveCart();
-        displayCart(); // Обновляем отображение корзины
+        displayCart(); // Update cart display
         Telegram.WebApp.showAlert('Корзина очищена!');
+        sendCartUpdateToBot(); // Send update to bot after clearing
     });
 
-    // Функция для перехода к оформлению заказа
+    // Function to proceed to checkout
     document.getElementById('proceed-to-checkout-webapp').addEventListener('click', () => {
         if (Object.keys(cart).length === 0) {
             Telegram.WebApp.showAlert('Ваша корзина пуста. Нечего оформлять!');
@@ -425,60 +517,50 @@ document.addEventListener('DOMContentLoaded', () => {
         displayView('checkout');
     });
 
-    // Функция для отправки данных корзины боту (программно)
-    function sendCartUpdateToBotProgrammatic() {
-        // Проверяем флаг, чтобы избежать дублирования отправки
-        if (isClosingHandledProgrammatically) {
-            console.log("DEBUG: sendCartUpdateToBotProgrammatic skipped, already handled for this session.");
-            return;
-        }
+    // Function to send cart data to bot (programmatically, only on close or explicit action)
+    function sendCartUpdateToBot() {
         const cart_sync_data = {
-            type: 'cart_sync', // Новый тип данных для синхронизации корзины
-            items: Object.values(cart) // Отправляем массив объектов товаров
+            type: 'cart_sync', // New data type for cart synchronization
+            items: Object.values(cart) // Send array of item objects
         };
-        Telegram.WebApp.sendData(JSON.stringify(cart_sync_data));
-        console.log("DEBUG: Cart data sent programmatically.");
-        isClosingHandledProgrammatically = true; // Устанавливаем флаг после отправки
+        try {
+            Telegram.WebApp.sendData(JSON.stringify(cart_sync_data));
+            console.log("DEBUG: Cart data sent programmatically.");
+        } catch (error) {
+            console.error("ERROR: Failed to send cart data programmatically:", error);
+        }
     }
 
-    // NEW: Обработчик события закрытия Web App для синхронизации корзины
-    // Это событие срабатывает, когда Web App собирается быть закрытым (пользователем или программно)
+    // Event handler for Web App closing to sync cart
     Telegram.WebApp.onEvent('closing', () => {
         console.log("DEBUG: Telegram Web App 'closing' event triggered.");
-        // Directly send data here, without relying on isClosingHandledProgrammatically,
-        // as this is the final moment and we want to guarantee sending.
-        const cart_sync_data = {
-            type: 'cart_sync',
-            items: Object.values(cart)
-        };
-        Telegram.WebApp.sendData(JSON.stringify(cart_sync_data));
-        console.log("DEBUG: Cart data sent directly on 'closing' event.");
+        sendCartUpdateToBot(); // Send data directly, as this is the last chance
     });
 
 
-    // Функция для возврата из корзины в главное меню бота (закрытие Web App)
+    // Function to return from cart to main bot menu (close Web App)
     document.getElementById('back-to-main-menu-webapp').addEventListener('click', () => {
-        sendCartUpdateToBotProgrammatic(); // Явно отправляем данные
-        // Небольшая задержка, чтобы дать Telegram.WebApp.sendData() время на обработку
+        sendCartUpdateToBot(); // Explicitly send data
+        // Small delay to allow Telegram.WebApp.sendData() to process
         setTimeout(() => {
-            Telegram.WebApp.close(); // Закрываем Web App
-        }, 50);
+            Telegram.WebApp.close(); // Close Web App
+        }, 500); // Increased delay
     });
 
-    // Функция для возврата из оформления заказа к корзине
+    // Function to return from checkout to cart
     document.getElementById('back-from-checkout-to-cart').addEventListener('click', () => {
-        displayCart(); // Возвращаемся к отображению корзины
+        displayView('cart'); // Return to cart view
     });
 
-    // Настройка формы оформления заказа
+    // Setup checkout form
     function setupCheckoutForm() {
-        // Инициализация полей доставки
+        // Initialize delivery fields
         toggleDeliveryFields();
         deliveryMethodRadios.forEach(radio => {
             radio.addEventListener('change', toggleDeliveryFields);
         });
 
-        // Установка минимальной даты для delivery-date
+        // Set min date for delivery-date
         const today = new Date();
         const year = today.getFullYear();
         const month = (today.getMonth() + 1).toString().padStart(2, '0');
@@ -489,15 +571,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleDeliveryFields() {
         const isCourier = document.querySelector('input[name="deliveryMethod"]:checked').value === 'courier';
 
-        // Показываем/скрываем информационные тексты
-        if (courierInfoText) {
+        // Show/hide info texts
+        if (courierInfoText) { // Check if element exists
             if (isCourier) {
                 courierInfoText.classList.remove('hidden');
             } else {
                 courierInfoText.classList.add('hidden');
             }
         }
-        if (pickupInfoText) {
+        if (pickupInfoText) { // Check if element exists
             if (!isCourier) {
                 pickupInfoText.classList.remove('hidden');
             } else {
@@ -505,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Управление required атрибутами для полей
+        // Manage required attributes for fields
         const lastName = document.getElementById('last-name');
         const firstName = document.getElementById('first-name');
         const middleName = document.getElementById('middle-name');
@@ -516,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const addressLine = document.getElementById('address-line');
         const pickupRadios = document.getElementById('pickup-radio-group').querySelectorAll('input[type="radio"]');
 
-        // Всегда обязательные поля
+        // Always required fields
         lastName.setAttribute('required', 'required');
         firstName.setAttribute('required', 'required');
         middleName.setAttribute('required', 'required');
@@ -541,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Валидация формы
+    // Form validation
     function validateForm() {
         let isValid = true;
         const lastName = document.getElementById('last-name');
@@ -554,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const addressLine = document.getElementById('address-line');
         const pickupSelected = document.querySelector('input[name="pickupAddress"]:checked');
 
-        // Скрываем все сообщения об ошибках перед новой валидацией
+        // Hide all error messages before new validation
         document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
 
         if (lastName.value.trim() === '') {
@@ -570,13 +652,13 @@ document.addEventListener('DOMContentLoaded', () => {
             isValid = false;
         }
 
-        // Простая валидация номера телефона (можно улучшить)
+        // Simple phone number validation (can be improved)
         if (!/^\+?\d{9,15}$/.test(phoneNumber.value.trim())) {
             document.getElementById('phoneNumber-error').style.display = 'block';
             isValid = false;
         }
 
-        // Простая валидация Email
+        // Simple Email validation
         if (!/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(email.value.trim())) {
             document.getElementById('email-error').style.display = 'block';
             isValid = false;
@@ -596,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('addressLine-error').style.display = 'block';
                 isValid = false;
             }
-        } else { // Самовывоз
+        } else { // Pickup
             if (!pickupSelected) {
                 document.getElementById('pickupAddress-error').style.display = 'block';
                 isValid = false;
@@ -606,9 +688,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Обработчик отправки формы заказа
+    // Order form submission handler
     checkoutForm.addEventListener('submit', async (event) => {
-        event.preventDefault(); // Предотвращаем стандартную отправку формы
+        event.preventDefault(); // Prevent default form submission
 
         if (!validateForm()) {
             Telegram.WebApp.showAlert('Пожалуйста, заполните все обязательные поля корректно.');
@@ -617,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(checkoutForm);
         const orderDetails = {};
-        // Собираем данные из формы
+        // Collect data from form
         orderDetails.lastName = formData.get('lastName');
         orderDetails.firstName = formData.get('firstName');
         orderDetails.middleName = formData.get('middleName');
@@ -629,14 +711,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (orderDetails.deliveryMethod === 'courier') {
             orderDetails.city = formData.get('city');
             orderDetails.addressLine = formData.get('addressLine');
-            orderDetails.comment = formData.get('comment'); // Комментарий для курьера
+            orderDetails.comment = formData.get('comment'); // Comment for courier
         } else { // pickup
             orderDetails.pickupAddress = formData.get('pickupAddress');
             orderDetails.comment = formData.get('comment');
         }
 
 
-        // Добавляем товары из корзины в orderDetails
+        // Add items from cart to orderDetails
         orderDetails.items = [];
         let totalOrderPrice = 0;
 
@@ -646,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemInCart = cart[productId];
             // Correctly extract category key from productId
             const parts = productId.split('_');
-            const category = parts.slice(0, parts.length - 1).join('_');
+            const category = parts.join('_'); // Get full category name
 
             if (category) {
                 categoriesToFetchForOrder.add(category);
@@ -705,32 +787,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         orderDetails.totalPrice = totalOrderPrice.toFixed(2);
 
-        // Добавляем тип данных для бота
+        // Add data type for bot
         orderDetails.type = 'order_submission';
 
-        // Отправляем данные боту
-        Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-        console.log("DEBUG: Данные заказа отправлены боту.");
+        // Send data to bot
+        try {
+            Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+            console.log("DEBUG: Данные заказа отправлены боту.");
+        } catch (error) {
+            console.error("ERROR: Failed to send order data:", error);
+        }
 
-        // Очищаем корзину после отправки заказа
+        // Clear cart after sending order
         cart = {};
-        saveCart(); // Это вызовет saveCart, которая НЕ будет вызывать sendCartUpdateToBotProgrammatic
-        sendCartUpdateToBotProgrammatic(); // Явно отправляем данные после заказа, чтобы обновить счетчик
+        saveCart(); // This will call saveCart, which will NOT call sendCartUpdateToBotProgrammatic
+        sendCartUpdateToBot(); // Explicitly send data after order to update counter
 
-        // Небольшая задержка, чтобы дать Telegram.WebApp.sendData() время на обработку
+        // Small delay to allow Telegram.WebApp.sendData() to process
         setTimeout(() => {
-            Telegram.WebApp.close(); // Закрываем Web App
-        }, 50);
+            Telegram.WebApp.close(); // Close Web App
+        }, 500); // Increased delay
     });
 
-    // Обработчик для кнопки "Начать покупки" на приветственном экране
+    // Handler for "Start Shopping" button on welcome screen
     startShoppingButton.addEventListener('click', () => {
-        // Открываем ссылку на бота Telegram
+        // Open Telegram bot link
         Telegram.WebApp.openTelegramLink('https://t.me/drazhin_bakery_bot');
-        Telegram.WebApp.close(); // Закрываем Web App
+        Telegram.WebApp.close(); // Close Web App
     });
 
-    // Инициализация отображения при загрузке страницы
+    // Initialize display on page load
     const initialCategory = getUrlParameter('category');
     const initialView = getUrlParameter('view');
     console.log(`DEBUG: Initializing Web App. initialView='${initialView}', initialCategory='${initialCategory}'`);
@@ -746,6 +832,15 @@ document.addEventListener('DOMContentLoaded', () => {
         displayView('products', initialCategory);
     } else {
         console.log('DEBUG: Initializing to welcome view (no specific parameters).');
-        displayView('welcome');
+        displayView('welcome'); // Default to welcome view if no specific view/category is provided
     }
-}); // Конец обработчика DOMContentLoaded
+
+    // Initialize Telegram Web App Main Button on load
+    if (Telegram.WebApp.MainButton) {
+        Telegram.WebApp.MainButton.onClick(() => {
+            displayView('cart'); // On main button click, always go to cart
+        });
+        updateMainButtonCartInfo(); // Update button state on load
+    }
+
+}); // End of DOMContentLoaded handler

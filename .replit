@@ -11,6 +11,7 @@ run = ["sh", "-c", "python3 -m bot.main"]
 deploymentTarget = "cloudrun"
 
 [workflows]
+runButton = "Run Bot"
 
 [[workflows.workflow]]
 name = "Run Bot"

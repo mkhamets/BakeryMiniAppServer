@@ -1,55 +1,46 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
-from .config import BASE_WEBAPP_URL  # Убедись, что эта переменная есть в config.py
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-def generate_main_menu(cart_count: int = 0) -> ReplyKeyboardMarkup:
-    cart_text = f"🛒 Корзина ({cart_count})" if cart_count > 0 else "🛒 Корзина"
+# Базовый URL для Web App. Он должен быть таким же, как в main.py и BotFather.
+# Убедитесь, что он заканчивается на '/bot-app/'
+BASE_WEBAPP_URL = "https://e653d5e4-945b-4845-b210-c8e4436510d8-00-1qk0jfa7quz7y.kirk.replit.dev/bot-app/"
 
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                KeyboardButton(
-                    text="🥨 Выпечка",
-                    web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?category=bakery&v=2")
-                ),
-                KeyboardButton(
-                    text="🥐 Круассаны",
-                    web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?category=croissants&v=2")
-                )
-            ],
-            [
-                KeyboardButton(
-                    text="🍞 Ремесленный хлеб",
-                    web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?category=artisan_bread&v=2")
-                ),
-                KeyboardButton(
-                    text="🍰 Десерты",
-                    web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?category=desserts&v=2")
-                )
-            ],
-            [
-                KeyboardButton(
-                    text=cart_text,
-                    web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?category=cart&v=2")
-                )
-            ],
-            [
-                KeyboardButton(text="📍 Наши адреса"),
-                KeyboardButton(text="⚡ О доставке"),
-                KeyboardButton(text="ℹ️ О нас")
-            ]
-        ],
-        resize_keyboard=True,
-        is_persistent=True,
-        one_time_keyboard=False,
-        input_field_placeholder="Выберите категорию или действие ⬇️"
-    )
-
+# Клавиатура для возврата в меню
 back_to_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="⬅️ Назад в меню")]
     ],
     resize_keyboard=True,
-    is_persistent=True,
+    is_persistent=True, # Добавлено обратно
     one_time_keyboard=False,
-    input_field_placeholder="Вернуться в главное меню ⬇️"
+    input_field_placeholder="Выберите категорию или действие ⬇️" # Добавлено обратно
 )
+
+def generate_main_menu(cart_items_count: int = 0) -> ReplyKeyboardMarkup:
+    """
+    Генерирует главное меню с учетом количества товаров в корзине.
+    """
+    cart_button_text = f"🛒 Проверить корзину ({cart_items_count})" if cart_items_count > 0 else "🛒 Проверить корзину"
+
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="📖 Наше меню", web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?view=categories"))
+            ],
+            [
+                KeyboardButton(text=cart_button_text, web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?view=cart"))
+            ],
+            [
+                KeyboardButton(text="ℹ️ О нас"),
+                KeyboardButton(text="📍 Наши адреса"),
+                KeyboardButton(text="⚡ О доставке")
+            ]
+        ],
+        resize_keyboard=True,
+        is_persistent=True, # Добавлено обратно
+        one_time_keyboard=False,
+        input_field_placeholder="Выберите категорию или действие ⬇️" # Добавлено обратно
+    )
+    return keyboard
+
+# Примечание: Кнопка "Оформить заказ" теперь обрабатывается в main.py через callback_query
+# и открывает WebApp с параметром ?view=checkout
