@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 renderCart();
                 updateMainButtonCartInfo();
+                Telegram.WebApp.MainButton.hide();
                 break;
             case 'checkout':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -97,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 renderCheckoutSummary();
                 updateMainButtonCartInfo();
+                Telegram.WebApp.MainButton.hide();
                 break;
             default:
                 console.warn('Неизвестное представление:', viewName);

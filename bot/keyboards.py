@@ -4,16 +4,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 # Убедитесь, что он заканчивается на '/bot-app/'
 BASE_WEBAPP_URL = "https://e653d5e4-945b-4845-b210-c8e4436510d8-00-1qk0jfa7quz7y.kirk.replit.dev/bot-app/"
 
-# Клавиатура для возврата в меню
-back_to_menu = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="⬅️ Назад в меню")]
-    ],
-    resize_keyboard=True,
-    is_persistent=True, # Добавлено обратно
-    one_time_keyboard=False,
-    input_field_placeholder="Выберите категорию или действие ⬇️" # Добавлено обратно
-)
+# Удалена клавиатура для возврата в меню (back_to_menu)
 
 def generate_main_menu(cart_items_count: int = 0) -> ReplyKeyboardMarkup:
     """

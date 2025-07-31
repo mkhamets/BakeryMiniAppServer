@@ -11,7 +11,7 @@ from aiohttp import web # Импортируем web для TCPSite
 
 from .api_server import setup_api_server # Убедитесь, что импортируется setup_api_server
 from .config import BOT_TOKEN, BASE_WEBAPP_URL
-from .keyboards import back_to_menu, generate_main_menu
+from .keyboards import generate_main_menu # Импорт generate_main_menu (back_to_menu удален)
 
 # Настраиваем логирование
 logging.basicConfig(
@@ -114,8 +114,9 @@ async def about_us(message: Message):
         "🍞 Свежайшие продукты\n"
         "❤️ Любовь к своему делу\n\n"
         "Подробнее: https://drazhin.by/o-pekarne"
-    ) # Добавлена закрывающая скобка
-    await message.answer(text, parse_mode=ParseMode.HTML, reply_markup=back_to_menu) # Добавлен вызов answer
+    )
+    # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
+    await message.answer(text, parse_mode=ParseMode.HTML, reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values())))
 
 # Хендлер для кнопки "Наши адреса"
 @dp.message(F.text == "📍 Наши адреса")
@@ -163,8 +164,9 @@ async def show_addresses(message: Message):
         "📱 +375 (29) 117‑25‑77\n"
         "📧 info@drazhin.by\n"
         "<a href='https://drazhin.by/kontakty'>Подробнее на сайте</a>"
-    ) # Добавлена закрывающая скобка
-    await message.answer(text, reply_markup=back_to_menu, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
+    )
+    # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
+    await message.answer(text, reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values())), disable_web_page_preview=True, parse_mode=ParseMode.HTML)
 
 # Хендлер для кнопки "О доставке"
 @dp.message(F.text == "⚡ О доставке")
@@ -186,17 +188,18 @@ async def delivery_info(message: Message):
         "📧 info@drazhin.by\n"
         "<a href='https://drazhin.by/kontakty'>Подробнее на сайте</a>"
     )
-    await message.answer(text, reply_markup=back_to_menu, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
+    # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
+    await message.answer(text, reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values())), disable_web_page_preview=True, parse_mode=ParseMode.HTML)
 
-# Хендлер для кнопки "Назад в меню"
-@dp.message(F.text == "⬅️ Назад в меню")
-async def back_to_menu_handler(message: Message) -> None:
-    user_id = message.from_user.id
-    cart_count = sum(get_user_cart(user_id).values())
-    await message.answer(
-        "Вы вернулись в главное меню.",
-        reply_markup=generate_main_menu(cart_count)
-    )
+# ИЗМЕНЕНИЕ: Удален хендлер для кнопки "⬅️ Назад в меню"
+# @dp.message(F.text == "⬅️ Назад в меню")
+# async def back_to_menu_handler(message: Message) -> None:
+#     user_id = message.from_user.id
+#     cart_count = sum(get_user_cart(user_id).values())
+#     await message.answer(
+#         "Вы вернулись в главное меню.",
+#         reply_markup=generate_main_menu(cart_count)
+#     )
 
 # Хендлер для данных из Web App
 @dp.message(F.web_app_data)
@@ -260,33 +263,33 @@ async def handle_web_app_data(message: Message):
 
                 await message.answer(
                     f"Ваш заказ принят! Мы свяжемся с вами в ближайшее время для подтверждения.\n\n{order_summary}",
-                    reply_markup=back_to_menu # Возвращаем пользователя в главное меню после заказа
+                    reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values())) # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
                 )
                 clear_user_cart(user_id) # Очищаем корзину после успешного заказа
                 logger.info(f"Заказ от пользователя {user_id} успешно оформлен. Корзина очищена.")
             else:
-                await message.answer("Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.", reply_markup=back_to_menu)
+                await message.answer("Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.", reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values()))) # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
                 logger.error(f"Неполные данные заказа от пользователя {user_id}: {data}")
         else:
-            await message.answer("Неизвестное действие из Web App.", reply_markup=back_to_menu)
+            await message.answer("Неизвестное действие из Web App.", reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values()))) # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
             logger.warning(f"Получено неизвестное действие из Web App для пользователя {user_id}: {action}")
 
     except json.JSONDecodeError:
         logger.error(f"Неверный формат JSON данных из Web App для пользователя {user_id}: {web_app_data_raw}")
-        await message.answer("Ошибка обработки данных из Web App. Пожалуйста, попробуйте снова.", reply_markup=back_to_menu)
+        await message.answer("Ошибка обработки данных из Web App. Пожалуйста, попробуйте снова.", reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values()))) # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
     except Exception as e:
         logger.error(f"Неизвестная ошибка при обработке данных из Web App для пользователя {user_id}: {e}")
-        await message.answer("Произошла внутренняя ошибка. Пожалуйста, попробуйте позже.", reply_markup=back_to_menu)
+        await message.answer("Произошла внутренняя ошибка. Пожалуйста, попробуйте позже.", reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values()))) # ИЗМЕНЕНИЕ: Заменено back_to_menu на generate_main_menu
 
 
-# Хендлер для текстового ввода, который не является командой или кнопкой
+# Хендлер для любых текстовых сообщений, которые не являются командой или кнопкой
 @dp.message(F.text)
 async def block_text_input(message: Message):
     if message.text not in CATEGORY_MAP.keys() and \
-       message.text not in ["ℹ️ О нас", "📍 Наши адреса", "⚡ О доставке", "⬅️ Назад в меню"] and \
-       not re.match(r"🛒 Корзина(\s\(\d+\))?", message.text) and \
+       message.text not in ["ℹ️ О нас", "📍 Наши адреса", "⚡ О доставке"] and \
+       not re.match(r"🛒 Проверить корзину(\s\(\d+\))?", message.text) and \
        message.text != "/start":
-        await message.answer("⚠️ Пожалуйста, используйте кнопки внизу для управления ботом �")
+        await message.answer("⚠️ Пожалуйста, используйте кнопки внизу для управления ботом 👇")
 
 
 async def main():
@@ -316,5 +319,5 @@ async def main():
         await runner.cleanup()
         logger.info("API сервер остановлен.")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
