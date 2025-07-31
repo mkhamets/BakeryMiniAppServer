@@ -23,14 +23,12 @@
     <!-- Основной контейнер приложения, который будет скрыт на welcome screen -->
     <div class="container" id="main-page-container">
         <!-- Заголовок для продуктов, корзины, оформления заказа (управляется script.js) -->
-        <!-- Этот заголовок будет использоваться для всех страниц, кроме welcome -->
         <h2 class="category-title" id="main-category-title">Загрузка...</h2>
-        
+
         <!-- div с id="app-content" будет содержать все динамические контейнеры -->
         <div id="app-content">
             <!-- Categories Container -->
             <div class="categories-container-wrapper hidden" id="categories-container">
-                <!-- Заголовок "Наше меню" УДАЛЕН отсюда, теперь используется main-category-title -->
                 <!-- Категории будут вставляться сюда динамически -->
             </div>
 
@@ -38,11 +36,9 @@
                 <div id="product-list">
                     <!-- Карточки товаров будут вставляться сюда -->
                 </div>
-                <!-- Кнопка "Назад к категориям" удалена, используем нативную кнопку Telegram Web App -->
             </div>
 
             <div class="cart-container hidden" id="cart-container">
-                <!-- Заголовок "Ваша корзина" УДАЛЕН отсюда, теперь используется main-category-title -->
                 <div id="cart-items-list">
                     <!-- Элементы корзины будут вставляться сюда -->
                 </div>
@@ -58,7 +54,6 @@
             </div>
 
             <div class="checkout-container hidden" id="checkout-container">
-                <!-- Заголовок "Оформление заказа" УДАЛЕН отсюда, теперь используется main-category-title -->
                 <form id="checkout-form" class="checkout-form">
                     <div class="form-group">
                         <label for="last-name">Фамилия:</label>
@@ -90,7 +85,6 @@
                         <input type="date" id="delivery-date" name="deliveryDate" required>
                         <div class="error-message" id="deliveryDate-error">Пожалуйста, выберите дату.</div>
                     </div>
-
                     <div class="form-group">
                         <label>Способ получения:</label>
                         <div class="radio-group">
@@ -100,18 +94,11 @@
                             <label for="delivery-pickup-radio">Самовывоз</label>
                         </div>
                     </div>
-
                     <div id="courier-delivery-fields">
                         <div class="form-group">
                             <label for="city">Город:</label>
-                            <select id="city" name="city">
-                                <option value="">Выберите город</option>
-                                <option value="Минск">Минск</option>
-                                <option value="Заславль">Заславль</option>
-                                <option value="Тарасово">Тарасово</option>
-                                <option value="Ратомка">Ратомка</option>
-                            </select>
-                            <div class="error-message" id="city-error">Пожалуйста, выберите город.</div>
+                            <input type="text" id="city" name="city" required>
+                            <div class="error-message" id="city-error">Пожалуйста, введите город.</div>
                         </div>
                         <div class="form-group">
                             <label for="address-line">Адрес (улица, дом, квартира):</label>
@@ -119,26 +106,19 @@
                             <div class="error-message" id="addressLine-error">Пожалуйста, введите адрес.</div>
                         </div>
                         <div class="form-group">
-                            <label for="comment-delivery">Комментарий к заказу (необязательно):</label>
+                            <label for="comment-delivery">Комментарий к доставке:</label>
                             <textarea id="comment-delivery" name="commentDelivery" rows="3"></textarea>
                         </div>
                     </div>
-
                     <div id="pickup-addresses" class="hidden">
                         <div class="form-group">
                             <label>Выберите адрес самовывоза:</label>
-                            <div class="radio-group" id="pickup-radio-group">
-                                <label><input type="radio" name="pickupAddress" value="ТЦ Green City"> ТЦ "Green City", ул. Притыцкого, 156</label>
-                                <label><input type="radio" name="pickupAddress" value="ТЦ Замок"> ТЦ "Замок", пр‑т Победителей, 65</label>
-                                <label><input type="radio" name="pickupAddress" value="ул. Л. Беды, 26"> ул. Л. Беды, 26</label>
-                                <label><input type="radio" name="pickupAddress" value="ул. Мстиславца, 8"> ул. Мстиславца, 8</label>
-                                <label><input type="radio" name="pickupAddress" value="ул. Лученка, 1"> ул. Лученка, 1</label>
-                                <label><input type="radio" name="pickupAddress" value="ул. Авиационная, 8"> ул. Авиационная, 8</label>
-                                <label><input type="radio" name="pickupAddress" value="ул. Нововиленская, 45"> ул. Нововиленская, 45</label>
-                                <label><input type="radio" name="pickupAddress" value="ул. Морской риф 1/4"> ул. Морской риф 1/4</label>
-                                <label><input type="radio" name="pickupAddress" value="г. Заславль, ул. Вокзальная, 11"> г. Заславль, ул. Вокзальная, 11</label>
+                            <div class="radio-group">
+                                <input type="radio" id="pickup-address-1" name="pickupAddress" value="ул. Притыцкого, 97" required>
+                                <label for="pickup-address-1">ул. Притыцкого, 97</label>
+                                <input type="radio" id="pickup-address-2" name="pickupAddress" value="ул. Дунина-Марцинкевича, 3" required>
+                                <label for="pickup-address-2">ул. Дунина-Марцинкевича, 3</label>
                             </div>
-                            <div class="error-message" id="pickupAddress-error">Пожалуйста, выберите адрес самовывоза.</div>
                         </div>
                     </div>
 
