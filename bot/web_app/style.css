@@ -42,7 +42,6 @@ h1 {
     margin-bottom: 20px;
     font-size: 1.8em;
     font-weight: bold;
-    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Применен новый шрифт */
 }
 
 /* Скрытие элементов */
@@ -128,7 +127,6 @@ h1 {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Применен новый шрифт */
 }
 
 .product-price {
@@ -245,7 +243,6 @@ h1 {
     font-weight: bold;
     font-size: 1.1rem;
     color: #5a3e2b;
-    /* Этот шрифт остается прежним, как было запрошено */
 }
 
 .cart-item-price {
@@ -281,10 +278,10 @@ h1 {
 }
 
 .cart-item-controls .remove-btn {
-    background-color: white; /* Красная кнопка для удаления */
+    background-color: #d9534f; /* Красная кнопка для удаления */
 }
 .cart-item-controls .remove-btn:hover {
-    background-color: white;
+    background-color: #c9302c;
 }
 
 .cart-total {
@@ -297,14 +294,14 @@ h1 {
     border-top: 2px solid #eee;
 }
 
-.cart-actions {
+.cart-actions-bottom {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin-top: 20px;
 }
 
-.cart-actions button, .cart-actions a {
+.cart-actions-bottom button, .cart-actions-bottom a {
     display: block;
     width: 100%;
     padding: 12px;
@@ -317,13 +314,13 @@ h1 {
 }
 
 .checkout-button {
-    background-color: #5cb85c; /* Зеленая кнопка */
+    background-color: #b76c4b; /* Коричневая кнопка */
     color: white;
     border: none;
 }
 
 .checkout-button:hover {
-    background-color: #449d44;
+    background-color: #a05a3a;
 }
 
 .clear-cart-button {
@@ -336,15 +333,27 @@ h1 {
     background-color: #ec971f;
 }
 
-.back-to-menu-button {
+/* Стили для кнопки "Продолжить покупки" */
+#continue-shopping-button {
     background-color: #6c757d; /* Серая кнопка */
     color: white;
     border: none;
+    display: block; /* Убедимся, что она блочный элемент */
+    width: 100%; /* Полная ширина */
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    margin-top: 10px; /* Отступ сверху */
 }
 
-.back-to-menu-button:hover {
+#continue-shopping-button:hover {
     background-color: #5a6268;
 }
+
 
 /* Стили для формы оформления заказа */
 .checkout-form {
@@ -532,7 +541,6 @@ h1 {
     margin-top: 0;
     margin-bottom: 15px;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Тень для текста */
-    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Применен новый шрифт */
 }
 
 .welcome-text {
@@ -542,7 +550,6 @@ h1 {
     color: white; /* Белый цвет для текста */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Тень для текста */
 }
-
 .start-shopping-button {
     background-color: #b76c4b; /* Коричневый цвет из старого welcome.html */
     color: white;
@@ -559,4 +566,127 @@ h1 {
 .start-shopping-button:hover {
     background-color: #a05c3d; /* Чуть темнее при наведении */
     transform: translateY(-2px);
+}
+
+/* НОВЫЕ СТИЛИ ДЛЯ КАРТОЧЕК КАТЕГОРИЙ */
+
+.categories-container-wrapper {
+    /* Общий контейнер для сетки категорий */
+    padding: 20px;
+    max-width: 600px; /* Ограничиваем ширину, как у .container */
+    margin: 0 auto; /* Центрируем */
+    box-sizing: border-box;
+}
+
+.categories-grid {
+    /* Сетка для карточек категорий */
+    display: grid;
+    grid-template-columns: 1fr; /* Одна колонка по умолчанию */
+    gap: 20px; /* Расстояние между карточками */
+    padding: 0; /* Убираем лишний padding, так как он уже есть у wrapper */
+    margin-top: 20px; /* Отступ от заголовка */
+}
+
+@media (min-width: 480px) { /* На экранах шире 480px */
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr); /* Две колонки */
+    }
+}
+
+.category-card-item {
+    /* Стили для отдельной карточки категории */
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px; /* Скругленные углы */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Более выраженная тень */
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Плавный эффект при наведении */
+    /* ИЗМЕНЕНО: Пропорции для более вертикального вида */
+    aspect-ratio: 0.8 / 1; /* Например, 4:5 или 8:10, чтобы было более вертикально */
+    display: flex;
+    flex-direction: column; /* Элементы внутри в колонку */
+    justify-content: flex-end; /* Текст прижат к низу */
+    background-color: #fff; /* Фоновый цвет, если изображение не загрузилось */
+    border: 1px solid #e0e0e0; /* Легкая рамка */
+}
+
+.category-card-item:hover {
+    transform: translateY(-5px); /* Эффект "подъема" */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); /* Усиленная тень при наведении */
+}
+
+.category-image-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 12px; /* Скругленные углы для контейнера изображения */
+}
+
+.category-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Изображение покрывает всю область без искажений */
+    display: block;
+    transition: transform 0.3s ease-in-out; /* Плавное увеличение при наведении */
+    /* border: 2px solid red; */ /* УДАЛЕНО: Красная рамка для отладки */
+}
+
+.category-card-item:hover .category-image {
+    transform: scale(1.05); /* Небольшое увеличение при наведении */
+}
+
+.category-image-filter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Градиентная накладка, как на материнском сайте */
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%); /* ВОССТАНОВЛЕНО: Оригинальный градиент */
+    z-index: 1; /* Фильтр поверх изображения, но под текстом */
+    border-radius: 12px; /* Скругленные углы для фильтра */
+}
+
+.category-text-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px; /* Отступы для текста */
+    color: white;
+    z-index: 2; /* Текст поверх фильтра */
+    box-sizing: border-box;
+    text-align: left; /* Текст выровнен по левому краю */
+}
+
+.category-title-text {
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-size: 1.5em; /* Размер заголовка */
+    color: white;
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Тень для читаемости */
+    line-height: 1.2;
+}
+
+.category-link-text {
+    display: flex;
+    align-items: center;
+    font-size: 0.9em;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: bold;
+}
+
+.category-arrow-svg {
+    margin-left: 5px;
+    fill: white;
+    width: 16px;
+    height: 16px;
+    min-width: 16px; /* Фиксированный размер */
+    min-height: 16px;
 }

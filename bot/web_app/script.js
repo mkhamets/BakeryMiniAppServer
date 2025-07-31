@@ -8,253 +8,269 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 // ---------------------------------------------------------------------
 
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Сделано асинхронным
 
     const mainPageContainer = document.getElementById('main-page-container'); // NEW: The main .container element
     const welcomeContainer = document.getElementById('welcome-container');
     const categoriesContainer = document.getElementById('categories-container');
-    const categoriesMainTitle = document.getElementById('categories-main-title');
+    const categoriesMainTitle = document.getElementById('categories-main-title'); // Заголовок внутри контейнера категорий
     const productsContainer = document.getElementById('products-container');
     const cartContainer = document.getElementById('cart-container');
     const checkoutContainer = document.getElementById('checkout-container');
-    const categoryTitle = document.getElementById('main-category-title'); // Main title for products/cart/checkout
+    const mainCategoryTitle = document.getElementById('main-category-title'); // Общий заголовок для продуктов/корзины/чекаута
 
-    const courierInfoText = document.getElementById('courier-text'); // These might be null if not in current HTML, need to check
-    const pickupInfoText = document.getElementById('pickup-text'); // These might be null if not in current HTML, need to check
-
-    const cartItemsList = document.getElementById('cart-items-list');
-    const cartTotalDisplay = document.getElementById('cart-total');
-    const checkoutForm = document.getElementById('checkout-form');
+    // Элементы для полей доставки и самовывоза
+    const courierInfoText = document.getElementById('courier-text');
+    const pickupInfoText = document.getElementById('pickup-text');
     const courierDeliveryFields = document.getElementById('courier-delivery-fields');
     const pickupAddresses = document.getElementById('pickup-addresses');
+
+
+    const cartItemsList = document.getElementById('cart-items-list');
+    const cartTotalElement = document.getElementById('cart-total');
+    const productListElement = document.getElementById('product-list');
+    const checkoutForm = document.getElementById('checkout-form');
     const deliveryMethodRadios = document.querySelectorAll('input[name="deliveryMethod"]');
+    const checkoutTotalElement = document.getElementById('cart-total'); // Используем cart-total для вывода итоговой суммы в чекауте
+    const checkoutItemsList = document.getElementById('checkout-items-list');
+
+    // Кнопки навигации
+    const backFromCheckoutToCartButton = document.getElementById('back-from-checkout-to-cart');
+    const continueShoppingButton = document.getElementById('continue-shopping-button'); // НОВАЯ КНОПКА
+
+    // Кнопка "Заказать с доставкой" на welcome screen
     const startShoppingButton = document.getElementById('start-shopping-button');
 
-    // Локальное хранилище корзины в Web App
-    let cart = JSON.parse(localStorage.getItem('drazhin_bakery_cart')) || {};
+    // Текущее состояние корзины
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
+    let productsData = {}; // Для хранения всех продуктов, загруженных из API
 
-    // Глобальная переменная для хранения данных о продуктах, загруженных через API
-    let productsDataCache = {};
+    // Карта для отображения человекочитаемых названий категорий и эмодзи
+    const CATEGORY_DISPLAY_MAP = {
+        "category_bakery": { name: "Выпечка", emoji: "🥨" },
+        "category_croissants": { name: "Круассаны", emoji: "🥐" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", emoji: "🍞" },
+        "category_desserts": { name: "Десерты", emoji: "🍰" }
+    };
 
-    // Функция для сохранения корзины в localStorage
-    function saveCart() {
-        localStorage.setItem('drazhin_bakery_cart', JSON.stringify(cart));
-        // Больше не обновляем MainButton здесь, так как она убрана
-    }
+    // Предварительная загрузка данных о продуктах при старте Web App
+    await fetchProductsData(); 
+    console.log('DEBUG: productsData for category_bakery:', productsData['category_bakery'] ? productsData['category_bakery'][0] : 'No data for category_bakery');
 
-    // Global BackButton setup
-    if (Telegram.WebApp.BackButton && Telegram.WebApp.version && parseFloat(Telegram.WebApp.version) >= 6.1) {
-        Telegram.WebApp.BackButton.onClick(() => {
-            console.log("DEBUG: Telegram Web App BackButton clicked.");
-            // Определяем, куда вернуться
-            const currentView = getUrlParameter('view');
-            const currentCategory = getUrlParameter('category');
-
-            if (currentView === 'checkout') {
-                displayView('cart'); // Из чекаута всегда в корзину
-            } else if (currentView === 'cart') { // If current view is cart
-                displayView('categories'); // From cart, go to categories
-            } else if (currentView === 'products' && currentCategory) {
-                displayView('categories'); // Из продуктов на экран категорий
-            } else if (currentView === 'categories') {
-                Telegram.WebApp.close(); // С экрана категорий закрываем Web App
-            } else {
-                Telegram.WebApp.close(); // По умолчанию закрываем
-            }
-        });
-    } else {
-        console.log("DEBUG: Telegram Web App BackButton not supported or version is too old.");
-    }
-
-
-    // Функция для получения параметров URL
-    function getUrlParameter(name) {
-        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-        var results = regex.exec(location.search);
-        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    }
-
-    // Function to display the correct view (categories, products, cart, checkout, welcome)
-    function displayView(viewName, category = null) {
-        console.log(`DEBUG: displayView called with viewName: ${viewName}, category: ${category}`);
-
-        // Hide all main content containers and titles
+    // Функция для отображения нужного контейнера
+    function displayView(viewName, categoryKey = null) {
+        // Скрываем все основные контейнеры
         welcomeContainer.classList.add('hidden');
+        mainPageContainer.classList.add('hidden');
         categoriesContainer.classList.add('hidden');
         productsContainer.classList.add('hidden');
         cartContainer.classList.add('hidden');
         checkoutContainer.classList.add('hidden');
-        categoryTitle.classList.add('hidden');
-        categoriesMainTitle.classList.add('hidden');
+        mainCategoryTitle.classList.add('hidden'); // Скрываем mainCategoryTitle по умолчанию
 
-        // Manage the main .container visibility
-        if (viewName === 'welcome') {
-            mainPageContainer.classList.add('hidden'); // Hide the white background container for welcome screen
-            welcomeContainer.classList.remove('hidden');
+        // Скрываем/показываем кнопку "Назад" Telegram Web App
+        if (viewName === 'welcome' || viewName === 'categories') {
+            Telegram.WebApp.BackButton.hide();
         } else {
-            mainPageContainer.classList.remove('hidden'); // Show the white background container for other views
-            if (viewName === 'categories') {
-                categoriesMainTitle.classList.remove('hidden');
+            Telegram.WebApp.BackButton.show();
+        }
+
+        // Отображаем нужный контейнер и устанавливаем заголовок
+        switch (viewName) {
+            case 'welcome':
+                welcomeContainer.classList.remove('hidden');
+                Telegram.WebApp.MainButton.hide(); 
+                break;
+            case 'categories':
+                mainPageContainer.classList.remove('hidden');
                 categoriesContainer.classList.remove('hidden');
+                mainCategoryTitle.textContent = 'Наше меню'; 
+                mainCategoryTitle.classList.remove('hidden'); // Показываем заголовок для категорий
                 loadCategories();
-            } else if (viewName === 'products' && category) {
-                categoryTitle.textContent = getCategoryDisplayName(category);
-                categoryTitle.classList.remove('hidden');
+                Telegram.WebApp.MainButton.hide(); 
+                break;
+            case 'products':
+                mainPageContainer.classList.remove('hidden');
                 productsContainer.classList.remove('hidden');
-                loadProducts(category);
-            } else if (viewName === 'cart') {
-                categoryTitle.textContent = 'Ваша корзина';
-                categoryTitle.classList.remove('hidden');
+                mainCategoryTitle.classList.remove('hidden'); // Показываем заголовок для продуктов
+                loadProducts(categoryKey);
+                updateMainButtonCartInfo(); 
+                break;
+            case 'cart':
+                mainPageContainer.classList.remove('hidden');
                 cartContainer.classList.remove('hidden');
-                displayCart();
-            } else if (viewName === 'checkout') {
-                categoryTitle.textContent = 'Оформление заказа';
-                categoryTitle.classList.remove('hidden');
+                mainCategoryTitle.textContent = 'Ваша корзина'; 
+                mainCategoryTitle.classList.remove('hidden'); // Показываем заголовок для корзины
+                renderCart();
+                updateMainButtonCartInfo(); 
+                break;
+            case 'checkout':
+                mainPageContainer.classList.remove('hidden');
                 checkoutContainer.classList.remove('hidden');
-                setupCheckoutForm();
-            }
-        }
-
-        // Update BackButton visibility based on the current view
-        if (Telegram.WebApp.BackButton && Telegram.WebApp.version && parseFloat(Telegram.WebApp.version) >= 6.1) {
-            if (viewName === 'welcome' || viewName === 'categories') {
-                Telegram.WebApp.BackButton.hide();
-            } else {
-                Telegram.WebApp.BackButton.show();
-            }
-        }
-
-        // Update MainButton (Cart) visibility
-        const totalItemsInCart = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-        if (Telegram.WebApp.MainButton) {
-            if (viewName === 'products' || viewName === 'categories') {
-                if (totalItemsInCart > 0) {
-                    Telegram.WebApp.MainButton.setText(`Корзина (${totalItemsInCart} товаров) - ${calculateCartTotal().toFixed(2)} р.`);
-                    Telegram.WebApp.MainButton.show();
-                } else {
-                    Telegram.WebApp.MainButton.hide();
-                }
-            } else {
-                Telegram.WebApp.MainButton.hide();
-            }
+                mainCategoryTitle.textContent = 'Оформление заказа'; 
+                mainCategoryTitle.classList.remove('hidden'); // Показываем заголовок для оформления заказа
+                renderCheckoutSummary();
+                updateMainButtonCartInfo(); 
+                break;
+            default:
+                console.warn('Неизвестное представление:', viewName);
+                break;
         }
     }
 
-    // Вспомогательная функция для получения отображаемого имени категории
-    function getCategoryDisplayName(categoryKey) {
-        const map = {
-            'bakery': 'Выпечка',
-            'croissants': 'Круассаны',
-            'artisan_bread': 'Ремесленный хлеб',
-            'desserts': 'Десерты',
-            'cart': 'Корзина', // This key is for internal use, not a product category
-            'categories': 'Наше меню' // Added for the categories view title
-        };
-        return map[categoryKey] || 'Каталог товаров';
+    // Обработчик кнопки "Назад" Telegram Web App
+    Telegram.WebApp.BackButton.onClick(() => {
+        const currentView = getCurrentView();
+        console.log('DEBUG: Back button clicked. Current view:', currentView);
+        if (currentView === 'products') {
+            displayView('categories');
+        } else if (currentView === 'cart') {
+            const lastProductCategory = localStorage.getItem('lastProductCategory');
+            if (lastProductCategory) {
+                displayView('products', lastProductCategory);
+                localStorage.removeItem('lastProductCategory'); 
+            } else {
+                displayView('categories');
+            }
+        } else if (currentView === 'checkout') {
+            displayView('cart'); 
+        } else if (currentView === 'categories') {
+            if (welcomeContainer.classList.contains('hidden')) { 
+                 Telegram.WebApp.close();
+            } else { 
+                displayView('welcome');
+            }
+        } else {
+            Telegram.WebApp.close(); 
+        }
+    });
+
+
+    function getCurrentView() {
+        if (!welcomeContainer.classList.contains('hidden')) return 'welcome';
+        if (!categoriesContainer.classList.contains('hidden')) return 'categories';
+        if (!productsContainer.classList.contains('hidden')) return 'products';
+        if (!cartContainer.classList.contains('hidden')) return 'cart';
+        if (!checkoutContainer.classList.contains('hidden')) return 'checkout';
+        return null;
     }
 
-    // Function to fetch product data from API
-    async function fetchProductsData(category) {
-        const apiUrl = `/api/products?category=${category}`;
+
+    // Функция для получения параметра из URL
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        const results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // --- API Calls ---
+    async function fetchProductsData() {
         try {
-            const response = await fetch(apiUrl);
+            const response = await fetch('/bot-app/api/products');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            return data;
+            productsData = data; 
+            console.log('DEBUG: Products data loaded:', productsData);
         } catch (error) {
-            console.error("Ошибка при получении данных о продуктах с API:", error);
-            Telegram.WebApp.showAlert(`Не удалось загрузить товары для категории "${getCategoryDisplayName(category)}". Пожалуйста, попробуйте позже.`);
-            return [];
+            console.error('Ошибка при загрузке данных о продуктах:', error);
+            if (Telegram.WebApp.showAlert) {
+                Telegram.WebApp.showAlert('Не удалось загрузить данные о продуктах. Пожалуйста, попробуйте позже.');
+            } else {
+                alert('Не удалось загрузить данные о продуктах. Пожалуйста, попробуйте позже.');
+            }
         }
     }
 
-    // NEW FUNCTION: Load and display categories
     async function loadCategories() {
-        categoriesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка категорий...</div>';
-        const apiUrl = `/api/categories`; // Assuming you'll add a /api/categories endpoint
-        let categories = [];
-
         try {
-            const response = await fetch(apiUrl);
+            const response = await fetch('/bot-app/api/categories');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            categories = await response.json();
-            console.log("DEBUG: Загружены категории:", categories);
-        } catch (error) {
-            console.error("Ошибка при получении данных о категориях с API:", error);
-            Telegram.WebApp.showAlert("Не удалось загрузить категории товаров. Пожалуйста, попробуйте позже.");
-            categoriesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Не удалось загрузить категории.</div>';
-            return;
-        }
+            const categoriesData = await response.json();
+            console.log('DEBUG: Categories data loaded:', categoriesData);
 
-        categoriesContainer.innerHTML = ''; // Clear "Loading..."
+            categoriesContainer.innerHTML = ''; 
 
-        if (categories.length === 0) {
-            categoriesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Категории не найдены.</div>';
-            return;
-        }
+            const categoriesGrid = document.createElement('div');
+            categoriesGrid.className = 'categories-grid'; 
 
-        categories.forEach(category => {
-            const categoryCard = document.createElement('div');
-            categoryCard.className = 'col-12 col-sm-6 col-lg-3 catalog-item mb-200'; // Using classes from drazhin.by
-            categoryCard.innerHTML = `
-                <a href="#" data-category-key="${category.key}">
-                    <div class="catalog-item__wrapper h-fx-item pos-r">
-                        <div class="catalog-item__image-wrapper pos-r ovfl-h">
-                            <img src="${category.image_url}" alt="${category.name}" class="catalog-item__image fade-box w-100p h-auto of-c h-fx-item__img lazyloaded" width="300" height="200" onerror="this.onerror=null;this.src='https://placehold.co/300x200/e0e0e0/555?text=Нет+фото';">
-                            <div class="catalog-item__image-filter pos-a trbl-0 bgc-gr-1"></div>
-                        </div>
-                        <div class="catalog-item__text-wrapper h-fx-item__text pos-a trbl-0 ptb-125 plr-150 d-flex flex-column justify-content-end">
-                            <h3 class="first-line fz-150 fc-wh ff-2 pt-100 dec-line-top-short dec-color-wh">${category.name}</h3>
-                            <div class="second-line btn-arrow mt-75 d-flex align-items-center">
-                                <span class="fc-wh fz-75 fw-500 h-fc-wh tt-u ls-7 mr-875">перейти в каталог</span>
-                                <svg class="svg svg-arrow-right-white" style="margin-bottom: 0.15rem" viewBox="0 0 24 24" fill="white">
-                                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                                </svg>
-                            </div>
+            categoriesData.forEach(category => {
+                const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, emoji: '' };
+                const categoryDisplayName = categoryInfo.name;
+                const categoryEmoji = categoryInfo.emoji;
+
+                const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
+                    ? productsData[category.key][0].image_url
+                    : 'https://placehold.co/300x200/cccccc/333333?text=No+Image'; 
+
+                console.log(`DEBUG: Category '${category.key}' image URL: ${categoryImageUrl}`);
+
+                const categoryCard = document.createElement('div');
+                categoryCard.className = 'category-card-item'; 
+                categoryCard.dataset.categoryKey = category.key; 
+
+                categoryCard.innerHTML = `
+                    <img src="${categoryImageUrl}" 
+                         alt="${categoryDisplayName}" 
+                         class="category-image" 
+                         onerror="console.error('ERROR: Failed to load category image for ${category.key}: ' + this.src); this.onerror=null;this.src='https://placehold.co/300x200/cccccc/333333?text=No+Image'; this.style.backgroundColor='lightgray';">
+                    <div class="category-text-wrapper">
+                        <h3 class="category-title-text">${categoryEmoji} ${categoryDisplayName}</h3>
+                        <div class="category-link-text">
+                            <span>перейти в каталог</span>
+                            <svg class="category-arrow-svg" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M10.707 2.293a1 1 0 010 1.414L6.414 8l4.293 4.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" transform="rotate(180 8 8)"></path>
+                            </svg>
                         </div>
                     </div>
-                </a>
-            `;
-            categoriesContainer.appendChild(categoryCard);
-        });
+                `;
 
-        // Add click handlers to category cards
-        categoriesContainer.querySelectorAll('.catalog-item a').forEach(link => {
-            link.addEventListener('click', (event) => {
-                event.preventDefault(); // Prevent default link behavior
-                const categoryKey = event.currentTarget.dataset.categoryKey;
-                console.log(`DEBUG: Category clicked: ${categoryKey}`);
-                displayView('products', categoryKey); // Go to products screen for selected category
+                categoryCard.addEventListener('click', () => {
+                    displayView('products', category.key);
+                    localStorage.setItem('lastProductCategory', category.key); 
+                });
+                categoriesGrid.appendChild(categoryCard);
             });
-        });
+            categoriesContainer.appendChild(categoriesGrid); 
+        } catch (error) {
+            console.error('Ошибка при загрузке категорий:', error);
+            if (Telegram.WebApp.showAlert) {
+                Telegram.WebApp.showAlert('Не удалось загрузить категории. Пожалуйста, попробуйте позже.');
+            } else {
+                alert('Не удалось загрузить категории. Пожалуйста, попробуйте позже.');
+            }
+        }
     }
 
-
-    // Function to load and display products
-    async function loadProducts(category) {
-        productsContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка товаров...</div>';
-        const products = await fetchProductsData(category);
-        productsDataCache[category] = products; // Cache the data
-        productsContainer.innerHTML = ''; // Clear "Loading..."
-
-        if (products.length === 0) {
-            productsContainer.innerHTML = '<div style="text-align: center; padding: 20px;">В этой категории пока нет товаров.</div>';
-            return;
+    async function loadProducts(categoryKey) {
+        if (!productsData[categoryKey]) {
+            await fetchProductsData();
+            if (!productsData[categoryKey]) {
+                if (Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('Продукты для этой категории не найдены.');
+                } else {
+                    alert('Продукты для этой категории не найдены.');
+                }
+                displayView('categories'); 
+                return;
+            }
         }
 
-        products.forEach((product, index) => {
-            // Use category_index as productId for uniqueness
-            // productId will be, for example, "bakery_0", "artisan_bread_1"
-            const productId = `${category}_${index}`;
-            const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
+        const products = productsData[categoryKey];
+        mainCategoryTitle.textContent = CATEGORY_DISPLAY_MAP[categoryKey] ? CATEGORY_DISPLAY_MAP[categoryKey].name : 'Продукты'; 
+        productListElement.innerHTML = ''; 
 
+        products.forEach(product => {
             const productCard = document.createElement('div');
             productCard.className = 'product-card';
+            productCard.dataset.productId = product.id; 
+
+            const quantityInCart = cart[product.id] ? cart[product.id].quantity : 0;
+
             productCard.innerHTML = `
                 <div class="product-image-container">
                     <img src="${product.image_url || 'https://placehold.co/300x225/e0e0e0/555?text=Нет+фото'}" alt="${product.name}" class="product-image" onerror="this.onerror=null;this.src='https://placehold.co/300x225/e0e0e0/555?text=Нет+фото';">
@@ -265,558 +281,370 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="product-price">${parseFloat(product.price).toFixed(2)} р.</div>
                         <div class="product-details">
                             ${product.weight && product.weight !== 'N/A' ? `<span>Вес: ${product.weight} гр.</span>` : ''}
-                            ${product.availability_days && product.availability_days !== 'N/A' ? `<span>Доступность: ${product.availability_days}</span>` : ''}
+                            ${product.availability_days && product.availability_days !== 'N/A' ? `<span>Доступен для заказа: ${product.availability_days}</span>` : ''}
                         </div>
                     </div>
                     <div>
                         <div class="quantity-controls">
-                            <button data-product-id="${productId}" data-action="decrease">-</button>
-                            <span class="quantity-display" id="qty-${productId}">${currentQuantity}</span>
-                            <button data-product-id="${productId}" data-action="increase">+</button>
+                            <button data-product-id="${product.id}" data-action="decrease">-</button>
+                            <span class="quantity-display" id="qty-${product.id}">${quantityInCart}</span>
+                            <button data-product-id="${product.id}" data-action="increase">+</button>
                         </div>
                         <a href="${product.url}" target="_blank" class="details-link">Подробнее</a>
                     </div>
                 </div>
             `;
-            productsContainer.appendChild(productCard);
+            productListElement.appendChild(productCard);
         });
 
-        // Add event listeners for +/- buttons
-        productsContainer.querySelectorAll('.quantity-controls button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const productId = event.target.dataset.productId;
-                const action = event.target.dataset.action;
-                updateCartQuantity(productId, action);
+        productListElement.querySelectorAll('.quantity-controls button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productId = e.target.dataset.productId;
+                const action = e.target.dataset.action;
+                if (action === 'increase') {
+                    updateProductQuantity(productId, 1);
+                } else if (action === 'decrease') {
+                    updateProductQuantity(productId, -1);
+                }
             });
         });
     }
 
-    // Function to update product quantity in cart
-    function updateCartQuantity(productId, action) {
-        let currentQuantity = cart[productId] ? cart[productId].quantity : 0;
-
-        if (action === 'increase') {
-            currentQuantity++;
-        } else if (action === 'decrease') {
-            currentQuantity--;
-            if (currentQuantity < 0) currentQuantity = 0;
+    function updateProductQuantity(productId, change) {
+        let product = null;
+        for (const catKey in productsData) {
+            product = productsData[catKey].find(p => p.id === productId);
+            if (product) break;
         }
 
-        if (currentQuantity === 0) {
+        if (!product) {
+            console.error('Продукт не найден:', productId);
+            return;
+        }
+
+        if (!cart[productId]) {
+            cart[productId] = { ...product, quantity: 0 };
+        }
+
+        cart[productId].quantity += change;
+
+        if (cart[productId].quantity <= 0) {
             delete cart[productId];
-        } else {
-            // Correctly parse category and index from productId
-            const parts = productId.split('_');
-            const index = parseInt(parts.pop()); // Last part is the index
-            const category = parts.join('_'); // Remaining parts form the category key
-
-            const productInfo = productsDataCache[category] ? productsDataCache[category][index] : null;
-
-            if (productInfo) {
-                cart[productId] = {
-                    id: productId,
-                    name: productInfo.name,
-                    price: parseFloat(productInfo.price),
-                    quantity: currentQuantity,
-                    image_url: productInfo.image_url,
-                    url: productInfo.url,
-                    weight: productInfo.weight,
-                    availability_days: productInfo.availability_days
-                };
-            } else {
-                console.warn(`Продукт с ID ${productId} не найден в кэше при обновлении корзины. Возможно, старая запись.`);
-                // If product not found in cache, save only ID and quantity
-                // In this case, image_url will be missing, and "Нет фото" will be displayed
-                cart[productId] = { id: productId, quantity: currentQuantity, name: "Неизвестный товар", price: 0 };
-            }
         }
 
-        // Update quantity display on product card
-        const qtyDisplay = document.getElementById(`qty-${productId}`);
-        if (qtyDisplay) {
-            qtyDisplay.textContent = currentQuantity;
-        }
-        saveCart(); // Save cart
-        updateMainButtonCartInfo(); // Update info on main button
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateProductCardUI(productId);
+        updateMainButtonCartInfo();
     }
 
-    // Function to update info on Telegram Web App's Main Button
-    function updateMainButtonCartInfo() {
-        const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-        const totalAmount = calculateCartTotal();
-
-        if (Telegram.WebApp.MainButton) {
-            if (totalItems > 0) {
-                Telegram.WebApp.MainButton.setText(`Корзина (${totalItems} товаров) - ${totalAmount.toFixed(2)} р.`);
-                Telegram.WebApp.MainButton.show();
-            } else {
-                Telegram.WebApp.MainButton.hide();
-            }
+    function updateProductCardUI(productId) {
+        const quantitySpan = document.getElementById(`qty-${productId}`); 
+        if (quantitySpan) {
+            const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
+            quantitySpan.textContent = currentQuantity;
+        }
+        if (!cartContainer.classList.contains('hidden')) {
+            renderCart();
         }
     }
 
-    // Function to calculate total cart amount
-    function calculateCartTotal() {
+
+    function renderCart() {
+        cartItemsList.innerHTML = '';
         let total = 0;
-        for (const productId in cart) {
-            if (cart[productId] && cart[productId].price) { // Check that price exists
-                total += cart[productId].price * cart[productId].quantity;
-            }
-        }
-        return total;
-    }
 
-    // Function to display cart
-    async function displayCart() {
-        console.log('DEBUG: Entering displayCart function.');
-        cartItemsList.innerHTML = ''; // Clear item list in cart
-        let totalPrice = 0;
-
-        // Clean up cart from potentially malformed productIds
-        const cleanedCart = {};
-        for (const productId in cart) {
-            const itemInCart = cart[productId];
-            const parts = productId.split('_');
-            // Check for valid format: at least two parts, last part is a number
-            if (parts.length >= 2 && /^\d+$/.test(parts[parts.length - 1])) {
-                const categoryPart = parts.slice(0, parts.length - 1).join('_');
-                // Ensure the category part is NOT 'cart' or 'checkout' or other non-product categories
-                if (categoryPart !== 'cart' && categoryPart !== 'checkout' && categoryPart !== 'welcome' && categoryPart !== 'categories') {
-                    cleanedCart[productId] = itemInCart;
-                } else {
-                    console.warn(`WARN: Invalid category '${categoryPart}' found in productId '${productId}'. Skipping item.`);
-                }
-            } else {
-                console.warn(`WARN: Malformed productId '${productId}'. Skipping item.`);
-            }
-        }
-        cart = cleanedCart; // Update the global cart object with cleaned data
-        saveCart(); // Persist the cleaned cart to localStorage
-
-        const productIdsInCart = Object.keys(cart);
-        if (productIdsInCart.length === 0) {
-            console.log('DEBUG: Cart is empty after cleaning.');
-            cartItemsList.innerHTML = '<p style="text-align: center; color: #666;">Ваша корзина пуста.</p>';
-            cartTotalDisplay.textContent = 'Общая сумма: 0.00 р.';
-            Telegram.WebApp.MainButton.hide(); // Hide cart button if empty
+        const cartItems = Object.values(cart);
+        if (cartItems.length === 0) {
+            cartItemsList.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста.</p>';
+            cartTotalElement.textContent = '0.00 р.';
+            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+            if (cartActionsBottom) cartActionsBottom.classList.add('hidden');
+            if (continueShoppingButton) continueShoppingButton.classList.add('hidden');
             return;
+        } else {
+            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+            if (cartActionsBottom) cartActionsBottom.classList.remove('hidden');
+            if (continueShoppingButton) continueShoppingButton.classList.remove('hidden');
         }
 
-        // Collect all unique categories from items in the cart that might need data fetching
-        const categoriesToFetch = new Set();
-        for (const productId in cart) {
-            const itemInCart = cart[productId];
-            // Correctly extract category key from productId
-            const parts = productId.split('_');
-            const categoryFromId = parts.slice(0, parts.length - 1).join('_'); // Get full category name
-            const indexFromId = parseInt(parts[parts.length - 1]);
+        cartItems.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
 
-            // IMPORTANT: Only consider fetching if product details are incomplete AND it's a valid product ID format
-            // AND the category is NOT 'cart' (to prevent fetching /api/products?category=cart)
-            if ((!itemInCart.name || !itemInCart.price || !itemInCart.image_url) &&
-                categoryFromId && !isNaN(indexFromId) && categoryFromId !== 'cart') {
-                categoriesToFetch.add(categoryFromId);
-            }
-        }
+            const cartItemElement = document.createElement('div');
+            cartItemElement.className = 'cart-item';
+            cartItemElement.dataset.productId = item.id;
 
-        // Fetch missing product data for categories if needed
-        // Use Promise.all to fetch all categories concurrently
-        const fetchPromises = Array.from(categoriesToFetch).map(async (category) => {
-            if (!productsDataCache[category] || productsDataCache[category].length === 0) {
-                console.log(`DEBUG: Fetching missing product data for category: ${category}`);
-                const products = await fetchProductsData(category);
-                productsDataCache[category] = products;
-
-                // Update cart items with full details if they were missing
-                products.forEach((product, index) => {
-                    const productIdInCache = `${category}_${index}`;
-                    if (cart[productIdInCache] && (!cart[productIdInCache].name || !cart[productIdInCache].image_url)) {
-                        cart[productIdInCache] = {
-                            id: productIdInCache,
-                            name: product.name,
-                            price: parseFloat(product.price),
-                            quantity: cart[productIdInCache].quantity, // Keep existing quantity
-                            image_url: product.image_url,
-                            url: product.url,
-                            weight: product.weight,
-                            availability_days: product.availability_days
-                        };
-                        console.log(`DEBUG: Updated cart item ${productIdInCache} with full details.`);
-                    }
-                });
-            }
+            cartItemElement.innerHTML = `
+                <img src="${item.image_url || 'https://placehold.co/80x80/cccccc/333333?text=No+Image'}" 
+                     alt="${item.name}" class="cart-item-image"
+                     onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/333333?text=No+Image';">
+                <div class="cart-item-details">
+                    <h4 class="cart-item-name">${item.name}</h4>
+                    <p class="cart-item-price">${item.price} BYN за шт.</p>
+                    <div class="cart-item-controls">
+                        <button class="quantity-button decrease-cart-quantity" data-product-id="${item.id}">-</button>
+                        <span class="cart-item-quantity">${item.quantity}</span>
+                        <button class="quantity-button increase-cart-quantity" data-product-id="${item.id}">+</button>
+                        <button class="remove-btn" data-product-id="${item.id}">Удалить</button>
+                    </div>
+                </div>
+                <div class="cart-item-total">${itemTotal.toFixed(2)} BYN</div>
+            `;
+            cartItemsList.appendChild(cartItemElement);
         });
-        await Promise.all(fetchPromises); // Wait for all fetches to complete
-        saveCart(); // Save cart after potentially updating with full details
 
+        cartTotalElement.textContent = `${total.toFixed(2)} р.`;
 
-        // Now iterate and display, all items in cart should have full details
-        for (const productId in cart) {
-            const itemInCart = cart[productId];
-            const quantity = itemInCart.quantity;
-
-            if (quantity > 0) {
-                const itemPrice = parseFloat(itemInCart.price);
-                const lineTotal = itemPrice * quantity;
-                totalPrice += lineTotal;
-
-                const cartItem = document.createElement('div');
-                cartItem.className = 'cart-item';
-                cartItem.innerHTML = `
-                        <img src="${itemInCart.image_url || 'https://placehold.co/80x80/e0e0e0/555?text=Нет+фото'}" alt="${itemInCart.name}" class="cart-item-image" onerror="this.onerror=null;this.src='https://placehold.co/80x80/e0e0e0/555?text=Нет+фото';">
-                        <div class="cart-item-details">
-                            <div class="cart-item-name">${itemInCart.name}</div>
-                            <div class="cart-item-price">${quantity} шт. x ${itemPrice.toFixed(2)} р. = ${lineTotal.toFixed(2)} р.</div>
-                        </div>
-                        <div class="cart-item-controls">
-                            <button data-product-id="${productId}" data-action="decrease">-</button>
-                            <span class="quantity-display">${quantity}</span>
-                            <button data-product-id="${productId}" data-action="increase">+</button>
-                            <button data-product-id="${productId}" data-action="remove" class="remove-btn">🗑</button>
-                        </div>
-                    `;
-                cartItemsList.appendChild(cartItem);
-            }
-        }
-
-        cartTotalDisplay.textContent = `Общая сумма: ${totalPrice.toFixed(2)} р.`;
-
-        // Add event listeners for cart buttons
-        cartItemsList.querySelectorAll('.cart-item-controls button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const productId = event.target.dataset.productId;
-                const action = event.target.dataset.action;
-                if (action === 'remove') {
-                    delete cart[productId];
-                    saveCart();
-                    displayCart(); // Re-render cart
-                } else {
-                    updateCartQuantity(productId, action);
-                    displayCart(); // Re-render cart to update totals
-                }
+        cartItemsList.querySelectorAll('.increase-cart-quantity').forEach(button => {
+            button.addEventListener('click', (e) => updateProductQuantity(e.target.dataset.productId, 1));
+        });
+        cartItemsList.querySelectorAll('.decrease-cart-quantity').forEach(button => {
+            button.addEventListener('click', (e) => updateProductQuantity(e.target.dataset.productId, -1));
+        });
+        cartItemsList.querySelectorAll('.remove-btn').forEach(button => { 
+            button.addEventListener('click', (e) => {
+                const productId = e.target.dataset.productId;
+                delete cart[productId];
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart(); 
+                updateMainButtonCartInfo();
             });
         });
-        console.log('DEBUG: Exiting displayCart function.');
     }
 
-    // Function to clear cart
-    document.getElementById('clear-cart-webapp').addEventListener('click', () => {
+    function clearCart() {
         cart = {};
-        saveCart();
-        displayCart(); // Update cart display
-        Telegram.WebApp.showAlert('Корзина очищена!');
-        sendCartUpdateToBot(); // Send update to bot after clearing
-    });
-
-    // Function to proceed to checkout
-    document.getElementById('proceed-to-checkout-webapp').addEventListener('click', () => {
-        if (Object.keys(cart).length === 0) {
-            Telegram.WebApp.showAlert('Ваша корзина пуста. Нечего оформлять!');
-            return;
-        }
-        displayView('checkout');
-    });
-
-    // Function to send cart data to bot (programmatically, only on close or explicit action)
-    function sendCartUpdateToBot() {
-        const cart_sync_data = {
-            type: 'cart_sync', // New data type for cart synchronization
-            items: Object.values(cart) // Send array of item objects
-        };
-        try {
-            Telegram.WebApp.sendData(JSON.stringify(cart_sync_data));
-            console.log("DEBUG: Cart data sent programmatically.");
-        } catch (error) {
-            console.error("ERROR: Failed to send cart data programmatically:", error);
+        localStorage.removeItem('cart');
+        renderCart();
+        updateMainButtonCartInfo();
+        if (Telegram.WebApp.showAlert) {
+            Telegram.WebApp.showAlert('Корзина очищена!');
+        } else {
+            alert('Корзина очищена!');
         }
     }
 
-    // Event handler for Web App closing to sync cart
-    Telegram.WebApp.onEvent('closing', () => {
-        console.log("DEBUG: Telegram Web App 'closing' event triggered.");
-        sendCartUpdateToBot(); // Send data directly, as this is the last chance
-    });
+    const clearCartButton = document.getElementById('clear-cart-button');
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', clearCart);
+    } else {
+        console.error('Element with ID "clear-cart-button" not found in DOM. Cannot attach click listener.');
+    }
+
+    const checkoutButton = document.getElementById('checkout-button');
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', () => {
+            if (Object.keys(cart).length === 0) {
+                if (Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('Ваша корзина пуста. Добавьте товары, чтобы оформить заказ.');
+                } else {
+                    alert('Ваша корзина пуста. Добавьте товары, чтобы оформить заказ.');
+                }
+                return;
+            }
+            displayView('checkout');
+        });
+    } else {
+        console.error('Element with ID "checkout-button" not found in DOM. Cannot attach click listener.');
+    }
 
 
-    // Function to return from cart to main bot menu (close Web App)
-    document.getElementById('back-to-main-menu-webapp').addEventListener('click', () => {
-        sendCartUpdateToBot(); // Explicitly send data
-        // Small delay to allow Telegram.WebApp.sendData() to process
-        setTimeout(() => {
-            Telegram.WebApp.close(); // Close Web App
-        }, 500); // Increased delay
-    });
+    // --- Checkout Logic ---
+    function renderCheckoutSummary() {
+        checkoutItemsList.innerHTML = '';
+        let total = 0;
 
-    // Function to return from checkout to cart
-    document.getElementById('back-from-checkout-to-cart').addEventListener('click', () => {
-        displayView('cart'); // Return to cart view
-    });
+        Object.values(cart).forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
 
-    // Setup checkout form
-    function setupCheckoutForm() {
-        // Initialize delivery fields
-        toggleDeliveryFields();
-        deliveryMethodRadios.forEach(radio => {
-            radio.addEventListener('change', toggleDeliveryFields);
+            const checkoutItemElement = document.createElement('li');
+            checkoutItemElement.className = 'checkout-item-summary';
+            checkoutItemElement.textContent = `${item.name} x ${item.quantity} - ${itemTotal.toFixed(2)} BYN`;
+            checkoutItemsList.appendChild(checkoutItemElement);
         });
 
-        // Set min date for delivery-date
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = (today.getMonth() + 1).toString().padStart(2, '0');
-        const day = today.getDate().toString().padStart(2, '0');
-        document.getElementById('delivery-date').min = `${year}-${month}-${day}`;
+        checkoutTotalElement.textContent = `${total.toFixed(2)} р.`;
+
+        const selectedDeliveryMethod = document.querySelector('input[name="deliveryMethod"]:checked')?.value;
+        toggleDeliveryFields(selectedDeliveryMethod);
     }
 
-    function toggleDeliveryFields() {
-        const isCourier = document.querySelector('input[name="deliveryMethod"]:checked').value === 'courier';
-
-        // Show/hide info texts
-        if (courierInfoText) { // Check if element exists
-            if (isCourier) {
-                courierInfoText.classList.remove('hidden');
+    function toggleDeliveryFields(method) {
+        if (courierDeliveryFields && pickupAddresses) {
+            if (method === 'courier') {
+                courierDeliveryFields.classList.remove('hidden');
+                pickupAddresses.classList.add('hidden');
+                document.getElementById('last-name').required = true;
+                document.getElementById('first-name').required = true;
+                document.getElementById('middle-name').required = true;
+                document.getElementById('phone-number').required = true;
+                document.getElementById('email').required = true;
+                document.getElementById('delivery-date').required = true;
+                document.getElementById('city').required = true;
+                document.getElementById('address-line').required = true;
+                document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
+            } else if (method === 'pickup') {
+                courierDeliveryFields.classList.add('hidden');
+                pickupAddresses.classList.remove('hidden');
+                document.getElementById('last-name').required = true;
+                document.getElementById('first-name').required = true;
+                document.getElementById('middle-name').required = true;
+                document.getElementById('phone-number').required = true;
+                document.getElementById('email').required = true;
+                document.getElementById('delivery-date').required = true;
+                document.getElementById('city').required = false;
+                document.getElementById('address-line').required = false;
+                document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = true);
             } else {
-                courierInfoText.classList.add('hidden');
+                courierDeliveryFields.classList.add('hidden');
+                pickupAddresses.classList.add('hidden');
+                document.getElementById('last-name').required = false;
+                document.getElementById('first-name').required = false;
+                document.getElementById('middle-name').required = false;
+                document.getElementById('phone-number').required = false;
+                document.getElementById('email').required = false;
+                document.getElementById('delivery-date').required = false;
+                document.getElementById('city').required = false;
+                document.getElementById('address-line').required = false;
+                document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
             }
         }
-        if (pickupInfoText) { // Check if element exists
-            if (!isCourier) {
+
+        if (courierInfoText && pickupInfoText) {
+            if (method === 'courier') {
+                courierInfoText.classList.remove('hidden');
+                pickupInfoText.classList.add('hidden');
+            } else if (method === 'pickup') {
+                courierInfoText.classList.add('hidden');
                 pickupInfoText.classList.remove('hidden');
             } else {
+                courierInfoText.classList.add('hidden');
                 pickupInfoText.classList.add('hidden');
             }
         }
-
-        // Manage required attributes for fields
-        const lastName = document.getElementById('last-name');
-        const firstName = document.getElementById('first-name');
-        const middleName = document.getElementById('middle-name');
-        const phoneNumber = document.getElementById('phone-number');
-        const email = document.getElementById('email');
-        const deliveryDate = document.getElementById('delivery-date');
-        const city = document.getElementById('city');
-        const addressLine = document.getElementById('address-line');
-        const pickupRadios = document.getElementById('pickup-radio-group').querySelectorAll('input[type="radio"]');
-
-        // Always required fields
-        lastName.setAttribute('required', 'required');
-        firstName.setAttribute('required', 'required');
-        middleName.setAttribute('required', 'required');
-        phoneNumber.setAttribute('required', 'required');
-        email.setAttribute('required', 'required');
-        deliveryDate.setAttribute('required', 'required');
-
-        if (isCourier) {
-            courierDeliveryFields.classList.remove('hidden');
-            pickupAddresses.classList.add('hidden');
-
-            city.setAttribute('required', 'required');
-            addressLine.setAttribute('required', 'required');
-            pickupRadios.forEach(radio => radio.removeAttribute('required'));
-        } else {
-            courierDeliveryFields.classList.add('hidden');
-            pickupAddresses.classList.remove('hidden');
-
-            city.removeAttribute('required');
-            addressLine.removeAttribute('required');
-            pickupRadios.forEach(radio => radio.setAttribute('required', 'required'));
-        }
-    }
-
-    // Form validation
-    function validateForm() {
-        let isValid = true;
-        const lastName = document.getElementById('last-name');
-        const firstName = document.getElementById('first-name');
-        const middleName = document.getElementById('middle-name');
-        const phoneNumber = document.getElementById('phone-number');
-        const email = document.getElementById('email');
-        const deliveryDate = document.getElementById('delivery-date');
-        const city = document.getElementById('city');
-        const addressLine = document.getElementById('address-line');
-        const pickupSelected = document.querySelector('input[name="pickupAddress"]:checked');
-
-        // Hide all error messages before new validation
-        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-
-        if (lastName.value.trim() === '') {
-            document.getElementById('lastName-error').style.display = 'block';
-            isValid = false;
-        }
-        if (firstName.value.trim() === '') {
-            document.getElementById('firstName-error').style.display = 'block';
-            isValid = false;
-        }
-        if (middleName.value.trim() === '') {
-            document.getElementById('middleName-error').style.display = 'block';
-            isValid = false;
-        }
-
-        // Simple phone number validation (can be improved)
-        if (!/^\+?\d{9,15}$/.test(phoneNumber.value.trim())) {
-            document.getElementById('phoneNumber-error').style.display = 'block';
-            isValid = false;
-        }
-
-        // Simple Email validation
-        if (!/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(email.value.trim())) {
-            document.getElementById('email-error').style.display = 'block';
-            isValid = false;
-        }
-
-        if (deliveryDate.value.trim() === '') {
-            document.getElementById('deliveryDate-error').style.display = 'block';
-            isValid = false;
-        }
-
-        if (document.querySelector('input[name="deliveryMethod"]:checked').value === 'courier') {
-            if (city.value.trim() === '') {
-                document.getElementById('city-error').style.display = 'block';
-                isValid = false;
-            }
-            if (addressLine.value.trim() === '') {
-                document.getElementById('addressLine-error').style.display = 'block';
-                isValid = false;
-            }
-        } else { // Pickup
-            if (!pickupSelected) {
-                document.getElementById('pickupAddress-error').style.display = 'block';
-                isValid = false;
-            }
-        }
-        return isValid;
     }
 
 
-    // Order form submission handler
-    checkoutForm.addEventListener('submit', async (event) => {
-        event.preventDefault(); // Prevent default form submission
-
-        if (!validateForm()) {
-            Telegram.WebApp.showAlert('Пожалуйста, заполните все обязательные поля корректно.');
-            return;
-        }
-
-        const formData = new FormData(checkoutForm);
-        const orderDetails = {};
-        // Collect data from form
-        orderDetails.lastName = formData.get('lastName');
-        orderDetails.firstName = formData.get('firstName');
-        orderDetails.middleName = formData.get('middleName');
-        orderDetails.phoneNumber = formData.get('phoneNumber');
-        orderDetails.email = formData.get('email');
-        orderDetails.deliveryDate = formData.get('deliveryDate');
-        orderDetails.deliveryMethod = formData.get('deliveryMethod');
-
-        if (orderDetails.deliveryMethod === 'courier') {
-            orderDetails.city = formData.get('city');
-            orderDetails.addressLine = formData.get('addressLine');
-            orderDetails.comment = formData.get('comment'); // Comment for courier
-        } else { // pickup
-            orderDetails.pickupAddress = formData.get('pickupAddress');
-            orderDetails.comment = formData.get('comment');
-        }
-
-
-        // Add items from cart to orderDetails
-        orderDetails.items = [];
-        let totalOrderPrice = 0;
-
-        // Collect all unique categories from items in the cart that might need data fetching
-        const categoriesToFetchForOrder = new Set();
-        for (const productId in cart) {
-            const itemInCart = cart[productId];
-            // Correctly extract category key from productId
-            const parts = productId.split('_');
-            const category = parts.join('_'); // Get full category name
-
-            if (category) {
-                categoriesToFetchForOrder.add(category);
-            }
-        }
-
-        // Fetch missing product data for categories if needed for order details
-        const fetchPromisesForOrder = Array.from(categoriesToFetchForOrder).map(async (category) => {
-            if (!productsDataCache[category] || productsDataCache[category].length === 0) {
-                console.log(`DEBUG: Fetching missing product data for order submission category: ${category}`);
-                const products = await fetchProductsData(category);
-                productsDataCache[category] = products;
-            }
+    if (deliveryMethodRadios.length > 0) {
+        deliveryMethodRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                toggleDeliveryFields(event.target.value);
+            });
         });
-        await Promise.all(fetchPromisesForOrder); // Wait for all fetches to complete
+        const initialSelectedMethod = document.querySelector('input[name="deliveryMethod"]:checked')?.value;
+        toggleDeliveryFields(initialSelectedMethod);
+    } else {
+        console.warn('No delivery method radio buttons found.');
+    }
 
 
-        for (const productId in cart) {
-            const itemInCart = cart[productId];
-            const quantity = itemInCart.quantity;
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', (event) => {
+            event.preventDefault(); 
 
-            // Correctly parse category and index from productId for lookup in productsDataCache
-            const parts = productId.split('_');
-            const index = parseInt(parts.pop());
-            const category = parts.join('_');
-
-            const productInfo = productsDataCache[category] ? productsDataCache[category][index] : null;
-
-            if (productInfo) {
-                const itemPrice = parseFloat(productInfo.price);
-                const lineTotal = itemPrice * quantity;
-                totalOrderPrice += lineTotal;
-
-                orderDetails.items.push({
-                    id: productId,
-                    name: productInfo.name,
-                    price: itemPrice,
-                    quantity: quantity,
-                    lineTotal: lineTotal,
-                    image_url: productInfo.image_url,
-                    url: productInfo.url,
-                    weight: productInfo.weight,
-                    availability_days: productInfo.availability_days
-                });
-            } else {
-                // Fallback if product info is still not found (should be rare with fetching)
-                console.warn(`WARN: Product with ID ${productId} not found in cache during order submission. Using fallback.`);
-                orderDetails.items.push({
-                    id: productId,
-                    name: itemInCart.name || "Неизвестный товар", // Use name from cart if available, else fallback
-                    price: itemInCart.price || 0,
-                    quantity: quantity,
-                    lineTotal: (itemInCart.price || 0) * quantity
-                });
+            const formData = new FormData(checkoutForm);
+            const orderDetails = {};
+            for (let [key, value] of formData.entries()) {
+                orderDetails[key] = value;
             }
+
+            let isValid = true;
+            const errorMessages = [];
+
+            if (!orderDetails.lastName) { isValid = false; errorMessages.push('Пожалуйста, введите вашу фамилию.'); }
+            if (!orderDetails.firstName) { isValid = false; errorMessages.push('Пожалуйста, введите ваше имя.'); }
+            if (!orderDetails.middleName) { isValid = false; errorMessages.push('Пожалуйста, введите ваше отчество.'); }
+
+            const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/; 
+            if (!orderDetails.phoneNumber || !phoneRegex.test(orderDetails.phoneNumber)) {
+                isValid = false;
+                errorMessages.push('Пожалуйста, введите корректный номер телефона.');
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!orderDetails.email || !emailRegex.test(orderDetails.email)) {
+                isValid = false;
+                errorMessages.push('Пожалуйста, введите корректный Email.');
+            }
+
+            if (!orderDetails.deliveryDate) { isValid = false; errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.'); }
+
+            if (!orderDetails.deliveryMethod) {
+                isValid = false;
+                errorMessages.push('Пожалуйста, выберите способ получения.');
+            } else {
+                if (orderDetails.deliveryMethod === 'courier') {
+                    if (!orderDetails.city) { isValid = false; errorMessages.push('Пожалуйста, выберите город для доставки.'); }
+                    if (!orderDetails.addressLine) { isValid = false; errorMessages.push('Пожалуйста, введите адрес доставки.'); }
+                } else if (orderDetails.deliveryMethod === 'pickup') {
+                    if (!orderDetails.pickupAddress) { isValid = false; errorMessages.push('Пожалуйста, выберите адрес самовывоза.'); }
+                }
+            }
+
+            if (!isValid) {
+                if (Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert(errorMessages.join('\n'));
+                } else {
+                    alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                }
+                return;
+            }
+
+            const orderPayload = {
+                action: 'checkout_order',
+                order_details: {
+                    lastName: orderDetails.lastName,
+                    firstName: orderDetails.firstName,
+                    middleName: orderDetails.middleName,
+                    phone: orderDetails.phoneNumber, 
+                    email: orderDetails.email,
+                    deliveryDate: orderDetails.deliveryDate,
+                    deliveryMethod: orderDetails.deliveryMethod,
+                    city: orderDetails.city || '', 
+                    addressLine: orderDetails.addressLine || '', 
+                    comment: orderDetails.commentDelivery || '', 
+                    pickupAddress: orderDetails.pickupAddress || '' 
+                },
+                cart_items: Object.values(cart).map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', '')) 
+            };
+
+            Telegram.WebApp.sendData(JSON.stringify(orderPayload));
+
+            clearCart();
+            if (Telegram.WebApp.showAlert) {
+                Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+            } else {
+                alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в вами в ближайшее время.');
+            }
+            Telegram.WebApp.close();
+        });
+    } else {
+        console.error('Element with ID "checkout-form" not found. Cannot attach submit listener.');
+    }
+
+
+    // --- Telegram Web App Main Button Logic ---
+    function updateMainButtonCartInfo() {
+        const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+        const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        if (totalItems > 0) {
+            Telegram.WebApp.MainButton.setText(`🛒 Корзина (${totalItems} товаров) - ${totalPrice.toFixed(2)} р.`);
+            Telegram.WebApp.MainButton.show();
+        } else {
+            Telegram.WebApp.MainButton.hide();
         }
-        orderDetails.totalPrice = totalOrderPrice.toFixed(2);
+    }
 
-        // Add data type for bot
-        orderDetails.type = 'order_submission';
-
-        // Send data to bot
-        try {
-            Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-            console.log("DEBUG: Данные заказа отправлены боту.");
-        } catch (error) {
-            console.error("ERROR: Failed to send order data:", error);
-        }
-
-        // Clear cart after sending order
-        cart = {};
-        saveCart(); // This will call saveCart, which will NOT call sendCartUpdateToBotProgrammatic
-        sendCartUpdateToBot(); // Explicitly send data after order to update counter
-
-        // Small delay to allow Telegram.WebApp.sendData() to process
-        setTimeout(() => {
-            Telegram.WebApp.close(); // Close Web App
-        }, 500); // Increased delay
-    });
-
-    // Handler for "Start Shopping" button on welcome screen
-    startShoppingButton.addEventListener('click', () => {
-        // Open Telegram bot link
-        Telegram.WebApp.openTelegramLink('https://t.me/drazhin_bakery_bot');
-        Telegram.WebApp.close(); // Close Web App
-    });
-
-    // Initialize display on page load
+    // Инициализация отображения при загрузке страницы
     const initialCategory = getUrlParameter('category');
     const initialView = getUrlParameter('view');
     console.log(`DEBUG: Initializing Web App. initialView='${initialView}', initialCategory='${initialCategory}'`);
@@ -827,20 +655,49 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (initialView === 'cart' || initialCategory === 'cart') {
         console.log('DEBUG: Initializing to cart view based on URL parameters.');
         displayView('cart');
+    } else if (initialView === 'categories') { 
+        console.log('DEBUG: Initializing to categories view based on URL parameters.');
+        displayView('categories');
     } else if (initialCategory) {
         console.log(`DEBUG: Initializing to products view for category: ${initialCategory}`);
         displayView('products', initialCategory);
     } else {
         console.log('DEBUG: Initializing to welcome view (no specific parameters).');
-        displayView('welcome'); // Default to welcome view if no specific view/category is provided
+        displayView('welcome'); 
     }
 
-    // Initialize Telegram Web App Main Button on load
     if (Telegram.WebApp.MainButton) {
         Telegram.WebApp.MainButton.onClick(() => {
-            displayView('cart'); // On main button click, always go to cart
+            displayView('cart'); 
         });
-        updateMainButtonCartInfo(); // Update button state on load
+        updateMainButtonCartInfo(); 
+    }
+
+    if (backFromCheckoutToCartButton) {
+        backFromCheckoutToCartButton.addEventListener('click', () => displayView('cart'));
+    } else {
+        console.error('Element with ID "back-from-checkout-to-cart" not found in DOM. Cannot attach click listener.');
+    }
+
+    if (continueShoppingButton) {
+        continueShoppingButton.addEventListener('click', () => {
+            const lastProductCategory = localStorage.getItem('lastProductCategory');
+            if (lastProductCategory) {
+                displayView('products', lastProductCategory);
+            } else {
+                displayView('categories'); 
+            }
+        });
+    } else {
+        console.error('Element with ID "continue-shopping-button" not found in DOM. Cannot attach click listener.');
+    }
+
+    if (startShoppingButton) {
+        startShoppingButton.addEventListener('click', () => {
+            displayView('categories'); 
+        });
+    } else {
+        console.error('Element with ID "start-shopping-button" not found in DOM. Cannot attach click listener.');
     }
 
 }); // End of DOMContentLoaded handler

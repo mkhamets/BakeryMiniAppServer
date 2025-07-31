@@ -85,6 +85,13 @@ def clear_user_cart(user_id: int):
         del user_carts[user_id]
     logger.info(f"Корзина пользователя {user_id} очищена.")
 
+# ЗАГЛУШКА: Функция для очистки сообщений корзины (если она нужна)
+# Если у тебя есть конкретная реализация этой функции, замени ее.
+async def clear_user_cart_messages(chat_id: int):
+    logger.info(f"Функция clear_user_cart_messages вызвана для чата {chat_id}. (ЗАГЛУШКА)")
+    # Здесь может быть логика удаления предыдущих сообщений корзины
+    pass
+
 # Хендлер команды /start
 @dp.message(F.text == "/start")
 async def command_start_handler(message: Message) -> None:
@@ -97,30 +104,89 @@ async def command_start_handler(message: Message) -> None:
 
 # Хендлер для кнопки "О нас"
 @dp.message(F.text == "ℹ️ О нас")
-async def about_us_handler(message: Message) -> None:
-    await message.answer(
-        "Пекарня Дражина - это место, где традиции встречаются с современностью. Мы используем только лучшие ингредиенты для создания нашей выпечки, хлеба и десертов. Приходите и убедитесь сами!",
-        reply_markup=back_to_menu
-    )
+async def about_us(message: Message):
+    await clear_user_cart_messages(message.chat.id) # Очищаем корзину, если пользователь переходит в другой раздел
+    text = (
+        "<b>О пекарне Дражина</b>\n\n"
+        "Наша пекарня — это место, где традиции встречаются с современными технологиями. "
+        "Мы готовим хлеб и выпечку по классическим рецептам, используя только натуральные ингредиенты.\n\n"
+        "🌾 Ремесленный подход\n"
+        "🍞 Свежайшие продукты\n"
+        "❤️ Любовь к своему делу\n\n"
+        "Подробнее: https://drazhin.by/o-pekarne"
+    ) # Добавлена закрывающая скобка
+    await message.answer(text, parse_mode=ParseMode.HTML, reply_markup=back_to_menu) # Добавлен вызов answer
 
 # Хендлер для кнопки "Наши адреса"
 @dp.message(F.text == "📍 Наши адреса")
-async def our_addresses_handler(message: Message) -> None:
-    await message.answer(
-        "Наши адреса:\n"
-        "📍 г. Минск, ул. Ленина, 5 (ст. м. Октябрьская)\n"
-        "📍 г. Минск, пр-т Победителей, 9 (ТЦ Galleria Minsk)",
-        reply_markup=back_to_menu
-    )
+async def show_addresses(message: Message):
+    await clear_user_cart_messages(message.chat.id) # Очищаем корзину, если пользователь переходит в другой раздел
+    text = (
+        "<b>📍 Наши магазины</b>\n\n"
+        "🏬 <b>ТЦ \"Green City\"</b>\n"
+        "ул. Притыцкого, 156, напротив Грин Сити\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIEUl9'>Yandex</a>\n\n"
+
+        "🏬 <b>ТЦ \"Замок\"</b>\n"
+        "пр‑т Победителей, 65, 1 этаж возле «Ив Роше»\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIEJ3Z'>Yandex</a>\n\n"
+
+        "🏠 <b>ул. Л. Беды, 26</b>\n"
+        "вход в WINE&SPIRITS\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIEXnX'>Yandex</a>\n\n"
+
+        "🏠 <b>ул. Мстиславца, 8</b>\n"
+        "в Маяк Минска, вход со двора\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIIYme'>Yandex</a>\n\n"
+
+        "🏠 <b>ул. Лученка, 1</b>\n"
+        "в ЖК «Minsk World»\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIII6lt'>Yandex</a>\n\n"
+
+        "🏠 <b>ул. Авиационная, 8</b>\n"
+        "Копище, Новая Боровая\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIIDl~'>Yandex</a>\n\n"
+
+        "🏠 <b>ул. Нововиленская, 45</b>\n"
+        "Minsk\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIIDl~'>Yandex</a>\n\n"
+
+        "🏠 <b>ул. Морской риф 1/4</b>\n"
+        "а/г Ратомка, ЖК «Пирс»\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIMRKA'>Yandex</a>\n\n"
+
+        "🏠 <b>г. Заславль, ул. Вокзальная, 11</b>\n"
+        "у ж/д станции «Беларусь»\n"
+        "🔗 <a href='http://maps.google.com/maps?q=53.9006,27.5670'>Google</a> | <a href='https://yandex.com/maps/-/CHTIMOpa'>Yandex</a>\n\n"
+
+        "<b>📞 Наши контакты:</b>\n"
+        "📱 +375 (29) 117‑25‑77\n"
+        "📧 info@drazhin.by\n"
+        "<a href='https://drazhin.by/kontakty'>Подробнее на сайте</a>"
+    ) # Добавлена закрывающая скобка
+    await message.answer(text, reply_markup=back_to_menu, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
 
 # Хендлер для кнопки "О доставке"
 @dp.message(F.text == "⚡ О доставке")
-async def delivery_info_handler(message: Message) -> None:
-    await message.answer(
-        "Информация о доставке:\n"
-        "Мы осуществляем доставку по Минску. Стоимость доставки зависит от района. Подробности уточняйте у оператора.",
-        reply_markup=back_to_menu
+async def delivery_info(message: Message):
+    await clear_user_cart_messages(message.chat.id) # Очищаем корзину, если пользователь переходит в другой раздел
+    text = (
+        "<b>🚚 Условия доставки</b>\n\n"
+        "✅ Бесплатная доставка.\n"
+        "❗️Минимальная сумма заказа для осуществления доставки — <b>70 рублей</b>.\n"
+        "🔴 Минимальная сумма заказа для доставки в праздничные и предпраздничные дни — <b>200 рублей</b>.\n\n"
+        "<b>🕒 Время доставки</b>\n"
+        "Мы доставляем заказы ежедневно с <b>12:30 до 17:00</b>.\n"
+        "<b>День в день</b>. Доставим товары день в день при оформлении заказа <b>до 11:00</b>.\n"
+        "<b>На завтра</b>. Заказы, оформленные <b>после 11:00</b>, доставляются на следующий день.\n"
+        "<b>🗺 Зона доставки</b>\n\n"
+        "<a href=\"https://yandex.com/maps/157/minsk/?from=mapframe&ll=27.513432%2C53.935659&mode=usermaps&source=mapframe&um=constructor%3Acaf348232a3eb659f0e8355c6c34c51b8307a553b53ad5723ecfdb4ff43ad6da&utm_source=mapframe&z=10.6\">📍 Посмотреть карту зоны доставки</a>\n\n"
+        "<b>📞 Контакты для уточнений</b>\n"
+        "Телефон: +375 (29) 117‑25‑77\n"
+        "📧 info@drazhin.by\n"
+        "<a href='https://drazhin.by/kontakty'>Подробнее на сайте</a>"
     )
+    await message.answer(text, reply_markup=back_to_menu, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
 
 # Хендлер для кнопки "Назад в меню"
 @dp.message(F.text == "⬅️ Назад в меню")
@@ -148,7 +214,7 @@ async def handle_web_app_data(message: Message):
             current_cart = get_user_cart(user_id)
 
             # Очищаем корзину перед обновлением, чтобы избежать устаревших данных
-            clear_user_cart(user_id) 
+            clear_user_cart(user_id)
 
             for item in cart_items:
                 product_id = item.get('id')
@@ -171,15 +237,21 @@ async def handle_web_app_data(message: Message):
             if order_details and cart_items and total_amount is not None:
                 # Формируем сообщение для администратора или для подтверждения пользователю
                 order_summary = "Новый заказ:\n"
-                order_summary += f"Имя: {order_details.get('name', 'Не указано')}\n"
+                order_summary += f"Фамилия: {order_details.get('lastName', 'Не указано')}\n"
+                order_summary += f"Имя: {order_details.get('firstName', 'Не указано')}\n"
+                order_summary += f"Отчество: {order_details.get('middleName', 'Не указано')}\n"
                 order_summary += f"Телефон: {order_details.get('phone', 'Не указан')}\n"
-                order_summary += f"Тип доставки: {order_details.get('deliveryType', 'Не указан')}\n"
+                order_summary += f"Email: {order_details.get('email', 'Не указан')}\n"
+                order_summary += f"Дата доставки/самовывоза: {order_details.get('deliveryDate', 'Не указано')}\n"
+                order_summary += f"Способ получения: {order_details.get('deliveryMethod', 'Не указан')}\n"
 
-                if order_details.get('deliveryType') == 'courier':
-                    order_summary += f"Адрес: {order_details.get('address', 'Не указан')}\n"
-                    order_summary += f"Время доставки: {order_details.get('deliveryTime', 'Не указано')}\n"
-                elif order_details.get('deliveryType') == 'pickup':
+                if order_details.get('deliveryMethod') == 'courier':
+                    order_summary += f"Город: {order_details.get('city', 'Не указан')}\n"
+                    order_summary += f"Адрес доставки: {order_details.get('addressLine', 'Не указан')}\n"
+                    order_summary += f"Комментарий: {order_details.get('comment', 'Нет')}\n"
+                elif order_details.get('deliveryMethod') == 'pickup':
                     order_summary += f"Адрес самовывоза: {order_details.get('pickupAddress', 'Не указан')}\n"
+
 
                 order_summary += "\nСостав заказа:\n"
                 for item in cart_items:
@@ -214,7 +286,7 @@ async def block_text_input(message: Message):
        message.text not in ["ℹ️ О нас", "📍 Наши адреса", "⚡ О доставке", "⬅️ Назад в меню"] and \
        not re.match(r"🛒 Корзина(\s\(\d+\))?", message.text) and \
        message.text != "/start":
-        await message.answer("⚠️ Пожалуйста, используйте кнопки внизу для управления ботом 👇")
+        await message.answer("⚠️ Пожалуйста, используйте кнопки внизу для управления ботом �")
 
 
 async def main():
@@ -226,7 +298,7 @@ async def main():
 
     # Настраиваем API сервер
     # ИЗМЕНЕНО: setup_api_server теперь только настраивает runner
-    runner = await setup_api_server() 
+    runner = await setup_api_server()
     port = int(os.environ.get("PORT", 8080)) # Получаем порт из переменных окружения или используем 8080
     site = web.TCPSite(runner, '0.0.0.0', port) # Создаем TCPSite
     await site.start() # Запускаем TCPSite только здесь
