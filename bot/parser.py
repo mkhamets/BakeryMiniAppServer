@@ -7,6 +7,7 @@ import asyncio
 import json
 from urllib.parse import urljoin
 import os
+import uuid # Импортируем модуль uuid для генерации уникальных ID
 
 # ===== Блок для отладки логирования - НАЧАЛО =====
 # Удаляем все существующие обработчики для корневого логгера,
@@ -78,7 +79,7 @@ async def get_products_from_category_page(session, category_url):
                 # Название и относительный URL
                 # Ищем внутри текущего product_element
                 title_link_element = product_element.select_one('a.open-product-modal.product-item__title')
-                
+
                 if not title_link_element:
                     # Если ссылка в блоке текста не найдена, попробуем главную ссылку
                     title_link_element = product_element.select_one('a.open-product-modal')
@@ -109,7 +110,7 @@ async def get_products_from_category_page(session, category_url):
                             image_url = f"{BASE_URL.rstrip('/')}{image_url_part}"
                         else:
                             image_url = f"{BASE_URL}{image_url_part}"
-                
+
                 # Цена
                 price_element = product_element.select_one('div.curent-price')
                 price_text = price_element.get_text(strip=True) if price_element else 'N/A'
@@ -254,7 +255,7 @@ async def main():
         "category_artisan_bread": "https://drazhin.by/remeslennyy-hleb/",
         "category_desserts": "https://drazhin.by/deserty/"
     }
-    
+
     scraped_data = {
         "category_bakery": [],
         "category_croissants": [],
@@ -266,17 +267,21 @@ async def main():
         for category_name, category_url in categories.items():
             # Шаг 1: Парсинг страниц категорий для получения базовой информации и URL продукта
             products_from_category = await get_products_from_category_page(session, category_url)
-            
+
             # Шаг 2: Для каждого продукта, спарсить его детальную страницу
             detailed_products = []
             for product_base_info in products_from_category:
                 product_url = product_base_info['url'] # Используем URL, который уже получили
                 product_details = await get_product_details(session, product_url)
-                
+
                 # Объединяем базовую информацию с детальной
                 combined_product_info = {**product_base_info, **product_details}
+
+                # ДОБАВЛЕНО: Генерируем уникальный ID для каждого продукта
+                combined_product_info['id'] = str(uuid.uuid4()) 
+
                 detailed_products.append(combined_product_info)
-                logger.info(f"Спарсены детали для: {product_base_info['name']}")
+                logger.info(f"Спарсены детали для: {product_base_info['name']} с ID: {combined_product_info['id']}") # Логируем ID
 
             scraped_data[category_name] = detailed_products
             logger.info(f"Завершено парсинг категории {category_name}. Найдено {len(detailed_products)} полных товаров.")
