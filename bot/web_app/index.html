@@ -57,27 +57,27 @@
                 <form id="checkout-form" class="checkout-form">
                     <div class="form-group">
                         <label for="last-name">Фамилия:</label>
-                        <input type="text" id="last-name" name="lastName" required>
+                        <input type="text" id="last-name" name="lastName" maxlength="50" required>
                         <div class="error-message" id="lastName-error">Пожалуйста, введите вашу фамилию.</div>
                     </div>
                     <div class="form-group">
                         <label for="first-name">Имя:</label>
-                        <input type="text" id="first-name" name="firstName" required>
+                        <input type="text" id="first-name" name="firstName" maxlength="50" required>
                         <div class="error-message" id="firstName-error">Пожалуйста, введите ваше имя.</div>
                     </div>
                     <div class="form-group">
                         <label for="middle-name">Отчество:</label>
-                        <input type="text" id="middle-name" name="middleName" required>
+                        <input type="text" id="middle-name" name="middleName" maxlength="50" required>
                         <div class="error-message" id="middleName-error">Пожалуйста, введите ваше отчество.</div>
                     </div>
                     <div class="form-group">
                         <label for="phone-number">Телефон:</label>
-                        <input type="tel" id="phone-number" name="phoneNumber" placeholder="+375 (XX) XXX-XX-XX" required>
+                        <input type="tel" id="phone-number" name="phoneNumber" placeholder="+375 (XX) XXX-XX-XX" maxlength="50" required>
                         <div class="error-message" id="phoneNumber-error">Пожалуйста, введите корректный номер телефона.</div>
                     </div>
                     <div class="form-group">
                         <label for="email">Email:</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email" name="email" maxlength="50" required>
                         <div class="error-message" id="email-error">Пожалуйста, введите корректный Email.</div>
                     </div>
                     <div class="form-group">
@@ -94,30 +94,43 @@
                             <label for="delivery-pickup-radio">Самовывоз</label>
                         </div>
                     </div>
-                    <div id="courier-delivery-fields">
-                        <div class="form-group">
-                            <label for="city">Город:</label>
-                            <input type="text" id="city" name="city" required>
-                            <div class="error-message" id="city-error">Пожалуйста, введите город.</div>
-                        </div>
+                        <div id="courier-delivery-fields" class="delivery-address-fields">
+                            <div class="form-group">
+                                <label for="city">Город <span class="required">*</span></label>
+                                <select id="city" name="city"> <!-- required будет управляться JS -->
+                                    <option value="">Выберите город</option>
+                                    <option value="Минск">Минск</option>
+                                    <option value="Заславль">Заславль</option>
+                                    <option value="Тарасово">Тарасово</option>
+                                    <option value="Ратомка">Ратомка</option>
+                                </select>
+                                <div class="error-message" id="city-error">Пожалуйста, выберите город.</div>
+                            </div>
                         <div class="form-group">
                             <label for="address-line">Адрес (улица, дом, квартира):</label>
-                            <input type="text" id="address-line" name="addressLine" required>
+                            <input type="text" id="address-line" name="addressLine" maxlength="50" required>
                             <div class="error-message" id="addressLine-error">Пожалуйста, введите адрес.</div>
                         </div>
                         <div class="form-group">
                             <label for="comment-delivery">Комментарий к доставке:</label>
-                            <textarea id="comment-delivery" name="commentDelivery" rows="3"></textarea>
+                            <textarea id="comment-delivery" name="commentDelivery" rows="3" maxlength="250"></textarea>
                         </div>
                     </div>
                     <div id="pickup-addresses" class="hidden">
                         <div class="form-group">
                             <label>Выберите адрес самовывоза:</label>
-                            <div class="radio-group">
-                                <input type="radio" id="pickup-address-1" name="pickupAddress" value="ул. Притыцкого, 97" required>
-                                <label for="pickup-address-1">ул. Притыцкого, 97</label>
-                                <input type="radio" id="pickup-address-2" name="pickupAddress" value="ул. Дунина-Марцинкевича, 3" required>
-                                <label for="pickup-address-2">ул. Дунина-Марцинкевича, 3</label>
+                            <div class="radio-group" id="pickup-radio-group">
+                                <!-- Адреса самовывоза будут загружены динамически -->
+                                <label><input type="radio" name="pickupAddress" value="ТЦ Green City"> ТЦ "Green City", ул. Притыцкого, 156</label>
+                                <label><input type="radio" name="pickupAddress" value="ТЦ Замок"> ТЦ "Замок", пр‑т Победителей, 65</label>
+                                <label><input type="radio" name="pickupAddress" value="ул. Л. Беды, 26"> ул. Л. Беды, 26</label>
+                                <label><input type="radio" name="pickupAddress" value="ул. Мстиславца, 8"> ул. Мстиславца, 8</label>
+                                <label><input type="radio" name="pickupAddress" value="ул. Лученка, 1"> ул. Лученка, 1</label>
+                                <label><input type="radio" name="pickupAddress" value="ул. Авиационная, 8"> ул. Авиационная, 8</label>
+                                <label><input type="radio" name="pickupAddress" value="ул. Нововиленская, 45"> ул. Нововиленская, 45</label>
+                                <label><input type="radio" name="pickupAddress" value="ул. Морской риф 1/4"> ул. Морской риф 1/4</label>
+                                <label><input type="radio" name="pickupAddress" value="г. Заславль, ул. Вокзальная, 11"> г. Заславль, ул. Вокзальная, 11</label>
+                                <div class="error-message" id="pickupAddress-error">Пожалуйста, выберите адрес самовывоза.</div>
                             </div>
                         </div>
                     </div>
