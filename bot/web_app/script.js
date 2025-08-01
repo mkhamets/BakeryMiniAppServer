@@ -497,6 +497,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orderDetails[key] = value;
                 }
 
+
                 let isValid = true;
                 const errorMessages = [];
 
@@ -564,7 +565,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         city: orderDetails.city || '',
                         addressLine: orderDetails.addressLine || '',
                         comment: orderDetails.commentDelivery || '',
-                        pickupAddress: orderDetails.pickupAddress || ''
+                        pickupAddress: orderDetails.pickupAddress || '',
+                        commentPickup: orderDetails.commentPickup || ''
                     },
                     cart_items: Object.values(cart).map(item => ({
                         id: item.id,
@@ -608,6 +610,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').required = true;
                 document.getElementById('address-line').required = true;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
+
+                // Очищаем поля самовывоза при переключении на доставку курьером
+                document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.checked = false);
+                document.getElementById('comment-pickup').value = '';
             } else if (method === 'pickup') {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.remove('hidden');
@@ -620,6 +626,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').required = false;
                 document.getElementById('address-line').required = false;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = true);
+
+                // Очищаем поля доставки курьером при переключении на самовывоз
+                document.getElementById('city').value = '';
+                document.getElementById('address-line').value = '';
+                document.getElementById('comment-delivery').value = '';
             } else {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.add('hidden');
@@ -726,6 +737,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+
             const orderPayload = {
                 action: 'checkout_order',
                 order_details: {
@@ -739,7 +751,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     city: orderDetails.city || '',
                     addressLine: orderDetails.addressLine || '',
                     comment: orderDetails.commentDelivery || '',
-                    pickupAddress: orderDetails.pickupAddress || ''
+                    pickupAddress: orderDetails.pickupAddress || '',
+                    commentPickup: orderDetails.commentPickup || ''
                 },
                 cart_items: Object.values(cart).map(item => ({
                     id: item.id,
@@ -749,6 +762,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 })),
                 total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
             };
+
 
             // Отправляем данные заказа
             Telegram.WebApp.sendData(JSON.stringify(orderPayload));
@@ -805,12 +819,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Инициализация кнопок, которые всегда присутствуют в DOM
     if (continueShoppingButton) {
         continueShoppingButton.addEventListener('click', () => {
-            const lastProductCategory = localStorage.getItem('lastProductCategory');
-            if (lastProductCategory) {
-                displayView('products', lastProductCategory);
-            } else {
-                displayView('categories');
-            }
+            // Всегда ведем на страницу "Наше меню" (категории)
+            displayView('categories');
         });
     } else {
         console.error('Элемент с ID "continue-shopping-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');

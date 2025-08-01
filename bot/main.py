@@ -62,8 +62,8 @@ CATEGORY_MAP = {
 }
 
 DELIVERY_MAP = {
-    'courier': 'доставка курьером',
-    'pickup': 'самовывоз'
+    'courier': 'Доставка курьером',
+    'pickup': 'Самовывоз'
 }
 
 
@@ -281,7 +281,7 @@ async def clear_user_cart_messages(chat_id: int):
 
 
 # ИЗМЕНЕНИЕ: Новая асинхронная функция для отправки email
-async def send_email_notification(recipient_email: str, subject: str, body: str):
+async def send_email_notification(recipient_email: str, subject: str, body: str, sender_name: str = "Пекарня Дражина"):
     """Отправляет email уведомление."""
     try:
         logger.info(f"Начинаем отправку email на {recipient_email}")
@@ -300,7 +300,7 @@ async def send_email_notification(recipient_email: str, subject: str, body: str)
 
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = sender_email
+        msg['From'] = f"{sender_name} <{sender_email}>"
         msg['To'] = recipient_email
 
         msg.attach(MIMEText(body, 'html', 'utf-8'))
@@ -551,8 +551,10 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
         logger.info(f"Способ доставки: {order_details.get('deliveryMethod')}")
         if order_details.get('deliveryMethod') == 'pickup':
             logger.info(f"Адрес самовывоза: {order_details.get('pickupAddress')}")
+            logger.info(f"Комментарий к самовывозу: {order_details.get('commentPickup')}")
         elif order_details.get('deliveryMethod') == 'courier':
             logger.info(f"Город: {order_details.get('city')}, Адрес: {order_details.get('addressLine')}")
+            logger.info(f"Комментарий к доставке: {order_details.get('comment')}")
 
         order_number = await generate_order_number()
         logger.info(f"Номер заказа сгенерирован: {order_number}")
@@ -608,6 +610,7 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
     try:
         logger.info(f"Начинаем формирование уведомлений для заказа {order_number}")
         logger.info(f"Параметры: cart_items={len(cart_items)}, total_amount={total_amount}, user_id={user_id}")
+
 
         # Валидация входных данных
         if not order_details or not cart_items or total_amount is None:
@@ -679,13 +682,27 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
             if admin_email_password:
                 logger.info(f"Отправляем email уведомление на {ADMIN_EMAIL}")
                 # Запускаем отправку email в фоновом режиме
-                asyncio.create_task(send_email_notification(ADMIN_EMAIL, email_subject, email_body))
+                asyncio.create_task(send_email_notification(ADMIN_EMAIL, email_subject, email_body, "Пекарня Дражина"))
                 logger.info("Задача отправки email создана")
             else:
                 logger.error("Переменная окружения ADMIN_EMAIL_PASSWORD не установлена. "
                             "Email уведомление не будет отправлено.")
         else:
             logger.warning("ADMIN_EMAIL не установлен. Email уведомление не будет отправлено.")
+
+        # Отправляем письмо пользователю
+        user_email = order_details.get('email')
+        if user_email:
+            try:
+                logger.info(f"Отправляем письмо пользователю на {user_email}")
+                user_email_subject = f"Вы сделали заказ {order_number} в Telegram боте Пекарни Дражина"
+                user_email_body = _format_user_email_body(order_number, order_details, cart_items, total_amount)
+                asyncio.create_task(send_email_notification(user_email, user_email_subject, user_email_body, "Пекарня Дражина"))
+                logger.info("Задача отправки письма пользователю создана")
+            except Exception as e:
+                logger.error(f"Ошибка при отправке письма пользователю: {e}")
+        else:
+            logger.warning("Email пользователя не указан. Письмо пользователю не будет отправлено.")
 
         logger.info(f"Все уведомления для заказа {order_number} обработаны")
 
@@ -719,6 +736,8 @@ def _format_telegram_order_summary(order_number: str, order_details: dict,
     elif order_details.get('deliveryMethod') == 'pickup':
         summary += (f"Способ получения: {delivery_text}\n"
                    f"Адрес самовывоза: `{order_details.get('pickupAddress', 'N/A')}`\n")
+        if order_details.get('commentPickup'):
+            summary += f"Комментарий к самовывозу: `{order_details.get('commentPickup', 'N/A')}`\n"
 
     summary += f"\n*Состав заказа:*\n"
     for item in cart_items:
@@ -748,6 +767,10 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
                       if (order_details.get('deliveryMethod') == 'courier' and order_details.get('comment')) else "")
     pickup_address = ("<p><b>Адрес самовывоза:</b> " + order_details.get('pickupAddress', 'N/A') + "</p>" 
                      if order_details.get('deliveryMethod') == 'pickup' else "")
+    pickup_comment = ("<p><b>Комментарий к самовывозу:</b> " + order_details.get('commentPickup', 'N/A') + "</p>" 
+                     if (order_details.get('deliveryMethod') == 'pickup' and order_details.get('commentPickup')) else "")
+
+
 
     # Формируем строки таблицы для товаров
     table_rows = ""
@@ -794,6 +817,7 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
                         {courier_address}
                         {courier_comment}
                         {pickup_address}
+                        {pickup_comment}
 
                         <h3>🛍️ Состав заказа:</h3>
                         <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse;">
@@ -814,6 +838,201 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
                     </html>
                     """
     return email_body
+
+
+def _format_user_email_body(order_number: str, order_details: dict, cart_items: list,
+                           total_amount: float) -> str:
+    """Форматирует письмо для пользователя с подтверждением заказа."""
+
+    # Проверяем доступность данных продуктов
+    global products_data
+    if not products_data:
+        logger.error("Данные продуктов не загружены!")
+        products_data = {}
+
+    # Создаем кэш для быстрого поиска товаров по ID
+    products_cache = {}
+    for category_products in products_data.values():
+        for product in category_products:
+            products_cache[product.get('id')] = product
+
+    # Формируем строки таблицы для товаров
+    table_rows = ""
+    for item in cart_items:
+        try:
+            price_float = float(item.get('price', 0))
+            quantity = int(item.get('quantity', 0))
+            total_item = price_float * quantity
+
+            # Получаем полную информацию о товаре из кэша
+            product_id = item.get('id')
+            full_product_info = products_cache.get(product_id)
+
+            # Используем полную информацию о товаре или данные из корзины
+            product_name = full_product_info.get('name', item.get('name', 'N/A')) if full_product_info else item.get('name', 'N/A')
+            product_image = full_product_info.get('image_url', '') if full_product_info else ''
+            product_url = full_product_info.get('url', '#') if full_product_info else '#'
+            product_weight = full_product_info.get('weight', 'N/A') if full_product_info else 'N/A'
+
+            table_rows += f"""
+                                                <tr>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">
+                                                        <img src="{product_image}" alt="{product_name}" 
+                                                             title="{product_name}" style="width:90px;height:113px">
+                                                    </td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">
+                                                        <a href="{product_url}" style="color:#348eda" target="_blank">
+                                                            {product_name}
+                                                        </a>
+                                                    </td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">{quantity} шт.</td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">{product_weight} гр.</td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">{price_float:.0f} р.</td>
+                                                </tr>
+                                                """
+        except (ValueError, TypeError) as e:
+            logger.error(f"Ошибка при форматировании товара для письма пользователю {item.get('name', 'Unknown')}: {e}")
+            table_rows += f"""
+                                                <tr>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">-</td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">{item.get('name', 'N/A')}</td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">{item.get('quantity', 0)} шт.</td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">-</td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">-</td>
+                                                </tr>
+                                                """
+
+    # Формируем информацию о доставке
+    delivery_info = ""
+    if order_details.get('deliveryMethod') == 'courier':
+        delivery_info = f"""
+        <p style="font-family:Arial;color:#111111;margin:20px">
+            <strong>Способ получения:</strong> Доставка курьером<br>
+            <strong>Город:</strong> {order_details.get('city', 'N/A')}<br>
+            <strong>Адрес:</strong> {order_details.get('addressLine', 'N/A')}<br>
+            <strong>Дата доставки:</strong> {order_details.get('deliveryDate', 'N/A')}
+        </p>
+        """
+        if order_details.get('comment'):
+            delivery_info += f"""
+        <p style="font-family:Arial;color:#111111;margin:20px">
+            <strong>Комментарий к доставке:</strong> {order_details.get('comment')}
+        </p>
+        """
+
+    elif order_details.get('deliveryMethod') == 'pickup':
+        delivery_info = f"""
+        <p style="font-family:Arial;color:#111111;margin:20px">
+            <strong>Способ получения:</strong> Самовывоз<br>
+            <strong>Адрес самовывоза:</strong> {order_details.get('pickupAddress', 'N/A')}<br>
+            <strong>Дата самовывоза:</strong> {order_details.get('deliveryDate', 'N/A')}
+        </p>
+        """
+        if order_details.get('commentPickup'):
+            delivery_info += f"""
+        <p style="font-family:Arial;color:#111111;margin:20px">
+            <strong>Комментарий к самовывозу:</strong> {order_details.get('commentPickup')}
+        </p>
+        """
+
+
+    user_email_body = f"""
+    <html>
+    <head></head>
+    <body>
+        <div style="margin:0;padding:0;background:#f6f6f6">
+            <div style="height:100%;padding-top:20px;background:#f6f6f6">
+                <a href="https://drazhin.by" target="_blank">
+                    <img style="display:block;margin:auto" src="https://drazhin.by//content/other/email_logo_drazhin.png" alt="https://drazhin.by">
+                </a>
+
+                <table style="padding:0 20px 20px 20px;width:100%;background:#f6f6f6;margin-top:10px">
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td style="border:1px solid #f0f0f0;background:#ffffff;width:800px;margin:auto">
+                                <div>
+                                    <table style="width:100%">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <h3 style="font-family:Arial;color:#111111;font-weight:200;line-height:1.2em;margin:40px 20px;font-size:22px">
+                                                        Вы сделали заказ {order_number} в Telegram боте Пекарни Дражина
+                                                    </h3>
+
+                                                    <p style="font-family:Arial;color:#111111;margin:20px">
+                                                        <strong>Покупатель:</strong><br>
+                                                        {order_details.get('lastName', 'N/A')} {order_details.get('firstName', 'N/A')} {order_details.get('middleName', 'N/A')}<br>
+                                                        <strong>Телефон:</strong> {order_details.get('phone', 'N/A')}<br>
+                                                        <strong>Email:</strong> {order_details.get('email', 'N/A')}
+                                                    </p>
+
+                                                    {delivery_info}
+
+                                                    <table style="width:90%;margin:auto">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="font-family:Arial;text-align:left;color:#111111"> </th>
+                                                                <th style="font-family:Arial;text-align:left;color:#111111">Наименование</th>
+                                                                <th style="font-family:Arial;text-align:left;color:#111111">Количество</th>
+                                                                <th style="font-family:Arial;text-align:left;color:#111111">Вес</th>
+                                                                <th style="font-family:Arial;text-align:left;color:#111111">Стоимость</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {table_rows}
+                                                        </tbody>
+                                                    </table>
+
+                                                    <h3 style="font-family:Arial;color:#111111;font-weight:200;line-height:1.2em;margin:40px 20px;font-size:22px">
+                                                        Итого: <strong>{total_amount:.0f}</strong> р.
+                                                    </h3>
+
+                                                    <p style="font-family:Arial;color:#111111;margin:20px">
+                                                        Спасибо за ваш заказ! Мы свяжемся с вами в ближайшее время для подтверждения.
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table style="clear:both!important;width:100%">
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <div>
+                                    <table style="width:100%;text-align:center">
+                                        <tbody>
+                                            <tr>
+                                                <td align="center">
+                                                    <p style="font-family:Arial;color:#666666;font-size:12px">
+                                                        <a href="https://drazhin.by" style="color:#999999" target="_blank">
+                                                            Пекарня Дражина
+                                                        </a>
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return user_email_body
 
 
 @dp.message(F.text)
