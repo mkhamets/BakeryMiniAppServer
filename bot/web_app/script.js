@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let cart = JSON.parse(localStorage.getItem('cart')) || {};
     let productsData = {};
+    let isSubmitting = false; // Флаг для предотвращения двойной отправки
 
     const CATEGORY_DISPLAY_MAP = {
         "category_bakery": { name: "Выпечка", emoji: "🥨" },
@@ -482,6 +483,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkoutForm.addEventListener('submit', (event) => {
                 event.preventDefault();
 
+                // Проверяем, не отправляется ли уже заказ
+                if (isSubmitting) {
+                    console.log('Заказ уже отправляется, игнорируем повторную отправку');
+                    return;
+                }
+
+                isSubmitting = true; // Устанавливаем флаг отправки
+
                 const formData = new FormData(checkoutForm);
                 const orderDetails = {};
                 for (let [key, value] of formData.entries()) {
@@ -522,10 +531,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 if (!isValid) {
+                    isSubmitting = false; // Сбрасываем флаг при ошибке
                     if (Telegram.WebApp.showAlert) {
                         Telegram.WebApp.showAlert(errorMessages.join('\n'));
                     } else {
-                        alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                        alert(errorMessages.join('\n'));
+                    }
+                    return;
+                }
+
+                // Проверяем, что корзина не пустая
+                if (Object.keys(cart).length === 0) {
+                    isSubmitting = false; // Сбрасываем флаг при ошибке
+                    if (Telegram.WebApp.showAlert) {
+                        Telegram.WebApp.showAlert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
+                    } else {
+                        alert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
                     }
                     return;
                 }
@@ -554,14 +575,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
                 };
 
+                // Отправляем данные заказа
                 Telegram.WebApp.sendData(JSON.stringify(orderPayload));
 
-                clearCart();
+                // Показываем сообщение об успешном заказе
                 if (Telegram.WebApp.showAlert) {
                     Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
                 } else {
-                    alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в вами в ближайшее время.');
+                    alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
                 }
+
+                // Очищаем корзину и закрываем Web App только после отправки
+                clearCart();
                 Telegram.WebApp.close();
             });
         } else {
@@ -675,7 +700,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (!orderDetails.city) { isValid = false; errorMessages.push('Пожалуйста, выберите город для доставки.'); }
                     if (!orderDetails.addressLine) { isValid = false; errorMessages.push('Пожалуйста, введите адрес доставки.'); }
                 } else if (orderDetails.deliveryMethod === 'pickup') {
-                    if (!orderDetails.pickupAddress) { isValid = false; errorMessages.push('Пожалуйста, выберите адрес самовывоза.'); }
+                    if (!orderDetails.pickupAddress || orderDetails.pickupAddress.trim() === '') { 
+                        isValid = false; 
+                        errorMessages.push('Пожалуйста, выберите адрес самовывоза.'); 
+                    }
                 }
             }
 
@@ -684,6 +712,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     Telegram.WebApp.showAlert(errorMessages.join('\n'));
                 } else {
                     alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                }
+                return;
+            }
+
+            // Проверяем, что корзина не пустая
+            if (Object.keys(cart).length === 0) {
+                if (Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
+                } else {
+                    alert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
                 }
                 return;
             }
@@ -712,14 +750,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
             };
 
+            // Отправляем данные заказа
             Telegram.WebApp.sendData(JSON.stringify(orderPayload));
 
-            clearCart();
+            // Показываем сообщение об успешном заказе
             if (Telegram.WebApp.showAlert) {
                 Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
             } else {
-                alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в вами в ближайшее время.');
+                alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
             }
+
+            // Очищаем корзину и закрываем Web App только после отправки
+            clearCart();
             Telegram.WebApp.close();
         });
     } else {

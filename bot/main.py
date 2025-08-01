@@ -62,8 +62,8 @@ CATEGORY_MAP = {
 }
 
 DELIVERY_MAP = {
-    'courier': 'Доставка курьером',
-    'pickup': 'Самовывоз'
+    'courier': 'доставка курьером',
+    'pickup': 'самовывоз'
 }
 
 
@@ -103,24 +103,50 @@ async def load_order_counter():
         if os.path.exists(ORDER_COUNTER_FILE):
             try:
                 with open(ORDER_COUNTER_FILE, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    order_counter = data.get('counter', 0)
-                    last_reset_month = data.get('month', datetime.datetime.now().month)
-                logger.info(f"Счетчик заказов успешно загружен из {ORDER_COUNTER_FILE}: "
-                           f"{order_counter}, Месяц: {last_reset_month}")
+                    content = f.read().strip()
+                    if not content:  # Проверяем, не пустой ли файл
+                        logger.warning(f"Файл счетчика заказов {ORDER_COUNTER_FILE} пустой. "
+                                      f"Создаем новый с начальными значениями.")
+                        order_counter = 0
+                        last_reset_month = datetime.datetime.now().month
+                        # Создаем новый файл с правильной структурой
+                        await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+                    else:
+                        data = json.loads(content)
+                        order_counter = data.get('counter', 0)
+                        last_reset_month = data.get('month', datetime.datetime.now().month)
+
+                        # Проверяем, если месяц в файле отличается от текущего
+                        current_month = datetime.datetime.now().month
+                        if last_reset_month != current_month:
+                            logger.info(f"Месяц в файле ({last_reset_month}) отличается от текущего ({current_month}). "
+                                      f"Сбрасываем счетчик.")
+                            order_counter = 0
+                            last_reset_month = current_month
+                            # Обновляем файл с новым месяцем
+                            await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+
+                        logger.info(f"Счетчик заказов успешно загружен из {ORDER_COUNTER_FILE}: "
+                                   f"{order_counter}, Месяц: {last_reset_month}")
             except (json.JSONDecodeError, FileNotFoundError) as e:
                 logger.warning(f"Файл счетчика заказов не найден или поврежден: {e}. "
                               f"Начинаем с 0.")
                 order_counter = 0
                 last_reset_month = datetime.datetime.now().month
+                # Создаем новый файл с правильной структурой
+                await save_order_counter({'counter': order_counter, 'month': last_reset_month})
             except Exception as e:
                 logger.error(f"Неизвестная ошибка при загрузке счетчика заказов: {e}")
                 order_counter = 0
                 last_reset_month = datetime.datetime.now().month
+                # Создаем новый файл с правильной структурой
+                await save_order_counter({'counter': order_counter, 'month': last_reset_month})
         else:
-            logger.warning(f"Файл счетчика {ORDER_COUNTER_FILE} не найден. Начинаем с 0.")
+            logger.warning(f"Файл счетчика {ORDER_COUNTER_FILE} не найден. Создаем новый.")
             order_counter = 0
             last_reset_month = datetime.datetime.now().month
+            # Создаем новый файл с правильной структурой
+            await save_order_counter({'counter': order_counter, 'month': last_reset_month})
 
 
 # ИЗМЕНЕНИЕ: Новая функция для сохранения счетчика заказов в файл
@@ -128,10 +154,19 @@ async def save_order_counter(counter_data):
     """Сохраняет счетчик заказов в файл."""
     async with order_counter_lock:
         try:
+            logger.info(f"Начинаем сохранение счетчика: {counter_data}")
+            # Создаем директорию, если она не существует
+            os.makedirs(os.path.dirname(ORDER_COUNTER_FILE), exist_ok=True)
+            logger.info(f"Директория создана/проверена: {os.path.dirname(ORDER_COUNTER_FILE)}")
+
+            # Используем синхронную операцию записи в файл
             with open(ORDER_COUNTER_FILE, 'w', encoding='utf-8') as f:
                 json.dump(counter_data, f, ensure_ascii=False, indent=4)
+            logger.info(f"Счетчик заказов успешно сохранен: {counter_data}")
         except Exception as e:
             logger.error(f"Ошибка при сохранении счетчика заказов: {e}")
+            logger.error(f"Тип ошибки: {type(e).__name__}")
+            raise  # Перебрасываем ошибку, чтобы вызывающий код мог ее обработать
 
 
 # ИЗМЕНЕНИЕ: Функция generate_order_number теперь асинхронная и работает с файлом
@@ -161,23 +196,36 @@ async def generate_order_number():
 
             # Сохраняем обновленный счетчик в файл
             try:
-                await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+                logger.info("Начинаем сохранение счетчика в файл...")
+                # Добавляем таймаут в 5 секунд для операции сохранения
+                await asyncio.wait_for(
+                    save_order_counter({'counter': order_counter, 'month': last_reset_month}),
+                    timeout=5.0
+                )
                 logger.info(f"Счетчик успешно сохранен в файл: {order_counter}")
+            except asyncio.TimeoutError:
+                logger.error("Таймаут при сохранении счетчика заказов")
+                logger.warning("Продолжаем выполнение без сохранения счетчика")
             except Exception as save_error:
                 logger.error(f"Ошибка при сохранении счетчика: {save_error}")
+                logger.error(f"Тип ошибки: {type(save_error).__name__}")
                 # Продолжаем выполнение даже если не удалось сохранить
+                # Но логируем предупреждение
+                logger.warning("Продолжаем выполнение без сохранения счетчика")
 
         # Форматируем дату и счетчик
         day = now.strftime("%d")
         month = now.strftime("%m")
+        year = now.strftime("%y")
 
         # Форматируем счетчик до трех знаков
         order_sequence = str(order_counter).zfill(3)
-        order_number = f"#{day}{month}/{order_sequence}"
-        
+        order_number = f"#{day}{month}{year}/{order_sequence}"
+
         logger.info(f"Сгенерирован номер заказа: {order_number}")
+        logger.info("Функция generate_order_number завершена успешно")
         return order_number
-        
+
     except Exception as e:
         logger.error(f"Критическая ошибка при генерации номера заказа: {e}")
         # Возвращаем номер заказа с временной меткой как fallback
@@ -237,7 +285,7 @@ async def send_email_notification(recipient_email: str, subject: str, body: str)
     """Отправляет email уведомление."""
     try:
         logger.info(f"Начинаем отправку email на {recipient_email}")
-        
+
         sender_email = ADMIN_EMAIL  # Email отправителя из переменных окружения
         sender_password = os.environ.get("ADMIN_EMAIL_PASSWORD")  # Пароль отправителя из переменных окружения
         smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")  # SMTP сервер (по умолчанию Gmail)
@@ -265,9 +313,9 @@ async def send_email_notification(recipient_email: str, subject: str, body: str)
             server.login(sender_email, sender_password)
             logger.info("Отправляем сообщение...")
             server.send_message(msg)
-            
+
         logger.info(f"Email успешно отправлен на {recipient_email} с темой '{subject}'.")
-        
+
     except smtplib.SMTPException as e:
         logger.error(f"Ошибка SMTP при отправке email: {e}")
     except Exception as e:
@@ -463,7 +511,7 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
     """Обрабатывает оформление заказа из Web App."""
     try:
         logger.info(f"Начинаем обработку заказа для пользователя {user_id}")
-        
+
         order_details = data.get('order_details')
         cart_items = data.get('cart_items')
         total_amount = data.get('total_amount')
@@ -479,9 +527,36 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
             )
             return
 
+        # Проверяем, что корзина не пустая
+        if len(cart_items) == 0:
+            logger.warning(f"Попытка оформить заказ с пустой корзиной от пользователя {user_id}")
+            await message.answer(
+                "Корзина пуста. Пожалуйста, добавьте товары в корзину перед оформлением заказа.", 
+                reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
+            )
+            return
+
+        # Проверяем, что сумма заказа больше 0
+        if total_amount <= 0:
+            logger.warning(f"Попытка оформить заказ с нулевой суммой от пользователя {user_id}")
+            await message.answer(
+                "Сумма заказа должна быть больше нуля. Пожалуйста, добавьте товары в корзину.", 
+                reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
+            )
+            return
+
         logger.info(f"Данные заказа валидны. Генерируем номер заказа...")
+        logger.info(f"Количество товаров в заказе: {len(cart_items)}")
+        logger.info(f"Сумма заказа: {total_amount}")
+        logger.info(f"Способ доставки: {order_details.get('deliveryMethod')}")
+        if order_details.get('deliveryMethod') == 'pickup':
+            logger.info(f"Адрес самовывоза: {order_details.get('pickupAddress')}")
+        elif order_details.get('deliveryMethod') == 'courier':
+            logger.info(f"Город: {order_details.get('city')}, Адрес: {order_details.get('addressLine')}")
+
         order_number = await generate_order_number()
         logger.info(f"Номер заказа сгенерирован: {order_number}")
+        logger.info("Переходим к отправке уведомлений...")
 
         # Отправляем уведомления
         logger.info("Начинаем отправку уведомлений...")
@@ -490,21 +565,35 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
             logger.info("Уведомления отправлены успешно")
         except Exception as notification_error:
             logger.error(f"Ошибка при отправке уведомлений: {notification_error}")
+            logger.error(f"Тип ошибки: {type(notification_error).__name__}")
             # Продолжаем выполнение даже если уведомления не отправились
+            logger.info("Продолжаем обработку заказа без уведомлений")
 
         # Очищаем корзину после успешного заказа
         logger.info(f"Очищаем корзину пользователя {user_id}")
-        clear_user_cart(user_id)
-        logger.info(f"Корзина пользователя {user_id} очищена после оформления заказа {order_number}.")
+        try:
+            clear_user_cart(user_id)
+            logger.info(f"Корзина пользователя {user_id} очищена после оформления заказа {order_number}.")
+        except Exception as e:
+            logger.error(f"Ошибка при очистке корзины: {e}")
 
-        await message.answer(
-            f"Спасибо за ваш заказ! Мы свяжемся с вами в ближайшее время для подтверждения.\n"
-            f"<b>Ваш номер заказа:</b> <code>{order_number}</code>",
-            parse_mode=ParseMode.HTML,
-            reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
-        )
-        logger.info(f"Ответ пользователю {user_id} отправлен успешно")
-        
+        # Отправляем подтверждение пользователю
+        try:
+            await message.answer(
+                f"Спасибо за ваш заказ! Мы свяжемся с вами в ближайшее время для подтверждения.\n"
+                f"<b>Ваш номер заказа:</b> <code>{order_number}</code>",
+                parse_mode=ParseMode.HTML,
+                reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
+            )
+            logger.info(f"Ответ пользователю {user_id} отправлен успешно")
+        except Exception as e:
+            logger.error(f"Ошибка при отправке ответа пользователю: {e}")
+            # Пытаемся отправить простой ответ без форматирования
+            try:
+                await message.answer(f"Спасибо за ваш заказ! Номер заказа: {order_number}")
+            except Exception as e2:
+                logger.error(f"Критическая ошибка при отправке ответа: {e2}")
+
     except Exception as e:
         logger.error(f"Критическая ошибка при обработке заказа для пользователя {user_id}: {e}")
         await message.answer(
@@ -518,7 +607,13 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
     """Отправляет уведомления о новом заказе."""
     try:
         logger.info(f"Начинаем формирование уведомлений для заказа {order_number}")
-        
+        logger.info(f"Параметры: cart_items={len(cart_items)}, total_amount={total_amount}, user_id={user_id}")
+
+        # Валидация входных данных
+        if not order_details or not cart_items or total_amount is None:
+            logger.error(f"Неверные данные для уведомлений: order_details={order_details}, cart_items={cart_items}, total_amount={total_amount}")
+            return
+
         delivery_method = order_details.get('deliveryMethod', 'N/A')
         delivery_text = DELIVERY_MAP.get(order_details.get('deliveryMethod'), 'N/A')
         phone_number = order_details.get('phone', 'N/A')
@@ -526,11 +621,16 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
 
         # Формируем сообщение для Telegram
         logger.info("Формируем сообщение для Telegram...")
-        telegram_order_summary = _format_telegram_order_summary(
-            order_number, order_details, cart_items, total_amount, 
-            formatted_phone, delivery_text
-        )
-        logger.info("Сообщение для Telegram сформировано")
+        try:
+            telegram_order_summary = _format_telegram_order_summary(
+                order_number, order_details, cart_items, total_amount, 
+                formatted_phone, delivery_text
+            )
+            logger.info("Сообщение для Telegram сформировано")
+        except Exception as e:
+            logger.error(f"Ошибка при формировании сообщения для Telegram: {e}")
+            # Создаем простое сообщение как fallback
+            telegram_order_summary = f"*НОВЫЙ ЗАКАЗ {order_number}*\n\nОшибка при формировании детального сообщения. Проверьте логи."
 
         # ИЗМЕНЕНИЕ: Отправка сообщения администратору в Telegram
         if ADMIN_CHAT_ID:
@@ -552,12 +652,27 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
 
         # ИЗМЕНЕНИЕ: Формируем тело email и отправляем его
         logger.info("Формируем email уведомление...")
-        email_subject = (f"Новый заказ {order_number} от "
-                        f"{order_details.get('firstName', '')} {order_details.get('lastName', '')} - "
-                        f"{total_amount:.2f} р.")
-        email_body = _format_email_body(order_number, order_details, cart_items, 
-                                       total_amount, delivery_text)
-        logger.info("Email уведомление сформировано")
+        try:
+            email_subject = (f"Новый заказ {order_number} от "
+                            f"{order_details.get('firstName', '')} {order_details.get('lastName', '')} - "
+                            f"{total_amount:.2f} р.")
+            email_body = _format_email_body(order_number, order_details, cart_items, 
+                                           total_amount, delivery_text)
+            logger.info("Email уведомление сформировано")
+        except Exception as e:
+            logger.error(f"Ошибка при формировании email уведомления: {e}")
+            # Создаем простое email как fallback
+            email_subject = f"Новый заказ {order_number}"
+            email_body = f"""
+            <html>
+            <body>
+                <h2>Новый заказ {order_number}</h2>
+                <p>Ошибка при формировании детального email. Проверьте логи.</p>
+                <p>Покупатель: {order_details.get('firstName', 'N/A')} {order_details.get('lastName', 'N/A')}</p>
+                <p>Сумма: {total_amount:.2f} р.</p>
+            </body>
+            </html>
+            """
 
         if ADMIN_EMAIL:
             admin_email_password = os.environ.get("ADMIN_EMAIL_PASSWORD")
@@ -571,12 +686,14 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
                             "Email уведомление не будет отправлено.")
         else:
             logger.warning("ADMIN_EMAIL не установлен. Email уведомление не будет отправлено.")
-            
+
         logger.info(f"Все уведомления для заказа {order_number} обработаны")
-        
+
     except Exception as e:
         logger.error(f"Критическая ошибка при отправке уведомлений для заказа {order_number}: {e}")
-        raise  # Перебрасываем ошибку выше
+        logger.error(f"Детали ошибки: {type(e).__name__}: {str(e)}")
+        # Не перебрасываем ошибку, чтобы не прерывать обработку заказа
+        logger.warning("Продолжаем обработку заказа без уведомлений")
 
 
 def _format_telegram_order_summary(order_number: str, order_details: dict, 
@@ -605,11 +722,15 @@ def _format_telegram_order_summary(order_number: str, order_details: dict,
 
     summary += f"\n*Состав заказа:*\n"
     for item in cart_items:
-        price_float = float(item.get('price', 0))
-        total_item_float = (float(item.get('total', 0)) if item.get('total') is not None 
-                           else (price_float * item.get('quantity', 0)))
-        summary += (f"- `{item.get('name', 'N/A')}` x `{item.get('quantity', 0)}` шт. "
-                   f"(`{price_float:.2f}` р. / шт.) = `{total_item_float:.2f}` р.\n")
+        try:
+            price_float = float(item.get('price', 0))
+            quantity = int(item.get('quantity', 0))
+            total_item_float = price_float * quantity
+            summary += (f"- `{item.get('name', 'N/A')}` x `{quantity}` шт. "
+                       f"(`{price_float:.2f}` р. / шт.) = `{total_item_float:.2f}` р.\n")
+        except (ValueError, TypeError) as e:
+            logger.error(f"Ошибка при форматировании товара {item.get('name', 'Unknown')}: {e}")
+            summary += f"- `{item.get('name', 'N/A')}` x `{item.get('quantity', 0)}` шт. (ошибка форматирования)\n"
 
     summary += f"\n*Общая сумма заказа:* `{total_amount:.2f}` р."
     return summary
@@ -631,14 +752,26 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
     # Формируем строки таблицы для товаров
     table_rows = ""
     for item in cart_items:
-        total_item = (float(item.get('total', 0)) if item.get('total') is not None 
-                     else (float(item.get('price', 0)) * item.get('quantity', 0)))
-        table_rows += f"""
+        try:
+            price_float = float(item.get('price', 0))
+            quantity = int(item.get('quantity', 0))
+            total_item = price_float * quantity
+            table_rows += f"""
+                                                <tr>
+                                                    <td>{item.get('name', 'N/A')}</td>
+                                                    <td>{quantity} шт.</td>
+                                                    <td>{price_float:.2f} р.</td>
+                                                    <td>{total_item:.2f} р.</td>
+                                                </tr>
+                                                """
+        except (ValueError, TypeError) as e:
+            logger.error(f"Ошибка при форматировании товара для email {item.get('name', 'Unknown')}: {e}")
+            table_rows += f"""
                                                 <tr>
                                                     <td>{item.get('name', 'N/A')}</td>
                                                     <td>{item.get('quantity', 0)} шт.</td>
-                                                    <td>{float(item.get('price', 0)):.2f} р.</td>
-                                                    <td>{total_item:.2f} р.</td>
+                                                    <td>ошибка</td>
+                                                    <td>ошибка</td>
                                                 </tr>
                                                 """
 
@@ -689,7 +822,7 @@ async def block_text_input(message: Message):
     allowed_texts = list(CATEGORY_MAP.keys()) + [
         "ℹ️ О нас", "📍 Наши адреса", "⚡ О доставке", "/start"
     ]
-    
+
     if (message.text not in allowed_texts and 
         not re.match(r"🛒 Проверить корзину(\s\(\d+\))?", message.text)):
         await message.answer("⚠️ Пожалуйста, используйте кнопки внизу для управления ботом 👇")
