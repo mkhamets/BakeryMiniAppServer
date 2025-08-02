@@ -760,7 +760,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
         if (totalItems > 0) {
-            Telegram.WebApp.MainButton.setText(`🛒 Корзина (${totalItems} товаров) - ${totalPrice.toFixed(2)} р.`);
+            Telegram.WebApp.MainButton.setText(`Корзина (${totalItems}) - ${totalPrice.toFixed(2)} р.`);
+            // Устанавливаем коричневый цвет как у кнопок + и - и "Начать покупки"
+            Telegram.WebApp.MainButton.setParams({
+                color: '#b76c4b'
+            });
             Telegram.WebApp.MainButton.show();
         } else {
             Telegram.WebApp.MainButton.hide();
