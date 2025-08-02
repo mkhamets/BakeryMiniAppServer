@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="product-name">
                         ${product.name}
                         ${product.availability_days && product.availability_days !== 'N/A' ? 
-                            ` (${product.availability_days})` : ''}
+                            `<span class="availability-info"> (${product.availability_days})</span>` : ''}
                     </div>
                     <span class="details-text" data-product-id="${product.id}">Подробнее</span>
                     <div class="product-bottom-row">
@@ -602,6 +602,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').required = true;
                 document.getElementById('address-line').required = true;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
+
+                // Очищаем поля самовывоза при переключении на доставку курьером
+                document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.checked = false);
+                document.getElementById('comment-pickup').value = '';
             } else if (method === 'pickup') {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.remove('hidden');
@@ -614,6 +618,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').required = false;
                 document.getElementById('address-line').required = false;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = true);
+
+                // Очищаем поля доставки курьером при переключении на самовывоз
+                document.getElementById('city').value = '';
+                document.getElementById('address-line').value = '';
+                document.getElementById('comment-delivery').value = '';
             } else {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.add('hidden');
@@ -720,7 +729,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     city: orderDetails.city || '',
                     addressLine: orderDetails.addressLine || '',
                     comment: orderDetails.commentDelivery || '',
-                    pickupAddress: orderDetails.pickupAddress || ''
+                    pickupAddress: orderDetails.pickupAddress || '',
+                    commentPickup: orderDetails.commentPickup || ''
                 },
                 cart_items: Object.values(cart).map(item => ({
                     id: item.id,
