@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          class="category-image"
                          onerror="this.onerror=null;this.src='https://placehold.co/300x200/cccccc/333333?text=No+Image';">
                     <div class="category-text-wrapper">
-                        <h3 class="category-title-text">${categoryEmoji} ${categoryDisplayName}</h3>
+                        <h3 class="category-title-text">${categoryDisplayName}</h3>
                         <div class="category-link-text">
                             <span>перейти в каталог</span>
                             <svg class="category-arrow-svg" viewBox="0 0 16 16" fill="currentColor">
@@ -253,24 +253,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             productCard.innerHTML = `
                 <div class="product-image-container">
-                    <img src="${product.image_url || 'https://placehold.co/300x225/e0e0e0/555?text=Нет+фото'}" alt="${product.name}" class="product-image" onerror="this.onerror=null;this.src='https://placehold.co/300x225/e0e0e0/555?text=Нет+фото';">
+                    <img src="${product.image_url || 'https://placehold.co/300x225/e0e0e0/555?text=Нет+фото'}" 
+                         alt="${product.name}" 
+                         class="product-image clickable-image" 
+                         data-product-id="${product.id}"
+                         onerror="this.onerror=null;this.src='https://placehold.co/300x225/e0e0e0/555?text=Нет+фото';">
                 </div>
                 <div class="product-info">
-                    <div>
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-price">${parseFloat(product.price).toFixed(2)} р.</div>
-                        <div class="product-details">
-                            ${product.weight && product.weight !== 'N/A' ? `<span>Вес: ${product.weight} гр.</span>` : ''}
-                            ${product.availability_days && product.availability_days !== 'N/A' ? `<span>Доступен для заказа: ${product.availability_days}</span>` : ''}
-                        </div>
+                    <div class="product-name">
+                        ${product.name}
+                        ${product.availability_days && product.availability_days !== 'N/A' ? 
+                            ` (${product.availability_days})` : ''}
                     </div>
-                    <div>
-                        <div class="quantity-controls">
-                            <button data-product-id="${product.id}" data-action="decrease">-</button>
-                            <span class="quantity-display" id="qty-${product.id}">${quantityInCart}</span>
-                            <button data-product-id="${product.id}" data-action="increase">+</button>
+                    <span class="details-text" data-product-id="${product.id}">Подробнее</span>
+                    <div class="product-bottom-row">
+                        <div class="product-weight">
+                            ${product.weight && product.weight !== 'N/A' ? `${product.weight} гр.` : ''}
                         </div>
-                        <a href="${product.url}" target="_blank" class="details-link" data-product-url="${product.url}">Подробнее</a>
+                        <div class="product-controls">
+                            <div class="product-price">${parseFloat(product.price).toFixed(2)} р.</div>
+                            <div class="quantity-controls">
+                                <button data-product-id="${product.id}" data-action="decrease">-</button>
+                                <span class="quantity-display" id="qty-${product.id}">${quantityInCart}</span>
+                                <button data-product-id="${product.id}" data-action="increase">+</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -297,16 +304,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             });
 
-            // Добавляем обработчики событий для кнопок "Подробнее"
-            productListElement.querySelectorAll('.details-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const productUrl = e.target.dataset.productUrl;
-                    if (productUrl) {
-                        Telegram.WebApp.openLink(productUrl);
-                    } else {
-                        console.warn('Предупреждение: URL продукта отсутствует для ссылки "Подробнее".');
-                    }
+            // Добавляем обработчики событий для текста "Подробнее"
+            productListElement.querySelectorAll('.details-text').forEach(text => {
+                text.addEventListener('click', (e) => {
+                    const productId = e.target.dataset.productId;
+                    showProductPopup(productId);
+                });
+            });
+
+            // Добавляем обработчики событий для кликабельных изображений
+            productListElement.querySelectorAll('.clickable-image').forEach(image => {
+                image.addEventListener('click', (e) => {
+                    const productId = e.target.dataset.productId;
+                    showProductPopup(productId);
                 });
             });
         }
@@ -356,18 +366,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         let total = 0;
 
         const cartItems = Object.values(cart);
-        if (cartItems.length === 0) {
-            if (cartItemsList) cartItemsList.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста.</p>';
-            if (cartTotalElement) cartTotalElement.textContent = '0.00 р.';
-            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
-            if (cartActionsBottom) cartActionsBottom.classList.add('hidden');
-            if (continueShoppingButton) continueShoppingButton.classList.add('hidden');
-            return;
-        } else {
-            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
-            if (cartActionsBottom) cartActionsBottom.classList.remove('hidden');
-            if (continueShoppingButton) continueShoppingButton.classList.remove('hidden');
-        }
+                    if (cartItems.length === 0) {
+                if (cartItemsList) cartItemsList.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста.</p>';
+                if (cartTotalElement) cartTotalElement.textContent = '0.00 р.';
+                const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+                if (cartActionsBottom) cartActionsBottom.classList.add('hidden');
+                if (continueShoppingButton) continueShoppingButton.classList.add('hidden');
+
+                // Показываем кнопку "Наше меню" для пустой корзины
+                const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
+                if (emptyCartMenuButton) emptyCartMenuButton.classList.remove('hidden');
+                return;
+            } else {
+                const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+                if (cartActionsBottom) cartActionsBottom.classList.remove('hidden');
+                if (continueShoppingButton) continueShoppingButton.classList.remove('hidden');
+
+                // Скрываем кнопку "Наше меню" когда в корзине есть товары
+                const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
+                if (emptyCartMenuButton) emptyCartMenuButton.classList.add('hidden');
+            }
 
         cartItems.forEach(item => {
             const itemTotal = item.price * item.quantity;
@@ -483,20 +501,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkoutForm.addEventListener('submit', (event) => {
                 event.preventDefault();
 
-                // Проверяем, не отправляется ли уже заказ
-                if (isSubmitting) {
-                    console.log('Заказ уже отправляется, игнорируем повторную отправку');
-                    return;
-                }
-
-                isSubmitting = true; // Устанавливаем флаг отправки
-
                 const formData = new FormData(checkoutForm);
                 const orderDetails = {};
                 for (let [key, value] of formData.entries()) {
                     orderDetails[key] = value;
                 }
-
 
                 let isValid = true;
                 const errorMessages = [];
@@ -532,22 +541,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 if (!isValid) {
-                    isSubmitting = false; // Сбрасываем флаг при ошибке
                     if (Telegram.WebApp.showAlert) {
                         Telegram.WebApp.showAlert(errorMessages.join('\n'));
                     } else {
-                        alert(errorMessages.join('\n'));
-                    }
-                    return;
-                }
-
-                // Проверяем, что корзина не пустая
-                if (Object.keys(cart).length === 0) {
-                    isSubmitting = false; // Сбрасываем флаг при ошибке
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
-                    } else {
-                        alert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
+                        alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
                     }
                     return;
                 }
@@ -565,8 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         city: orderDetails.city || '',
                         addressLine: orderDetails.addressLine || '',
                         comment: orderDetails.commentDelivery || '',
-                        pickupAddress: orderDetails.pickupAddress || '',
-                        commentPickup: orderDetails.commentPickup || ''
+                        pickupAddress: orderDetails.pickupAddress || ''
                     },
                     cart_items: Object.values(cart).map(item => ({
                         id: item.id,
@@ -577,18 +573,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
                 };
 
-                // Отправляем данные заказа
                 Telegram.WebApp.sendData(JSON.stringify(orderPayload));
 
-                // Показываем сообщение об успешном заказе
+                clearCart();
                 if (Telegram.WebApp.showAlert) {
                     Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
                 } else {
-                    alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                    alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в вами в ближайшее время.');
                 }
-
-                // Очищаем корзину и закрываем Web App только после отправки
-                clearCart();
                 Telegram.WebApp.close();
             });
         } else {
@@ -610,10 +602,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').required = true;
                 document.getElementById('address-line').required = true;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
-
-                // Очищаем поля самовывоза при переключении на доставку курьером
-                document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.checked = false);
-                document.getElementById('comment-pickup').value = '';
             } else if (method === 'pickup') {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.remove('hidden');
@@ -626,11 +614,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').required = false;
                 document.getElementById('address-line').required = false;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = true);
-
-                // Очищаем поля доставки курьером при переключении на самовывоз
-                document.getElementById('city').value = '';
-                document.getElementById('address-line').value = '';
-                document.getElementById('comment-delivery').value = '';
             } else {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.add('hidden');
@@ -711,10 +694,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (!orderDetails.city) { isValid = false; errorMessages.push('Пожалуйста, выберите город для доставки.'); }
                     if (!orderDetails.addressLine) { isValid = false; errorMessages.push('Пожалуйста, введите адрес доставки.'); }
                 } else if (orderDetails.deliveryMethod === 'pickup') {
-                    if (!orderDetails.pickupAddress || orderDetails.pickupAddress.trim() === '') { 
-                        isValid = false; 
-                        errorMessages.push('Пожалуйста, выберите адрес самовывоза.'); 
-                    }
+                    if (!orderDetails.pickupAddress) { isValid = false; errorMessages.push('Пожалуйста, выберите адрес самовывоза.'); }
                 }
             }
 
@@ -726,17 +706,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 return;
             }
-
-            // Проверяем, что корзина не пустая
-            if (Object.keys(cart).length === 0) {
-                if (Telegram.WebApp.showAlert) {
-                    Telegram.WebApp.showAlert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
-                } else {
-                    alert('Корзина пуста. Пожалуйста, добавьте товары в корзину.');
-                }
-                return;
-            }
-
 
             const orderPayload = {
                 action: 'checkout_order',
@@ -751,8 +720,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     city: orderDetails.city || '',
                     addressLine: orderDetails.addressLine || '',
                     comment: orderDetails.commentDelivery || '',
-                    pickupAddress: orderDetails.pickupAddress || '',
-                    commentPickup: orderDetails.commentPickup || ''
+                    pickupAddress: orderDetails.pickupAddress || ''
                 },
                 cart_items: Object.values(cart).map(item => ({
                     id: item.id,
@@ -763,19 +731,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
             };
 
-
-            // Отправляем данные заказа
             Telegram.WebApp.sendData(JSON.stringify(orderPayload));
 
-            // Показываем сообщение об успешном заказе
+            clearCart();
             if (Telegram.WebApp.showAlert) {
                 Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
             } else {
-                alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в вами в ближайшее время.');
             }
-
-            // Очищаем корзину и закрываем Web App только после отправки
-            clearCart();
             Telegram.WebApp.close();
         });
     } else {
@@ -833,5 +796,141 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         console.error('Элемент с ID "start-shopping-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');
     }
+
+    // Инициализация кнопки "Наше меню" для пустой корзины
+    const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
+    if (emptyCartMenuButton) {
+        emptyCartMenuButton.addEventListener('click', () => {
+            displayView('categories');
+        });
+    } else {
+        console.error('Элемент с ID "empty-cart-menu-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');
+    }
+
+    // Инициализация поп-апа продукта
+    const productPopup = document.getElementById('product-popup');
+    const productPopupClose = document.getElementById('product-popup-close');
+
+    if (productPopupClose) {
+        productPopupClose.addEventListener('click', () => {
+            hideProductPopup();
+        });
+    }
+
+    // Закрытие поп-апа при клике на фон
+    if (productPopup) {
+        productPopup.addEventListener('click', (e) => {
+            if (e.target === productPopup) {
+                hideProductPopup();
+            }
+        });
+    }
+
+    // Инициализируем отображение корзины
+    renderCart();
+
+    // Функция для показа поп-апа с информацией о продукте
+    function showProductPopup(productId) {
+        let product = null;
+
+        // Ищем продукт во всех категориях
+        for (const catKey in productsData) {
+            product = productsData[catKey].find(p => p.id === productId);
+            if (product) break;
+        }
+
+        if (!product) {
+            console.error('Продукт не найден:', productId);
+            return;
+        }
+
+        const popupBody = document.getElementById('product-popup-body');
+        if (!popupBody) {
+            console.error('Элемент popup-body не найден');
+            return;
+        }
+
+        // Формируем HTML для поп-апа
+        let popupHTML = `
+            <img src="${product.image_url || 'https://placehold.co/400x300/e0e0e0/555?text=Нет+фото'}" 
+                 alt="${product.name}" 
+                 class="product-popup-image" 
+                 onerror="this.onerror=null;this.src='https://placehold.co/400x300/e0e0e0/555?text=Нет+фото';">
+
+            <div class="product-popup-name">${product.name}</div>
+            <div class="product-popup-price">${parseFloat(product.price).toFixed(2)} р.</div>
+
+            <div class="product-popup-info">`;
+
+        // Добавляем информацию о весе
+        if (product.weight && product.weight !== 'N/A') {
+            popupHTML += `
+                <div class="product-popup-info-item">
+                    <div class="product-popup-info-label">Вес:</div>
+                    <div class="product-popup-info-value">${product.weight} гр.</div>
+                </div>`;
+        }
+
+        // Добавляем информацию о доступности
+        if (product.availability_days && product.availability_days !== 'N/A') {
+            popupHTML += `
+                <div class="product-popup-info-item">
+                    <div class="product-popup-info-label">Доступен для заказа:</div>
+                    <div class="product-popup-info-value">${product.availability_days}</div>
+                </div>`;
+        }
+
+        popupHTML += `</div>`;
+
+        // Добавляем состав (ингредиенты)
+        if (product.ingredients && product.ingredients !== 'N/A') {
+            popupHTML += `
+                <div class="product-popup-ingredients">
+                    <div class="product-popup-ingredients-label">Состав:</div>
+                    <div class="product-popup-ingredients-value">${product.ingredients}</div>
+                </div>`;
+        }
+
+        // Добавляем пищевую ценность
+        if (product.calories && product.calories !== 'N/A') {
+            popupHTML += `
+                <div class="product-popup-nutrition">
+                    <div class="product-popup-nutrition-label">Пищевая ценность:</div>
+                    <div class="product-popup-nutrition-value">
+                        <div><strong>Калорийность:</strong> ${product.calories}</div>`;
+
+            if (product.energy_value && product.energy_value !== 'N/A') {
+                popupHTML += `<div><strong>Энергетическая ценность:</strong> ${product.energy_value}</div>`;
+            }
+
+            popupHTML += `
+                    </div>
+                </div>`;
+        }
+
+        popupBody.innerHTML = popupHTML;
+
+        // Показываем поп-ап
+        const popup = document.getElementById('product-popup');
+        if (popup) {
+            popup.classList.remove('hidden');
+            // Блокируем прокрутку основного контента
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    // Функция для скрытия поп-апа
+    function hideProductPopup() {
+        const popup = document.getElementById('product-popup');
+        if (popup) {
+            popup.classList.add('hidden');
+            // Восстанавливаем прокрутку основного контента
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Делаем функции доступными глобально
+    window.showProductPopup = showProductPopup;
+    window.hideProductPopup = hideProductPopup;
 
 });
