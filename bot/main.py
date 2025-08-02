@@ -627,13 +627,14 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         try:
             telegram_order_summary = _format_telegram_order_summary(
                 order_number, order_details, cart_items, total_amount, 
-                formatted_phone, delivery_text
+                formatted_phone, delivery_text, user_id
             )
             logger.info("Сообщение для Telegram сформировано")
         except Exception as e:
             logger.error(f"Ошибка при формировании сообщения для Telegram: {e}")
             # Создаем простое сообщение как fallback
-            telegram_order_summary = f"*НОВЫЙ ЗАКАЗ {order_number}*\n\nОшибка при формировании детального сообщения. Проверьте логи."
+            user_link_fallback = f"\n[💬 Написать клиенту](tg://user?id={user_id})" if user_id else ""
+            telegram_order_summary = f"*НОВЫЙ ЗАКАЗ {order_number}*\n\nОшибка при формировании детального сообщения. Проверьте логи.{user_link_fallback}"
 
         # ИЗМЕНЕНИЕ: Отправка сообщения администратору в Telegram
         if ADMIN_CHAT_ID:
@@ -715,14 +716,20 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
 
 def _format_telegram_order_summary(order_number: str, order_details: dict, 
                                   cart_items: list, total_amount: float,
-                                  formatted_phone: str, delivery_text: str) -> str:
+                                  formatted_phone: str, delivery_text: str, user_id: int | None = None) -> str:
     """Форматирует сводку заказа для Telegram."""
+
+    # Формируем кликабельную ссылку на пользователя, если user_id доступен
+    user_link = ""
+    if user_id:
+        user_link = f"\n[💬 Написать клиенту](tg://user?id={user_id})"
+
     summary = (f"*НОВЫЙ ЗАКАЗ {order_number}*\n\n"
                f"*Покупатель:*\n"
                f"Фамилия: `{order_details.get('lastName', 'N/A')}`\n"
                f"Имя: `{order_details.get('firstName', 'N/A')}`\n"
                f"Отчество: `{order_details.get('middleName', 'N/A')}`\n"
-               f"Телефон: `{formatted_phone}`\n"
+               f"Телефон: [{formatted_phone}](tel:{formatted_phone}){user_link}\n"
                f"Email: `{order_details.get('email', 'N/A')}`\n"
                f"Дата доставки/самовывоза: `{order_details.get('deliveryDate', 'N/A')}`\n\n")
 
