@@ -468,7 +468,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-bottom: 15px;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Тень для текста */
     font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Применен новый шрифт */
-    font-weight: bold;
+    font-weight: normal;
 }
 
 .welcome-text {
@@ -790,32 +790,35 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-popup-close {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    background: none;
+    position: fixed !important; /* Принудительно фиксированное позиционирование */
+    top: 15px !important;
+    right: 15px !important;
+    background: rgba(64, 64, 64, 0.9) !important; /* Более темная серая */
     border: none;
-    font-size: 2em;
+    font-size: 2em; /* Больше размер */
     cursor: pointer;
-    color: #666;
-    z-index: 1001;
-    width: 40px;
-    height: 40px;
+    color: white !important;
+    z-index: 999999 !important; /* Максимальный z-index */
+    width: 56px; /* Больше размер */
+    height: 56px; /* Больше размер */
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s;
+    border-radius: 12px; /* Скругления как у других элементов */
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Тень для лучшей видимости */
 }
 
 .product-popup-close:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    color: #333;
+    background-color: rgba(32, 32, 32, 0.95) !important; /* Еще более темная при hover */
+    color: white !important;
+    transform: scale(1.1); /* Больше увеличение при hover */
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); /* Усиленная тень при hover */
 }
 
 #product-popup-body {
     padding: 20px;
-    padding-top: 60px; /* Место для кнопки закрытия */
+    padding-top: 100px; /* Еще больше места для большой фиксированной кнопки закрытия */
 }
 
 .product-popup-image {
@@ -842,6 +845,45 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: bold;
     color: #b76c4b;
     margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Стили для кнопок управления количеством в поп-апе */
+.product-popup-quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; /* В 2 раза больше чем в карточке */
+    margin-bottom: 20px;
+}
+
+.product-popup-quantity-controls button {
+    background-color: #b76c4b;
+    color: white;
+    border: none;
+    border-radius: 10px; /* В 2 раза больше */
+    padding: 10px 16px; /* В 2 раза больше */
+    font-size: 1.8rem; /* В 2 раза больше */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-width: 56px; /* В 2 раза больше */
+    height: 56px; /* В 2 раза больше */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* В 2 раза больше */
+}
+
+.product-popup-quantity-controls button:hover {
+    background-color: #a05a3a;
+}
+
+.product-popup-quantity-display {
+    padding: 0 12px; /* В 2 раза больше */
+    font-size: 1.8rem; /* В 2 раза больше */
+    font-weight: bold;
+    color: #333;
+    min-width: 36px; /* В 2 раза больше */
     text-align: center;
 }
 

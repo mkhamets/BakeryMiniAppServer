@@ -826,8 +826,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     const productPopupClose = document.getElementById('product-popup-close');
 
     if (productPopupClose) {
+        // Принудительно применяем стили к кнопке закрытия при инициализации
+        productPopupClose.style.position = 'fixed';
+        productPopupClose.style.top = '15px';
+        productPopupClose.style.right = '15px';
+        productPopupClose.style.background = 'rgba(64, 64, 64, 0.9)';
+        productPopupClose.style.color = 'white';
+        productPopupClose.style.zIndex = '999999';
+        productPopupClose.style.width = '56px';
+        productPopupClose.style.height = '56px';
+        productPopupClose.style.borderRadius = '12px';
+        productPopupClose.style.fontSize = '2em';
+        productPopupClose.style.border = 'none';
+        productPopupClose.style.cursor = 'pointer';
+        productPopupClose.style.display = 'flex';
+        productPopupClose.style.alignItems = 'center';
+        productPopupClose.style.justifyContent = 'center';
+        productPopupClose.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+        productPopupClose.style.transition = 'all 0.2s ease';
+        
         productPopupClose.addEventListener('click', () => {
             hideProductPopup();
+        });
+        
+        // Добавляем hover эффект через JavaScript
+        productPopupClose.addEventListener('mouseenter', () => {
+            productPopupClose.style.background = 'rgba(32, 32, 32, 0.95)';
+            productPopupClose.style.transform = 'scale(1.1)';
+            productPopupClose.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.4)';
+        });
+        
+        productPopupClose.addEventListener('mouseleave', () => {
+            productPopupClose.style.background = 'rgba(64, 64, 64, 0.9)';
+            productPopupClose.style.transform = 'scale(1)';
+            productPopupClose.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
         });
     }
 
@@ -873,6 +905,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             <div class="product-popup-name">${product.name}</div>
             <div class="product-popup-price">${parseFloat(product.price).toFixed(2)} р.</div>
+            
+            <!-- Кнопки управления количеством -->
+            <div class="product-popup-quantity-controls">
+                <button class="popup-decrease-quantity" data-product-id="${product.id}">-</button>
+                <span class="product-popup-quantity-display" id="popup-quantity-${product.id}">0</span>
+                <button class="popup-increase-quantity" data-product-id="${product.id}">+</button>
+            </div>
 
             <div class="product-popup-info">`;
 
@@ -924,12 +963,128 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         popupBody.innerHTML = popupHTML;
 
+        // Обновляем счетчик количества в поп-апе
+        const quantityDisplay = document.getElementById(`popup-quantity-${product.id}`);
+        if (quantityDisplay) {
+            const currentQuantity = cart[product.id] || 0;
+            quantityDisplay.textContent = currentQuantity;
+        }
+        
+        // Принудительно применяем стили к кнопкам управления количеством
+        const quantityControls = popupBody.querySelector('.product-popup-quantity-controls');
+        if (quantityControls) {
+            quantityControls.style.display = 'flex';
+            quantityControls.style.alignItems = 'center';
+            quantityControls.style.justifyContent = 'center';
+            quantityControls.style.gap = '12px';
+            quantityControls.style.marginBottom = '20px';
+            quantityControls.style.zIndex = '1000';
+            quantityControls.style.position = 'relative';
+        }
+        
+        const decreaseButton = popupBody.querySelector('.popup-decrease-quantity');
+        const increaseButton = popupBody.querySelector('.popup-increase-quantity');
+        
+        if (decreaseButton) {
+            decreaseButton.style.background = '#b76c4b';
+            decreaseButton.style.color = 'white';
+            decreaseButton.style.border = 'none';
+            decreaseButton.style.borderRadius = '10px';
+            decreaseButton.style.padding = '10px 16px';
+            decreaseButton.style.fontSize = '1.8rem';
+            decreaseButton.style.cursor = 'pointer';
+            decreaseButton.style.minWidth = '56px';
+            decreaseButton.style.height = '56px';
+            decreaseButton.style.display = 'flex';
+            decreaseButton.style.justifyContent = 'center';
+            decreaseButton.style.alignItems = 'center';
+            decreaseButton.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+        }
+        
+        if (increaseButton) {
+            increaseButton.style.background = '#b76c4b';
+            increaseButton.style.color = 'white';
+            increaseButton.style.border = 'none';
+            increaseButton.style.borderRadius = '10px';
+            increaseButton.style.padding = '10px 16px';
+            increaseButton.style.fontSize = '1.8rem';
+            increaseButton.style.cursor = 'pointer';
+            increaseButton.style.minWidth = '56px';
+            increaseButton.style.height = '56px';
+            increaseButton.style.display = 'flex';
+            increaseButton.style.justifyContent = 'center';
+            increaseButton.style.alignItems = 'center';
+            increaseButton.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+        }
+        
+        // Принудительно применяем стили к счетчику
+        if (quantityDisplay) {
+            quantityDisplay.style.padding = '0 12px';
+            quantityDisplay.style.fontSize = '1.8rem';
+            quantityDisplay.style.fontWeight = 'bold';
+            quantityDisplay.style.color = '#333';
+            quantityDisplay.style.minWidth = '36px';
+            quantityDisplay.style.textAlign = 'center';
+        }
+
         // Показываем поп-ап
         const popup = document.getElementById('product-popup');
         if (popup) {
             popup.classList.remove('hidden');
             // Блокируем прокрутку основного контента
             document.body.style.overflow = 'hidden';
+            
+            // Принудительно применяем стили к кнопке закрытия
+            const closeButton = document.getElementById('product-popup-close');
+            if (closeButton) {
+                closeButton.style.position = 'fixed';
+                closeButton.style.top = '15px';
+                closeButton.style.right = '15px';
+                closeButton.style.background = 'rgba(64, 64, 64, 0.9)';
+                closeButton.style.color = 'white';
+                closeButton.style.zIndex = '999999';
+                closeButton.style.width = '56px';
+                closeButton.style.height = '56px';
+                closeButton.style.borderRadius = '12px';
+                closeButton.style.fontSize = '2em';
+                closeButton.style.border = 'none';
+                closeButton.style.cursor = 'pointer';
+                closeButton.style.display = 'flex';
+                closeButton.style.alignItems = 'center';
+                closeButton.style.justifyContent = 'center';
+                closeButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+                closeButton.style.transition = 'all 0.2s ease';
+            }
+            
+            // Добавляем обработчики для кнопок управления количеством в поп-апе
+            const decreaseButton = popup.querySelector('.popup-decrease-quantity');
+            const increaseButton = popup.querySelector('.popup-increase-quantity');
+            
+            if (decreaseButton) {
+                decreaseButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = e.target.dataset.productId;
+                    updateProductQuantity(productId, -1);
+                    // Обновляем счетчик в поп-апе
+                    const quantityDisplay = document.getElementById(`popup-quantity-${productId}`);
+                    if (quantityDisplay) {
+                        quantityDisplay.textContent = cart[productId] || 0;
+                    }
+                });
+            }
+            
+            if (increaseButton) {
+                increaseButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = e.target.dataset.productId;
+                    updateProductQuantity(productId, 1);
+                    // Обновляем счетчик в поп-апе
+                    const quantityDisplay = document.getElementById(`popup-quantity-${productId}`);
+                    if (quantityDisplay) {
+                        quantityDisplay.textContent = cart[productId] || 0;
+                    }
+                });
+            }
         }
     }
 
