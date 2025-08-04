@@ -1,93 +1,124 @@
-# Python Flask ReplAuth
+# Bakery Mini App Server
 
-Using the ReplAuth with Flask is super easy! First we create a new Flask app: 
+Telegram бот с веб-приложением для заказов в пекарне.
 
-<details>
-  <summary>Import Flask and create new Flask app</summary>
+## Деплой на Heroku
 
-```python
-from flask import Flask, render_template, request
-app = Flask('app')
-@app.route('/')
-```
-</details>
+### 1. Подготовка
 
-And then we request the headers: 
+Убедитесь, что у вас установлены:
+- Git
+- Heroku CLI
+- Python 3.11+
 
-<details>
-  <summary>Requested Headers:</summary>
+### 2. Создание приложения на Heroku
 
-```python
-def hello_world():
-    print(request.headers)
-    return render_template(
-        'index.html',
-        user_id=request.headers['X-Replit-User-Id'],
-        user_name=request.headers['X-Replit-User-Name'],
-        user_roles=request.headers['X-Replit-User-Roles'],
-        user_bio=request.headers['X-Replit-User-Bio'],
-        user_profile_image=request.headers['X-Replit-User-Profile-Image'],
-        user_teams=request.headers['X-Replit-User-Teams'],
-        user_url=request.headers['X-Replit-User-Url']
-    )
-```
-</details>
+```bash
+# Войдите в Heroku CLI
+heroku login
 
-In this code we've requested all the possible headers, which are these:
+# Создайте новое приложение
+heroku create your-app-name
 
-<details>
-  <summary>All Replit Headers</summary>
-
-```python
-X-Replit-User-Bio
-X-Replit-User-Id
-X-Replit-User-Name
-X-Replit-User-Profile-Image
-X-Replit-User-Roles
-X-Replit-User-Teams
-X-Replit-User-Url
-```
-</details>
-
-Once we've requested all these headers, we can show the information we've got after the user has passed through the Auth. This info will be displayed on the console, but can also be displayed in a html file.
-
-We can show this by displaying the variable assigned to a header in a HTML tag (it can also be shown without a tag). If we wanted to show the username of the user we would put this:
-
-```html
-<h1>{{ user_name }}</h1>
+# Или подключитесь к существующему
+heroku git:remote -a your-app-name
 ```
 
-And the output will be a heading (h1) with the username. 
+### 3. Настройка переменных окружения
 
-# ReplAuth FAQ 
+```bash
+# Установите переменные окружения
+heroku config:set BOT_TOKEN="ваш_токен_бота"
+heroku config:set BASE_WEBAPP_URL="https://your-app-name.herokuapp.com/bot-app/"
+heroku config:set ADMIN_CHAT_ID="ваш_id_администратора"
+heroku config:set ADMIN_EMAIL="ваш_email@example.com"
+heroku config:set ADMIN_EMAIL_PASSWORD="пароль_для_smtp"  # опционально
+heroku config:set SMTP_SERVER="smtp.gmail.com"  # опционально
+```
 
-The question is in a quote and in italic and the answer is in a bullet point.
+### 4. Деплой
 
-<details>
-  <summary>ReplAuth FAQ</summary>
-  
-  > *How many ReplAuths are there?*
-  
-  - There are 2 repl auths!
- ---
-  > *Which ReplAuths are there?*
-  
-  - Node.js and Python Flask
----
-  > *Is there a Replit Documentation on ReplAuths?*
+```bash
+# Добавьте все файлы в git
+git add .
 
-  - Yes! You can find it in the [Replit Docs](https://docs.replit.com)
-</details>
+# Сделайте коммит
+git commit -m "Initial deployment"
 
-# Template
+# Отправьте на Heroku
+git push heroku main
+```
 
-**Name**: Python Flask ReplAuth
+### 5. Проверка статуса
 
-**Description**: Python Flask ReplAuth is easy and useful to use! What are you waiting for? Start using ReplAuth today!
+```bash
+# Проверьте логи
+heroku logs --tail
 
-# Questions?
+# Откройте приложение
+heroku open
+```
 
-If you have any question please look at our support resources:
+## Структура проекта
 
-- [Replit Docs](https://docs.replit.com)
-- [Ask forum](https://ask.replit.com)
+```
+BakeryMiniAppServer/
+├── bot/
+│   ├── __init__.py
+│   ├── api_server.py      # API сервер для веб-приложения
+│   ├── config.py          # Конфигурация
+│   ├── handlers.py        # Обработчики команд бота
+│   ├── keyboards.py       # Клавиатуры
+│   ├── main.py           # Главный файл бота
+│   ├── parser.py         # Парсер данных
+│   └── web_app/          # Веб-приложение
+│       ├── index.html
+│       ├── style.css
+│       ├── script.js
+│       └── Hleb.jpg
+├── data/
+│   ├── order_counter.json
+│   └── products_scraped.json
+├── Procfile              # Конфигурация для Heroku
+├── requirements.txt      # Зависимости Python
+├── runtime.txt          # Версия Python
+└── app.json             # Описание приложения для Heroku
+```
+
+## Переменные окружения
+
+- `BOT_TOKEN` - Токен вашего Telegram бота
+- `BASE_WEBAPP_URL` - Базовый URL для веб-приложения
+- `ADMIN_CHAT_ID` - ID чата администратора в Telegram
+- `ADMIN_EMAIL` - Email администратора для уведомлений
+- `ADMIN_EMAIL_PASSWORD` - Пароль для SMTP (опционально)
+- `SMTP_SERVER` - SMTP сервер (по умолчанию: smtp.gmail.com)
+
+## Возможные проблемы
+
+### 1. Ошибка "No web processes running"
+
+```bash
+# Запустите веб-процесс
+heroku ps:scale web=1
+```
+
+### 2. Ошибка с портом
+
+Приложение автоматически использует переменную `PORT` от Heroku.
+
+### 3. Проблемы с зависимостями
+
+Убедитесь, что все зависимости указаны в `requirements.txt` с точными версиями.
+
+### 4. Проблемы с файлами данных
+
+Файлы в папке `data/` должны быть включены в репозиторий для работы приложения.
+
+## Поддержка
+
+При возникновении проблем проверьте логи:
+
+```bash
+heroku logs --tail
+```
