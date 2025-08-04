@@ -2,7 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 
 # Базовый URL для Web App. Он должен быть таким же, как в main.py и BotFather.
 # Убедитесь, что он заканчивается на '/bot-app/'
-BASE_WEBAPP_URL = "https://e653d5e4-945b-4845-b210-c8e4436510d8-00-1qk0jfa7quz7y.kirk.replit.dev/bot-app/"
+BASE_WEBAPP_URL = "https://bakery-mini-app-server-440955f475ad.herokuapp.com/bot-app/"
 
 # Удалена клавиатура для возврата в меню (back_to_menu)
 
