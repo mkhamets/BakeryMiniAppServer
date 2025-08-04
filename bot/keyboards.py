@@ -20,6 +20,7 @@ def generate_main_menu(cart_items_count: int = 0) -> ReplyKeyboardMarkup:
             [
                 KeyboardButton(text=cart_button_text, web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?view=cart"))
             ],
+            [
                 KeyboardButton(text="📍 Наши адреса"),
                 KeyboardButton(text="⚡ О доставке"),
                 KeyboardButton(text="ℹ️ О нас")
