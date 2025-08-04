@@ -16,11 +16,11 @@ from aiogram.types import (
 )
 from aiohttp import web  # Импортируем web для TCPSite
 
-from .api_server import setup_api_server  # Убедитесь, что импортируется setup_api_server
-from .config import (
+from bot.api_server import setup_api_server  # ИЗМЕНЕНО: Абсолютный импорт
+from bot.config import (
     BOT_TOKEN, BASE_WEBAPP_URL, ADMIN_CHAT_ID, ADMIN_EMAIL
-)  # ИЗМЕНЕНИЕ: Импортируем ADMIN_CHAT_ID и ADMIN_EMAIL
-from .keyboards import generate_main_menu
+)  # ИЗМЕНЕНО: Абсолютный импорт
+from bot.keyboards import generate_main_menu  # ИЗМЕНЕНО: Абсолютный импорт
 
 
 # Настраиваем логирование
