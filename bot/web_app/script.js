@@ -136,11 +136,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else if (currentView === 'checkout') {
             displayView('cart');
         } else if (currentView === 'categories') {
-            if (welcomeContainer && welcomeContainer.classList.contains('hidden')) {
-                 Telegram.WebApp.close();
-            } else {
-                displayView('welcome');
-            }
+            // Если мы на странице категорий, закрываем приложение
+            Telegram.WebApp.close();
         } else {
             Telegram.WebApp.close();
         }
@@ -798,6 +795,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (initialCategory) {
         displayView('products', initialCategory);
     } else {
+        // Only show welcome if no specific view is requested
         displayView('welcome');
     }
 
