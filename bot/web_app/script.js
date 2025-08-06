@@ -94,7 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.classList.remove('hidden');
                 }
                 renderCart();
-                updateMainButtonCartInfo();
                 Telegram.WebApp.MainButton.hide();
                 break;
             case 'checkout':
@@ -105,7 +104,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.classList.remove('hidden');
                 }
                 renderCheckoutSummary();
-                updateMainButtonCartInfo();
                 Telegram.WebApp.MainButton.hide();
                 break;
             default:
@@ -768,6 +766,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateMainButtonCartInfo() {
+        const currentView = getCurrentView();
+        
+        // Hide the main button if we're on cart or checkout screens
+        if (currentView === 'cart' || currentView === 'checkout') {
+            Telegram.WebApp.MainButton.hide();
+            return;
+        }
+        
         const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
