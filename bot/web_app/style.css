@@ -401,7 +401,10 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     padding: 0;
     background: none;
     border: none;
-    flex: 1;
+    text-align: right;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
 }
 
 .clear-cart-button-small {
@@ -415,7 +418,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: bold;
     background-color: #6c757d;
     color: white;
-    margin-left: 15px;
+    margin-right: 15px;
 }
 
 .clear-cart-button-small:hover {
