@@ -374,24 +374,62 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .cart-total {
-    text-align: right;
-    font-size: 1.4em;
+    font-size: 1.3em;
     font-weight: bold;
-    margin-top: 20px;
-    color: #5a3e2b;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
+    color: #333;
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+.cart-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+.cart-total-row .cart-total {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    flex: 1;
+}
+
+.clear-cart-button-small {
+    padding: 6px 12px;
+    font-size: 0.8em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    background-color: #6c757d;
+    color: white;
+    margin-left: 15px;
+}
+
+.clear-cart-button-small:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
 }
 
 .cart-actions-bottom {
     display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
     gap: 10px; /* Расстояние между кнопками */
 }
 
-.checkout-button, .clear-cart-button {
-    flex: 1; /* Кнопки занимают равную ширину */
+.checkout-button {
+    flex: 1; /* Кнопка занимает всю ширину */
     padding: 12px 15px;
     font-size: 1.1em;
     border: none;
@@ -400,27 +438,16 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     font-weight: bold;
-}
-
-.checkout-button {
-    background-color: #28a745; /* Зеленый цвет */
+    background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
     color: white;
 }
 
 .checkout-button:hover {
-    background-color: #218838;
+    background-color: #a05a3a;
     transform: translateY(-2px);
 }
 
-.clear-cart-button {
-    background-color: #6c757d; /* Серый цвет */
-    color: white;
-}
 
-.clear-cart-button:hover {
-    background-color: #5a6268;
-    transform: translateY(-2px);
-}
 
 .back-button {
     display: block; /* Кнопка занимает всю ширину */
