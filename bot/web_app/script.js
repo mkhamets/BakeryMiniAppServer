@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                      onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/333333?text=No+Image';">
                 <div class="cart-item-details">
                     <h4 class="cart-item-name">${item.name}</h4>
-                    <p class="cart-item-price">${item.price} BYN за шт.</p>
+                    <p class="cart-item-price">${item.price} р. за шт.</p>
                     <div class="cart-item-controls">
                         <button class="quantity-button decrease-cart-quantity" data-product-id="${item.id}">-</button>
                         <span class="cart-item-quantity">${item.quantity}</span>
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="remove-btn" data-product-id="${item.id}">Удалить</button>
                     </div>
                 </div>
-                <div class="cart-item-total">${itemTotal.toFixed(2)} BYN</div>
+                <div class="cart-item-total">${itemTotal.toFixed(2)} р.</div>
             `;
             if (cartItemsList) cartItemsList.appendChild(cartItemElement);
         });
@@ -493,7 +493,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const checkoutItemElement = document.createElement('li');
             checkoutItemElement.className = 'checkout-item-summary';
-            checkoutItemElement.textContent = `${item.name} x ${item.quantity} - ${itemTotal.toFixed(2)} BYN`;
+            checkoutItemElement.textContent = `${item.name} x ${item.quantity} - ${itemTotal.toFixed(2)} р.`;
             if (checkoutItemsList) checkoutItemsList.appendChild(checkoutItemElement);
         });
 
