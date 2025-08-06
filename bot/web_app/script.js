@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const productsContainer = document.getElementById('products-container');
     const cartContainer = document.getElementById('cart-container');
     const checkoutContainer = document.getElementById('checkout-container');
+    const productScreen = document.getElementById('product-screen');
     const mainCategoryTitle = document.getElementById('main-category-title');
 
     const courierInfoText = document.getElementById('courier-text');
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let cart = JSON.parse(localStorage.getItem('cart')) || {};
     let productsData = {};
     let isSubmitting = false; // Флаг для предотвращения двойной отправки
+    let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
         "category_bakery": { name: "Выпечка", emoji: "🥨" },
@@ -49,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (productsContainer) productsContainer.classList.add('hidden');
         if (cartContainer) cartContainer.classList.add('hidden');
         if (checkoutContainer) checkoutContainer.classList.add('hidden');
+        if (productScreen) productScreen.classList.add('hidden');
         if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
 
         if (viewName === 'welcome' || viewName === 'categories') {
@@ -78,6 +81,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
                 loadProducts(categoryKey);
                 updateMainButtonCartInfo();
+                break;
+            case 'product':
+                if (productScreen) productScreen.classList.remove('hidden');
+                Telegram.WebApp.MainButton.hide();
                 break;
             case 'cart':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -111,6 +118,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentView = getCurrentView();
         if (currentView === 'products') {
             displayView('categories');
+        } else if (currentView === 'product') {
+            // Возвращаемся к списку продуктов в той же категории
+            if (currentProductCategory) {
+                displayView('products', currentProductCategory);
+            } else {
+                displayView('categories');
+            }
         } else if (currentView === 'cart') {
             const lastProductCategory = localStorage.getItem('lastProductCategory');
             if (lastProductCategory) {
@@ -136,6 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (welcomeContainer && !welcomeContainer.classList.contains('hidden')) return 'welcome';
         if (categoriesContainer && !categoriesContainer.classList.contains('hidden')) return 'categories';
         if (productsContainer && !productsContainer.classList.contains('hidden')) return 'products';
+        if (productScreen && !productScreen.classList.contains('hidden')) return 'product';
         if (cartContainer && !cartContainer.classList.contains('hidden')) return 'cart';
         if (checkoutContainer && !checkoutContainer.classList.contains('hidden')) return 'checkout';
         return null;
@@ -308,7 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             productListElement.querySelectorAll('.details-text').forEach(text => {
                 text.addEventListener('click', (e) => {
                     const productId = e.target.dataset.productId;
-                    showProductPopup(productId);
+                    showProductScreen(productId, categoryKey);
                 });
             });
 
@@ -316,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             productListElement.querySelectorAll('.clickable-image').forEach(image => {
                 image.addEventListener('click', (e) => {
                     const productId = e.target.dataset.productId;
-                    showProductPopup(productId);
+                    showProductScreen(productId, categoryKey);
                 });
             });
         }
@@ -821,62 +836,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Элемент с ID "empty-cart-menu-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');
     }
 
-    // Инициализация поп-апа продукта
-    const productPopup = document.getElementById('product-popup');
-    const productPopupClose = document.getElementById('product-popup-close');
-
-    if (productPopupClose) {
-        // Принудительно применяем стили к кнопке закрытия при инициализации
-        productPopupClose.style.position = 'fixed';
-        productPopupClose.style.top = '15px';
-        productPopupClose.style.right = '15px';
-        productPopupClose.style.background = 'rgba(64, 64, 64, 0.9)';
-        productPopupClose.style.color = 'white';
-        productPopupClose.style.zIndex = '999999';
-        productPopupClose.style.width = '56px';
-        productPopupClose.style.height = '56px';
-        productPopupClose.style.borderRadius = '12px';
-        productPopupClose.style.fontSize = '2em';
-        productPopupClose.style.border = 'none';
-        productPopupClose.style.cursor = 'pointer';
-        productPopupClose.style.display = 'flex';
-        productPopupClose.style.alignItems = 'center';
-        productPopupClose.style.justifyContent = 'center';
-        productPopupClose.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-        productPopupClose.style.transition = 'all 0.2s ease';
-        
-        productPopupClose.addEventListener('click', () => {
-            hideProductPopup();
-        });
-        
-        // Добавляем hover эффект через JavaScript
-        productPopupClose.addEventListener('mouseenter', () => {
-            productPopupClose.style.background = 'rgba(32, 32, 32, 0.95)';
-            productPopupClose.style.transform = 'scale(1.1)';
-            productPopupClose.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.4)';
-        });
-        
-        productPopupClose.addEventListener('mouseleave', () => {
-            productPopupClose.style.background = 'rgba(64, 64, 64, 0.9)';
-            productPopupClose.style.transform = 'scale(1)';
-            productPopupClose.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-        });
-    }
-
-    // Закрытие поп-апа при клике на фон
-    if (productPopup) {
-        productPopup.addEventListener('click', (e) => {
-            if (e.target === productPopup) {
-                hideProductPopup();
-            }
-        });
-    }
-
     // Инициализируем отображение корзины
     renderCart();
 
-    // Функция для показа поп-апа с информацией о продукте
-    function showProductPopup(productId) {
+    // Функция для показа экрана с информацией о продукте
+    function showProductScreen(productId, categoryKey) {
         let product = null;
 
         // Ищем продукт во всех категориях
@@ -890,216 +854,124 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const popupBody = document.getElementById('product-popup-body');
-        if (!popupBody) {
-            console.error('Элемент popup-body не найден');
+        // Сохраняем текущую категорию для возврата
+        currentProductCategory = categoryKey;
+
+        const screenBody = document.getElementById('product-screen-body');
+        if (!screenBody) {
+            console.error('Элемент product-screen-body не найден');
             return;
         }
 
-        // Формируем HTML для поп-апа
-        let popupHTML = `
+        // Формируем HTML для экрана продукта
+        let screenHTML = `
             <img src="${product.image_url || 'https://placehold.co/400x300/e0e0e0/555?text=Нет+фото'}" 
                  alt="${product.name}" 
-                 class="product-popup-image" 
+                 class="product-screen-image" 
                  onerror="this.onerror=null;this.src='https://placehold.co/400x300/e0e0e0/555?text=Нет+фото';">
 
-            <div class="product-popup-name">${product.name}</div>
-            <div class="product-popup-price">${parseFloat(product.price).toFixed(2)} р.</div>
+            <div class="product-screen-name">${product.name}</div>
+            <div class="product-screen-price">${parseFloat(product.price).toFixed(2)} р.</div>
             
             <!-- Кнопки управления количеством -->
-            <div class="product-popup-quantity-controls">
-                <button class="popup-decrease-quantity" data-product-id="${product.id}">-</button>
-                <span class="product-popup-quantity-display" id="popup-quantity-${product.id}">0</span>
-                <button class="popup-increase-quantity" data-product-id="${product.id}">+</button>
+            <div class="product-screen-quantity-controls">
+                <button class="screen-decrease-quantity" data-product-id="${product.id}">-</button>
+                <span class="product-screen-quantity-display" id="screen-quantity-${product.id}">0</span>
+                <button class="screen-increase-quantity" data-product-id="${product.id}">+</button>
             </div>
 
-            <div class="product-popup-info">`;
+            <div class="product-screen-info">`;
 
         // Добавляем информацию о весе
         if (product.weight && product.weight !== 'N/A') {
-            popupHTML += `
-                <div class="product-popup-info-item">
-                    <div class="product-popup-info-label">Вес:</div>
-                    <div class="product-popup-info-value">${product.weight} гр.</div>
+            screenHTML += `
+                <div class="product-screen-info-item">
+                    <div class="product-screen-info-label">Вес:</div>
+                    <div class="product-screen-info-value">${product.weight} гр.</div>
                 </div>`;
         }
 
         // Добавляем информацию о доступности
         if (product.availability_days && product.availability_days !== 'N/A') {
-            popupHTML += `
-                <div class="product-popup-info-item">
-                    <div class="product-popup-info-label">Доступен для заказа:</div>
-                    <div class="product-popup-info-value">${product.availability_days}</div>
+            screenHTML += `
+                <div class="product-screen-info-item">
+                    <div class="product-screen-info-label">Доступен для заказа:</div>
+                    <div class="product-screen-info-value">${product.availability_days}</div>
                 </div>`;
         }
 
-        popupHTML += `</div>`;
+        screenHTML += `</div>`;
 
         // Добавляем состав (ингредиенты)
         if (product.ingredients && product.ingredients !== 'N/A') {
-            popupHTML += `
-                <div class="product-popup-ingredients">
-                    <div class="product-popup-ingredients-label">Состав:</div>
-                    <div class="product-popup-ingredients-value">${product.ingredients}</div>
+            screenHTML += `
+                <div class="product-screen-ingredients">
+                    <div class="product-screen-ingredients-label">Состав:</div>
+                    <div class="product-screen-ingredients-value">${product.ingredients}</div>
                 </div>`;
         }
 
         // Добавляем пищевую ценность
         if (product.calories && product.calories !== 'N/A') {
-            popupHTML += `
-                <div class="product-popup-nutrition">
-                    <div class="product-popup-nutrition-label">Пищевая ценность:</div>
-                    <div class="product-popup-nutrition-value">
+            screenHTML += `
+                <div class="product-screen-nutrition">
+                    <div class="product-screen-nutrition-label">Пищевая ценность:</div>
+                    <div class="product-screen-nutrition-value">
                         <div><strong>Калорийность:</strong> ${product.calories}</div>`;
 
             if (product.energy_value && product.energy_value !== 'N/A') {
-                popupHTML += `<div><strong>Энергетическая ценность:</strong> ${product.energy_value}</div>`;
+                screenHTML += `<div><strong>Энергетическая ценность:</strong> ${product.energy_value}</div>`;
             }
 
-            popupHTML += `
+            screenHTML += `
                     </div>
                 </div>`;
         }
 
-        popupBody.innerHTML = popupHTML;
+        screenBody.innerHTML = screenHTML;
 
-        // Обновляем счетчик количества в поп-апе
-        const quantityDisplay = document.getElementById(`popup-quantity-${product.id}`);
+        // Обновляем счетчик количества в экране продукта
+        const quantityDisplay = document.getElementById(`screen-quantity-${product.id}`);
         if (quantityDisplay) {
-            const currentQuantity = cart[product.id] || 0;
+            const currentQuantity = cart[product.id] ? cart[product.id].quantity : 0;
             quantityDisplay.textContent = currentQuantity;
         }
-        
-        // Принудительно применяем стили к кнопкам управления количеством
-        const quantityControls = popupBody.querySelector('.product-popup-quantity-controls');
-        if (quantityControls) {
-            quantityControls.style.display = 'flex';
-            quantityControls.style.alignItems = 'center';
-            quantityControls.style.justifyContent = 'center';
-            quantityControls.style.gap = '12px';
-            quantityControls.style.marginBottom = '20px';
-            quantityControls.style.zIndex = '1000';
-            quantityControls.style.position = 'relative';
-        }
-        
-        const decreaseButton = popupBody.querySelector('.popup-decrease-quantity');
-        const increaseButton = popupBody.querySelector('.popup-increase-quantity');
+
+        // Показываем экран продукта
+        displayView('product');
+
+        // Добавляем обработчики для кнопок управления количеством в экране продукта
+        const decreaseButton = screenBody.querySelector('.screen-decrease-quantity');
+        const increaseButton = screenBody.querySelector('.screen-increase-quantity');
         
         if (decreaseButton) {
-            decreaseButton.style.background = '#b76c4b';
-            decreaseButton.style.color = 'white';
-            decreaseButton.style.border = 'none';
-            decreaseButton.style.borderRadius = '10px';
-            decreaseButton.style.padding = '10px 16px';
-            decreaseButton.style.fontSize = '1.8rem';
-            decreaseButton.style.cursor = 'pointer';
-            decreaseButton.style.minWidth = '56px';
-            decreaseButton.style.height = '56px';
-            decreaseButton.style.display = 'flex';
-            decreaseButton.style.justifyContent = 'center';
-            decreaseButton.style.alignItems = 'center';
-            decreaseButton.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+            decreaseButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const productId = e.target.dataset.productId;
+                updateProductQuantity(productId, -1);
+                // Обновляем счетчик в экране продукта
+                const quantityDisplay = document.getElementById(`screen-quantity-${productId}`);
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = cart[productId] ? cart[productId].quantity : 0;
+                }
+            });
         }
         
         if (increaseButton) {
-            increaseButton.style.background = '#b76c4b';
-            increaseButton.style.color = 'white';
-            increaseButton.style.border = 'none';
-            increaseButton.style.borderRadius = '10px';
-            increaseButton.style.padding = '10px 16px';
-            increaseButton.style.fontSize = '1.8rem';
-            increaseButton.style.cursor = 'pointer';
-            increaseButton.style.minWidth = '56px';
-            increaseButton.style.height = '56px';
-            increaseButton.style.display = 'flex';
-            increaseButton.style.justifyContent = 'center';
-            increaseButton.style.alignItems = 'center';
-            increaseButton.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-        }
-        
-        // Принудительно применяем стили к счетчику
-        if (quantityDisplay) {
-            quantityDisplay.style.padding = '0 12px';
-            quantityDisplay.style.fontSize = '1.8rem';
-            quantityDisplay.style.fontWeight = 'bold';
-            quantityDisplay.style.color = '#333';
-            quantityDisplay.style.minWidth = '36px';
-            quantityDisplay.style.textAlign = 'center';
-        }
-
-        // Показываем поп-ап
-        const popup = document.getElementById('product-popup');
-        if (popup) {
-            popup.classList.remove('hidden');
-            // Блокируем прокрутку основного контента
-            document.body.style.overflow = 'hidden';
-            
-            // Принудительно применяем стили к кнопке закрытия
-            const closeButton = document.getElementById('product-popup-close');
-            if (closeButton) {
-                closeButton.style.position = 'fixed';
-                closeButton.style.top = '15px';
-                closeButton.style.right = '15px';
-                closeButton.style.background = 'rgba(64, 64, 64, 0.9)';
-                closeButton.style.color = 'white';
-                closeButton.style.zIndex = '999999';
-                closeButton.style.width = '56px';
-                closeButton.style.height = '56px';
-                closeButton.style.borderRadius = '12px';
-                closeButton.style.fontSize = '2em';
-                closeButton.style.border = 'none';
-                closeButton.style.cursor = 'pointer';
-                closeButton.style.display = 'flex';
-                closeButton.style.alignItems = 'center';
-                closeButton.style.justifyContent = 'center';
-                closeButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-                closeButton.style.transition = 'all 0.2s ease';
-            }
-            
-            // Добавляем обработчики для кнопок управления количеством в поп-апе
-            const decreaseButton = popup.querySelector('.popup-decrease-quantity');
-            const increaseButton = popup.querySelector('.popup-increase-quantity');
-            
-            if (decreaseButton) {
-                decreaseButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const productId = e.target.dataset.productId;
-                    updateProductQuantity(productId, -1);
-                    // Обновляем счетчик в поп-апе
-                    const quantityDisplay = document.getElementById(`popup-quantity-${productId}`);
-                    if (quantityDisplay) {
-                        quantityDisplay.textContent = cart[productId] || 0;
-                    }
-                });
-            }
-            
-            if (increaseButton) {
-                increaseButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const productId = e.target.dataset.productId;
-                    updateProductQuantity(productId, 1);
-                    // Обновляем счетчик в поп-апе
-                    const quantityDisplay = document.getElementById(`popup-quantity-${productId}`);
-                    if (quantityDisplay) {
-                        quantityDisplay.textContent = cart[productId] || 0;
-                    }
-                });
-            }
-        }
-    }
-
-    // Функция для скрытия поп-апа
-    function hideProductPopup() {
-        const popup = document.getElementById('product-popup');
-        if (popup) {
-            popup.classList.add('hidden');
-            // Восстанавливаем прокрутку основного контента
-            document.body.style.overflow = '';
+            increaseButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const productId = e.target.dataset.productId;
+                updateProductQuantity(productId, 1);
+                // Обновляем счетчик в экране продукта
+                const quantityDisplay = document.getElementById(`screen-quantity-${productId}`);
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = cart[productId] ? cart[productId].quantity : 0;
+                }
+            });
         }
     }
 
     // Делаем функции доступными глобально
-    window.showProductPopup = showProductPopup;
-    window.hideProductPopup = hideProductPopup;
+    window.showProductScreen = showProductScreen;
 
 });
