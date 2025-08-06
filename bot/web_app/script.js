@@ -420,8 +420,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="quantity-button increase-cart-quantity" data-product-id="${item.id}">+</button>
                         <button class="remove-btn" data-product-id="${item.id}">Удалить</button>
                     </div>
+                    <div class="cart-item-total">${itemTotal.toFixed(2)} р.</div>
                 </div>
-                <div class="cart-item-total">${itemTotal.toFixed(2)} р.</div>
             `;
             if (cartItemsList) cartItemsList.appendChild(cartItemElement);
         });
