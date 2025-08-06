@@ -408,14 +408,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .cart-total-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
-    margin: 0;
+    margin: 20px 0;
     padding: 12px 15px;
     background-color: #f8f9fa;
     border-radius: 8px;
     border: 2px solid #e9ecef;
-    flex: 1;
+    width: 100%;
     min-height: 48px; /* Match checkout button height */
 }
 
@@ -423,30 +423,32 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-size: 1.3em;
     font-weight: bold;
     color: #333;
-    text-align: right;
+    text-align: center;
     margin: 0;
     padding: 0;
     background: none;
     border: none;
 }
 
-.clear-cart-button-small {
-    padding: 6px 12px;
-    font-size: 0.8em;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    font-weight: bold;
+.clear-cart-button {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    margin-top: 15px;
     background-color: #6c757d;
     color: white;
-    margin: 0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.clear-cart-button-small:hover {
+.clear-cart-button:hover {
     background-color: #5a6268;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .cart-actions-bottom {
@@ -1013,10 +1015,3 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     }
 }
 
-.cart-summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px 0;
-    gap: 15px;
-}
