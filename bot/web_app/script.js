@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const cartItems = Object.values(cart);
                     if (cartItems.length === 0) {
                 if (cartItemsList) cartItemsList.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста.</p>';
-                if (cartTotalElement) cartTotalElement.textContent = '0.00 р.';
+                if (cartTotalElement) cartTotalElement.textContent = 'Общая сумма: 0.00 р.';
                 const cartActionsBottom = document.querySelector('.cart-actions-bottom');
                 if (cartActionsBottom) cartActionsBottom.classList.add('hidden');
                 if (continueShoppingButton) continueShoppingButton.classList.add('hidden');
@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (cartItemsList) cartItemsList.appendChild(cartItemElement);
         });
 
-        if (cartTotalElement) cartTotalElement.textContent = `${total.toFixed(2)} р.`;
+        if (cartTotalElement) cartTotalElement.textContent = `Общая сумма: ${total.toFixed(2)} р.`;
 
         // Добавляем обработчики для кнопок в корзине
         if (cartItemsList) {
