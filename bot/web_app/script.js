@@ -573,11 +573,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span class="cart-item-total">${itemTotal.toFixed(2)} р.</span>
                     </p>
                     <div class="cart-item-controls">
-                        <button class="quantity-button decrease-cart-quantity" data-product-id="${item.id}">-</button>
-                        <span class="cart-item-quantity">${item.quantity}</span>
-                        <button class="quantity-button increase-cart-quantity" data-product-id="${item.id}">+</button>
+                        <div class="quantity-controls">
+                            <button class="quantity-button decrease-cart-quantity" data-product-id="${item.id}">-</button>
+                            <span class="cart-item-quantity">${item.quantity}</span>
+                            <button class="quantity-button increase-cart-quantity" data-product-id="${item.id}">+</button>
+                        </div>
                         <button class="btn--noborder bgc-t fc-1 h-fc h-fc-acc-1 pr-0 remove-btn" data-product-id="${item.id}" type="button">
-                            X
+                            <svg class="svg svg-as_close fz-125">
+                                <use xlink:href="sprite.svg#as_close"></use>
+                            </svg>
                         </button>
                     </div>
                 </div>

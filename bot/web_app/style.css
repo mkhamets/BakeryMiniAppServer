@@ -332,7 +332,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .cart-item-controls {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 10px;
+}
+
+.cart-item-controls .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .cart-item-quantity {
