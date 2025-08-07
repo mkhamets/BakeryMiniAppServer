@@ -1172,5 +1172,140 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-right: 6px;
 }
 
+/* Core site quantity button styles */
+.h-200 {
+    height: 2rem;
+}
+
+.w-200 {
+    width: 2rem;
+}
+
+.cur-p {
+    cursor: pointer;
+}
+
+.pos-r {
+    position: relative;
+}
+
+.br-50p {
+    border-radius: 50%;
+}
+
+.align-items-center {
+    -webkit-box-align: center !important;
+    -webkit-align-items: center !important;
+    -ms-flex-align: center!important;
+    align-items: center !important;
+}
+
+.justify-content-center {
+    -webkit-box-pack: center !important;
+    -webkit-justify-content: center !important;
+    -ms-flex-pack: center!important;
+    justify-content: center !important;
+}
+
+.d-flex {
+    display: -webkit-box !important;
+    display: -webkit-flex !important;
+    display: -ms-flexbox!important;
+    display: flex !important;
+}
+
+.fc-1 {
+    color: #303030;
+}
+
+.fw-400 {
+    font-weight: 400;
+}
+
+.fz-150 {
+    font-size: 1.5rem;
+}
+
+.fz-175 {
+    font-size: 1.75rem;
+}
+
+.mb-25 {
+    margin-bottom: 0.25rem;
+}
+
+.mlr-50 {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.ptb-25 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mx-w-300 {
+    max-width: 3rem;
+}
+
+/* Form group and input group styles */
+.form-group {
+    position: relative;
+    color: #303030;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group-sm {
+    font-size: 0.875rem;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Quantity changer buttons */
+.changer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.changer:hover {
+    opacity: 0.8;
+}
+
+.count_minus, .count_plus {
+    background-color: #d7d7d7;
+}
+
+/* Override existing quantity button styles */
+.quantity-button {
+    display: none !important;
+}
+
+.quantity-controls {
+    display: none !important;
+}
+
 
 
