@@ -442,10 +442,9 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin: 0;
     padding: 0;
     background: none;
-    border: 1px solid #ccc;
+    border: none;
     flex-shrink: 0;
     width: auto;
-    color: #666;
 }
 
 .cart-total-container {
@@ -478,8 +477,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     padding: 6px 8px;
     margin-top: 15px;
     background-color: white;
-    color: #333;
-    border: 2px solid #333;
+    color: #666;
+    border: 2px solid #ccc;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.9em;
