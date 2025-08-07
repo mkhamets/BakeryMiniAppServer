@@ -429,11 +429,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 
 .cart-summary-row {
-    display: flex;
+    /* display: flex; */
     justify-content: space-between;
-    align-items: center;
-    margin: 20px 0;
+    /* margin: 20px 0; */
     width: 100%;
+    flex-direction: row;
 }
 
 .clear-cart-container {
@@ -1363,5 +1363,17 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     max-width: 3.5rem;
 }
 
+/* Additional CSS rules */
+body * {
+    outline: 0 !important;
+}
 
+*, ::after, ::before {
+    -webkit-box-sizing: inherit;
+    box-sizing: inherit;
+}
 
+*, ::after, ::before {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
