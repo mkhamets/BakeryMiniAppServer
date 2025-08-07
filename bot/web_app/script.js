@@ -573,17 +573,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span class="cart-item-total">${itemTotal.toFixed(2)} р.</span>
                     </p>
                     <div class="cart-item-controls">
-                        <div class="form-group">
-                            <div class="input-group input-group-sm d-flex align-items-center justify-content-center justify-content-md-start">
-                                <div class="changer count_minus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center decrease-cart-quantity" data-product-id="${item.id}" style="background-color: #d7d7d7;">
-                                    <span class="fz-150 fw-400 fc-1 mb-25">-</span>
-                                </div>
-                                <input type="number" name="count" value="${item.quantity}" min="1" readonly="" class="count mssaleprice-count cur-p form-control ptb-25 fz-175 mlr-50 text-center mx-w-300 cart-item-quantity" style="border: none !important; background-color:transparent !important;">
-                                <div class="changer count_plus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center increase-cart-quantity" data-product-id="${item.id}" style="background-color: #d7d7d7;">
-                                    <span class="fz-150 fw-400 fc-1">+</span>
-                                </div>
+                        <div class="input-group input-group-sm d-flex align-items-center justify-content-center justify-content-md-start">
+                            <div class="changer count_minus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center decrease-cart-quantity" data-product-id="${item.id}" style="background-color: #d7d7d7;">
+                                <span class="fz-150 fw-400 fc-1 mb-25">-</span>
                             </div>
-                            <button class="" type="submit" name="ms2_action" value="cart/change"></button>
+                            <input type="number" name="count" value="${item.quantity}" min="1" readonly="" class="count mssaleprice-count cur-p form-control ptb-25 fz-175 mlr-50 text-center mx-w-300 cart-item-quantity" style="border: none !important; background-color:transparent !important;">
+                            <div class="changer count_plus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center increase-cart-quantity" data-product-id="${item.id}" style="background-color: #d7d7d7;">
+                                <span class="fz-150 fw-400 fc-1">+</span>
+                            </div>
                         </div>
                         <button class="btn--noborder bgc-t fc-1 h-fc h-fc-acc-1 pr-0 remove-btn" data-product-id="${item.id}" type="button">
                             <svg class="svg svg-as_close fz-125">
