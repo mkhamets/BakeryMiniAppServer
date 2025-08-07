@@ -162,7 +162,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .product-price {
     font-size: 1.1rem;
-    color: #d9534f;
+    color: #000000;
     font-weight: bold;
     flex-shrink: 0;
 }
@@ -211,16 +211,17 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .quantity-controls button {
-    background-color: #b76c4b;
-    color: white;
+    background-color: #d7d7d7;
+    color: #333;
     border: none;
-    border-radius: 5px;
-    padding: 5px 8px;
+    border-radius: 50%;
+    padding: 0;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
     min-width: 28px;
     height: 28px;
+    width: 28px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -228,7 +229,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .quantity-controls button:hover {
-    background-color: #a05a3a;
+    opacity: 0.8;
 }
 
 .quantity-display {
@@ -351,7 +352,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .cart-item-total {
     font-weight: bold;
     font-size: 1.1em;
-    color: #d9534f;
+    color: #000000;
     margin: 0;
     text-align: right;
 }
