@@ -155,7 +155,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Стиль для информации о доступности в скобках */
 .product-name .availability-info {
-    font-size: 0.6rem !important; /* Принудительно меньший размер */
+    font-size: 0.9rem !important; /* Принудительно меньший размер */
     color: #666;
     font-weight: normal;
 }
