@@ -186,17 +186,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (cartContainer) cartContainer.classList.add('hidden');
         if (checkoutContainer) checkoutContainer.classList.add('hidden');
         if (productScreen) productScreen.classList.add('hidden');
-        if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
+        if (mainCategoryTitle) {
+            mainCategoryTitle.classList.add('hidden');
+            // Keep loading text hidden by default
+            if (mainCategoryTitle.textContent === 'Загрузка...') {
+                mainCategoryTitle.classList.add('hidden');
+            }
+        }
         if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
-        // Hide loading text when logo is hidden
-        const loadingText = document.getElementById('main-category-title');
-        if (loadingText && loadingText.textContent === 'Загрузка...') {
-            loadingText.style.display = 'none';
-        }
-        // Also hide loading text for all views except loading
-        if (viewName !== 'loading' && mainCategoryTitle) {
-            mainCategoryTitle.style.display = '';
-        }
 
         if (viewName === 'welcome' || viewName === 'categories') {
             Telegram.WebApp.BackButton.hide();
@@ -207,9 +204,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         switch (viewName) {
             case 'loading':
                 if (loadingLogoContainer) loadingLogoContainer.classList.remove('hidden');
-                // Hide loading text when logo is shown
+                // Keep loading text hidden
                 if (mainCategoryTitle) {
-                    mainCategoryTitle.style.display = 'none';
+                    mainCategoryTitle.classList.add('hidden');
                 }
                 Telegram.WebApp.MainButton.hide();
                 break;
