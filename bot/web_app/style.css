@@ -1321,5 +1321,51 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     display: none !important;
 }
 
+/* Product grid quantity controls - smaller size */
+.product-controls .input-group {
+    gap: 4px;
+}
+
+.product-controls .w-200 {
+    width: 1.5rem;
+}
+
+.product-controls .h-200 {
+    height: 1.5rem;
+}
+
+.product-controls .fz-150 {
+    font-size: 1.2rem;
+}
+
+.product-controls .fz-175 {
+    font-size: 1.3rem;
+}
+
+.product-controls .mx-w-300 {
+    max-width: 2rem;
+}
+
+/* Product screen quantity controls - medium size */
+.product-screen-content .w-200 {
+    width: 2.5rem;
+}
+
+.product-screen-content .h-200 {
+    height: 2.5rem;
+}
+
+.product-screen-content .fz-150 {
+    font-size: 1.8rem;
+}
+
+.product-screen-content .fz-175 {
+    font-size: 2rem;
+}
+
+.product-screen-content .mx-w-300 {
+    max-width: 3.5rem;
+}
+
 
 
