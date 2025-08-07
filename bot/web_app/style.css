@@ -391,8 +391,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border-radius: 0;
     transition: all 0.2s ease;
     color: rgb(48, 48, 48);
-    font-size: 17.5px;
-    line-height: 24.5px;
 }
 
 .remove-btn:hover {
@@ -400,10 +398,20 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     opacity: 0.7;
 }
 
-.remove-btn .svg {
-    width: 17.5px;
-    height: 17.5px;
-    fill: rgb(48, 48, 48);
+.svg-as_close {
+    font-size: 2rem;
+    width: 1em;
+}
+
+.svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+}
+
+.fz-125 {
+    font-size: 1.25rem;
 }
 
 .cart-total {
