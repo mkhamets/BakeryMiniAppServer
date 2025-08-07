@@ -442,9 +442,10 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin: 0;
     padding: 0;
     background: none;
-    border: none;
+    border: 1px solid #ccc;
     flex-shrink: 0;
     width: auto;
+    color: #666;
 }
 
 .cart-total-container {
@@ -453,9 +454,9 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     align-items: center;
     margin: 0;
     padding: 12px 15px;
-    background-color: #f8f9fa;
+    background-color: white;
     border-radius: 8px;
-    border: 2px solid #e9ecef;
+    border: 2px solid white;
     width: auto;
     min-height: 48px; /* Match checkout button height */
 }
