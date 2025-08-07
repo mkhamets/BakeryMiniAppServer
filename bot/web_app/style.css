@@ -521,6 +521,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .menu-button {
+    display: block;
+    width: 100%;
     padding: 12px 30px;
     font-size: 1.1em;
     border: none;
@@ -531,7 +533,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: bold;
     background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
     color: white;
-    min-width: 200px;
+    margin: 20px 0;
+    text-align: center;
 }
 
 .menu-button:hover {

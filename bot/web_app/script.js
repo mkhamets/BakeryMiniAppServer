@@ -509,26 +509,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         let total = 0;
 
         const cartItems = Object.values(cart);
-                    if (cartItems.length === 0) {
-                if (cartItemsList) cartItemsList.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста.</p>';
-                if (cartTotalElement) cartTotalElement.textContent = 'Общая сумма: 0.00 р.';
-                const cartActionsBottom = document.querySelector('.cart-actions-bottom');
-                if (cartActionsBottom) cartActionsBottom.classList.add('hidden');
-                if (continueShoppingButton) continueShoppingButton.classList.add('hidden');
+        if (cartItems.length === 0) {
+            if (cartItemsList) cartItemsList.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста.</p>';
+            if (cartTotalElement) cartTotalElement.textContent = 'Общая сумма: 0.00 р.';
+            
+            // Скрываем cart-summary-row когда корзина пуста
+            const cartSummaryRow = document.querySelector('.cart-summary-row');
+            if (cartSummaryRow) cartSummaryRow.classList.add('hidden');
+            
+            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+            if (cartActionsBottom) cartActionsBottom.classList.add('hidden');
+            if (continueShoppingButton) continueShoppingButton.classList.add('hidden');
 
-                // Показываем кнопку "Наше меню" для пустой корзины
-                const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
-                if (emptyCartMenuButton) emptyCartMenuButton.classList.remove('hidden');
-                return;
-            } else {
-                const cartActionsBottom = document.querySelector('.cart-actions-bottom');
-                if (cartActionsBottom) cartActionsBottom.classList.remove('hidden');
-                if (continueShoppingButton) continueShoppingButton.classList.remove('hidden');
+            // Показываем кнопку "Наше меню" для пустой корзины
+            const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
+            if (emptyCartMenuButton) emptyCartMenuButton.classList.remove('hidden');
+            return;
+        } else {
+            // Показываем cart-summary-row когда в корзине есть товары
+            const cartSummaryRow = document.querySelector('.cart-summary-row');
+            if (cartSummaryRow) cartSummaryRow.classList.remove('hidden');
+            
+            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+            if (cartActionsBottom) cartActionsBottom.classList.remove('hidden');
+            if (continueShoppingButton) continueShoppingButton.classList.remove('hidden');
 
-                // Скрываем кнопку "Наше меню" когда в корзине есть товары
-                const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
-                if (emptyCartMenuButton) emptyCartMenuButton.classList.add('hidden');
-            }
+            // Скрываем кнопку "Наше меню" когда в корзине есть товары
+            const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
+            if (emptyCartMenuButton) emptyCartMenuButton.classList.add('hidden');
+        }
 
         cartItems.forEach(item => {
             const itemTotal = item.price * item.quantity;
