@@ -74,31 +74,7 @@ function replaceTextWithIcon(element, iconName, size = 'normal', color = 'primar
 
 // Function to initialize icons in the UI
 function initializeIcons() {
-    // Replace emoji in continue shopping button with icon
-    const continueShoppingButton = document.getElementById('continue-shopping-button');
-    if (continueShoppingButton) {
-        const icon = createIconWithColor('arrow-back', 'white', 'normal');
-        continueShoppingButton.innerHTML = '';
-        continueShoppingButton.appendChild(icon);
-        continueShoppingButton.appendChild(document.createTextNode(' Продолжить покупки'));
-        continueShoppingButton.classList.add('btn-with-icon');
-    }
-    
-    // Add cart icon to checkout button
-    const checkoutButton = document.getElementById('checkout-button');
-    if (checkoutButton) {
-        const icon = createIconWithColor('cart', 'white', 'small');
-        checkoutButton.insertBefore(icon, checkoutButton.firstChild);
-        checkoutButton.classList.add('btn-with-icon');
-    }
-    
-    // Add close icon to clear cart button
-    const clearCartButton = document.getElementById('clear-cart-button');
-    if (clearCartButton) {
-        const icon = createIconWithColor('close', 'dark', 'small');
-        clearCartButton.insertBefore(icon, clearCartButton.firstChild);
-        clearCartButton.classList.add('btn-with-icon');
-    }
+    // Icons removed as requested - keeping function for potential future use
     
     // Add icons to delivery method labels
     addDeliveryMethodIcons();
