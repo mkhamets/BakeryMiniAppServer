@@ -439,14 +439,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="product-controls">
                             <div class="product-price">${parseFloat(product.price).toFixed(2)} р.</div>
-                            <div class="input-group input-group-sm d-flex align-items-center justify-content-center justify-content-md-start">
-                                <div class="changer count_minus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center" data-product-id="${product.id}" data-action="decrease" style="background-color: #d7d7d7;">
-                                    <span class="fz-150 fw-400 fc-1 mb-25">-</span>
-                                </div>
-                                <input type="number" name="count" value="${quantityInCart}" min="0" readonly="" class="count mssaleprice-count cur-p form-control ptb-25 fz-175 mlr-50 text-center mx-w-300 quantity-display" id="qty-${product.id}" style="border: none !important; background-color:transparent !important;">
-                                <div class="changer count_plus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center" data-product-id="${product.id}" data-action="increase" style="background-color: #d7d7d7;">
-                                    <span class="fz-150 fw-400 fc-1">+</span>
-                                </div>
+                            <div class="quantity-controls">
+                                <button data-product-id="${product.id}" data-action="decrease">-</button>
+                                <span class="quantity-display" id="qty-${product.id}">${quantityInCart}</span>
+                                <button data-product-id="${product.id}" data-action="increase">+</button>
                             </div>
                         </div>
                     </div>
@@ -457,10 +453,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Добавляем обработчики событий для кнопок +/-
         if (productListElement) {
-            productListElement.querySelectorAll('.changer[data-action]').forEach(button => {
+            productListElement.querySelectorAll('.quantity-controls button').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const clickedButton = e.currentTarget;
+                    const clickedButton = e.target.closest('button[data-product-id]');
                     if (!clickedButton) {
                         console.error('ОЧЕНЬ ВАЖНО: Кнопка управления количеством не найдена или не имеет data-product-id. e.target:', e.target);
                         return;
@@ -522,10 +517,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateProductCardUI(productId) {
-        const quantityInput = document.getElementById(`qty-${productId}`);
-        if (quantityInput) {
+        const quantitySpan = document.getElementById(`qty-${productId}`);
+        if (quantitySpan) {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
-            quantityInput.value = currentQuantity;
+            quantitySpan.textContent = currentQuantity;
         }
         if (cartContainer && !cartContainer.classList.contains('hidden')) {
             renderCart();

@@ -233,7 +233,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .quantity-display {
     padding: 0 6px;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: bold;
     color: #333;
     min-width: 18px;
@@ -1314,10 +1314,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Override existing quantity button styles */
 .quantity-button {
-    display: none !important;
-}
-
-.quantity-controls {
     display: none !important;
 }
 
