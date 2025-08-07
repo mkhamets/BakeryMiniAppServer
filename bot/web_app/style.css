@@ -155,8 +155,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Стиль для информации о доступности в скобках */
 .product-name .availability-info {
-    font-size: 0.9rem !important; /* Принудительно меньший размер */
-    color: #666;
+    font-size: 0.9rem; 
+    color: #bc5757;
     font-weight: normal;
 }
 
@@ -1533,6 +1533,27 @@ body a {
 }
 
 /* Additional CSS rules */
+/* Loading Logo Styles */
+.loading-logo-container {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-top: 1vh;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-logo {
+    width: 50vw; /* 2/4 of screen width = 50% */
+    height: auto;
+    max-width: 300px;
+    max-height: 80px;
+    object-fit: contain;
+}
+
 body * {
     outline: 0 !important;
 }

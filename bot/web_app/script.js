@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const checkoutContainer = document.getElementById('checkout-container');
     const productScreen = document.getElementById('product-screen');
     const mainCategoryTitle = document.getElementById('main-category-title');
+    const loadingLogoContainer = document.getElementById('loading-logo-container');
 
     const courierInfoText = document.getElementById('courier-text');
     const pickupInfoText = document.getElementById('pickup-text');
@@ -186,6 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (checkoutContainer) checkoutContainer.classList.add('hidden');
         if (productScreen) productScreen.classList.add('hidden');
         if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
+        if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
 
         if (viewName === 'welcome' || viewName === 'categories') {
             Telegram.WebApp.BackButton.hide();
@@ -205,6 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.textContent = 'Наше меню';
                     mainCategoryTitle.classList.remove('hidden');
                 }
+                if (loadingLogoContainer) loadingLogoContainer.classList.remove('hidden');
                 loadCategories();
                 Telegram.WebApp.MainButton.hide();
                 break;
@@ -212,6 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
                 if (productsContainer) productsContainer.classList.remove('hidden');
                 if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
+                if (loadingLogoContainer) loadingLogoContainer.classList.remove('hidden');
                 loadProducts(categoryKey);
                 updateMainButtonCartInfo();
                 break;
@@ -359,6 +363,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (categoriesGrid) categoriesGrid.appendChild(categoryCard);
             });
             if (categoriesContainer) categoriesContainer.appendChild(categoriesGrid);
+            
+            // Hide loading logo after categories are loaded
+            if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
         } catch (error) {
             console.error('Ошибка при загрузке категорий:', error);
             if (Telegram.WebApp.showAlert) {
@@ -462,6 +469,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     showProductScreen(productId, categoryKey);
                 });
             });
+            
+            // Hide loading logo after products are loaded
+            if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
         }
     }
 
