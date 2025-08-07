@@ -428,27 +428,35 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 
 
+.cart-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    width: 100%;
+}
+
 .clear-cart-container {
     display: flex;
     justify-content: flex-start;
-    margin: 20px 0;
+    margin: 0;
     padding: 0;
     background: none;
     border: none;
     flex-shrink: 0;
-    width: 100%;
+    width: auto;
 }
 
 .cart-total-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    margin: 20px 0;
+    margin: 0;
     padding: 12px 15px;
     background-color: #f8f9fa;
     border-radius: 8px;
     border: 2px solid #e9ecef;
-    width: 100%;
+    width: auto;
     min-height: 48px; /* Match checkout button height */
 }
 
@@ -488,12 +496,13 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .cart-actions-bottom {
     display: flex;
-    gap: 10px; /* Расстояние между кнопками */
+    justify-content: center;
+    margin: 20px 0;
+    width: 100%;
 }
 
 .checkout-button {
-    flex: 1; /* Кнопка занимает всю ширину */
-    padding: 12px 15px;
+    padding: 12px 30px;
     font-size: 1.1em;
     border: none;
     border-radius: 8px;
@@ -503,6 +512,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: bold;
     background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
     color: white;
+    min-width: 200px;
 }
 
 .checkout-button:hover {
@@ -513,10 +523,10 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 
 .back-button {
-    display: block; /* Кнопка занимает всю ширину */
-    width: 100%;
-    padding: 12px 15px;
-    margin-top: 15px;
+    display: block;
+    width: auto;
+    padding: 12px 30px;
+    margin: 20px auto 0 auto;
     background-color: #007bff; /* Синий цвет */
     color: white;
     border: none;
@@ -526,6 +536,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: bold;
     transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
 }
 
 .back-button:hover {
