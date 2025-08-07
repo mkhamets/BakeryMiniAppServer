@@ -1470,6 +1470,28 @@ body a {
     text-decoration: none;
 }
 
+/* Button and color classes from main.min.css */
+.btn--noborder {
+    border: none;
+}
+
+.bgc-t {
+    background-color: transparent;
+}
+
+.h-fc-acc-1:hover, .h-fc-acc-1:focus, .h-fc-acc-1:active {
+    color: #b76c4b;
+}
+
+.h-fc-acc-1:hover svg, .h-fc-acc-1:focus svg, .h-fc-acc-1:active svg {
+    color: #b76c4b;
+    fill: #b76c4b;
+}
+
+.h-fc-acc-1:hover:before, .h-fc-acc-1:focus:before, .h-fc-acc-1:active:before {
+    background-color: #b76c4b;
+}
+
 /* Additional CSS rules */
 body * {
     outline: 0 !important;
