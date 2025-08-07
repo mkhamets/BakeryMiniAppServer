@@ -411,14 +411,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                      onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/333333?text=No+Image';">
                 <div class="cart-item-details">
                     <h4 class="cart-item-name">${item.name}</h4>
-                    <p class="cart-item-price">${item.price} р. за шт.</p>
+                    <p class="cart-item-price">
+                        <span class="price-per-unit">${item.price} р. за шт.</span>
+                        <span class="cart-item-total">${itemTotal.toFixed(2)} р.</span>
+                    </p>
                     <div class="cart-item-controls">
                         <button class="quantity-button decrease-cart-quantity" data-product-id="${item.id}">-</button>
                         <span class="cart-item-quantity">${item.quantity}</span>
                         <button class="quantity-button increase-cart-quantity" data-product-id="${item.id}">+</button>
                         <button class="remove-btn" data-product-id="${item.id}">Удалить</button>
                     </div>
-                    <div class="cart-item-total">${itemTotal.toFixed(2)} р.</div>
                 </div>
             `;
             if (cartItemsList) cartItemsList.appendChild(cartItemElement);
