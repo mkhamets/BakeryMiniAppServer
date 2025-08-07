@@ -1394,6 +1394,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     width: 2.25em;
 }
 
+.svg-arrow-back {
+    font-size: .5rem;
+    width: 2.25em;
+}
+
 .svg {
     display: inline-block;
     width: 1em;
@@ -1506,6 +1511,23 @@ body a {
 
 .h-fc-acc-1:hover:before, .h-fc-acc-1:focus:before, .h-fc-acc-1:active:before {
     background-color: #b76c4b;
+}
+
+.fz-125 {
+    font-size: 1.25rem;
+}
+
+.remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 0;
+    transition: all 0.2s ease;
+    color: rgb(48, 48, 48);
 }
 
 /* Additional CSS rules */
