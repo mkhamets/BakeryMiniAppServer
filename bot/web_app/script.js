@@ -2,6 +2,160 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
+// Helper function to create SVG icons
+function createIcon(iconName, className = '') {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const use = document.createElementNS('http://www.w3.org/1999/xlink', 'use');
+    
+    svg.setAttribute('class', `icon ${className}`);
+    use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#${iconName}`);
+    
+    svg.appendChild(use);
+    return svg;
+}
+
+// Helper function to create icon with specific size
+function createIconWithSize(iconName, size = 'normal', className = '') {
+    const icon = createIcon(iconName, className);
+    
+    switch(size) {
+        case 'small':
+            icon.classList.add('icon--small');
+            break;
+        case 'large':
+            icon.classList.add('icon--large');
+            break;
+        case 'xl':
+            icon.classList.add('icon--xl');
+            break;
+    }
+    
+    return icon;
+}
+
+// Helper function to create icon with color
+function createIconWithColor(iconName, color = 'primary', size = 'normal', className = '') {
+    const icon = createIconWithSize(iconName, size, className);
+    icon.classList.add(`icon--${color}`);
+    return icon;
+}
+
+// Common icon creation functions
+function createCartIcon(size = 'normal', color = 'primary') {
+    return createIconWithColor('cart', color, size);
+}
+
+function createCloseIcon(size = 'normal', color = 'dark') {
+    return createIconWithColor('close', color, size);
+}
+
+function createDeliveryIcon(size = 'normal', color = 'primary') {
+    return createIconWithColor('delivery', color, size);
+}
+
+function createLocationIcon(size = 'normal', color = 'primary') {
+    return createIconWithColor('location', color, size);
+}
+
+function createMoneyIcon(size = 'normal', color = 'primary') {
+    return createIconWithColor('money', color, size);
+}
+
+function createTakeawayIcon(size = 'normal', color = 'primary') {
+    return createIconWithColor('takeaway', color, size);
+}
+
+// Helper function to replace text with icon
+function replaceTextWithIcon(element, iconName, size = 'normal', color = 'primary') {
+    const icon = createIconWithColor(iconName, color, size);
+    element.innerHTML = '';
+    element.appendChild(icon);
+}
+
+// Function to initialize icons in the UI
+function initializeIcons() {
+    // Replace emoji in continue shopping button with icon
+    const continueShoppingButton = document.getElementById('continue-shopping-button');
+    if (continueShoppingButton) {
+        const icon = createIconWithColor('arrow-back', 'white', 'normal');
+        continueShoppingButton.innerHTML = '';
+        continueShoppingButton.appendChild(icon);
+        continueShoppingButton.appendChild(document.createTextNode(' Продолжить покупки'));
+        continueShoppingButton.classList.add('btn-with-icon');
+    }
+    
+    // Add cart icon to checkout button
+    const checkoutButton = document.getElementById('checkout-button');
+    if (checkoutButton) {
+        const icon = createIconWithColor('cart', 'white', 'small');
+        checkoutButton.insertBefore(icon, checkoutButton.firstChild);
+        checkoutButton.classList.add('btn-with-icon');
+    }
+    
+    // Add close icon to clear cart button
+    const clearCartButton = document.getElementById('clear-cart-button');
+    if (clearCartButton) {
+        const icon = createIconWithColor('close', 'dark', 'small');
+        clearCartButton.insertBefore(icon, clearCartButton.firstChild);
+        clearCartButton.classList.add('btn-with-icon');
+    }
+    
+    // Add icons to delivery method labels
+    addDeliveryMethodIcons();
+
+    // Add money icon to cart total
+    addMoneyIconToCartTotal();
+    
+    // Add location icons to address fields
+    addLocationIcons();
+}
+
+// Function to add icons to delivery method labels
+function addDeliveryMethodIcons() {
+    const courierLabel = document.querySelector('label[for="delivery-courier-radio"]');
+    const pickupLabel = document.querySelector('label[for="delivery-pickup-radio"]');
+    
+    if (courierLabel) {
+        const icon = createIconWithColor('delivery', 'primary', 'small');
+        courierLabel.insertBefore(icon, courierLabel.firstChild);
+        courierLabel.classList.add('btn-with-icon');
+    }
+    
+    if (pickupLabel) {
+        const icon = createIconWithColor('takeaway', 'primary', 'small');
+        pickupLabel.insertBefore(icon, pickupLabel.firstChild);
+        pickupLabel.classList.add('btn-with-icon');
+    }
+}
+
+// Function to add money icon to cart total
+function addMoneyIconToCartTotal() {
+    const cartTotal = document.getElementById('cart-total');
+    if (cartTotal && !cartTotal.querySelector('.icon')) {
+        const icon = createIconWithColor('money', 'primary', 'small');
+        cartTotal.insertBefore(icon, cartTotal.firstChild);
+        cartTotal.classList.add('btn-with-icon');
+    }
+}
+
+// Function to add location icons to address fields
+function addLocationIcons() {
+    const cityLabel = document.querySelector('label[for="city"]');
+    const addressLabel = document.querySelector('label[for="address-line"]');
+    
+    if (cityLabel && !cityLabel.querySelector('.icon')) {
+        const icon = createIconWithColor('location', 'primary', 'small');
+        cityLabel.insertBefore(icon, cityLabel.firstChild);
+        cityLabel.classList.add('btn-with-icon');
+    }
+    
+    if (addressLabel && !addressLabel.querySelector('.icon')) {
+        const icon = createIconWithColor('location', 'primary', 'small');
+        addressLabel.insertBefore(icon, addressLabel.firstChild);
+        addressLabel.classList.add('btn-with-icon');
+    }
+}
+
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -43,6 +197,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     await fetchProductsData();
+    
+    // Initialize icons in the UI
+    initializeIcons();
 
     function displayView(viewName, categoryKey = null) {
         if (welcomeContainer) welcomeContainer.classList.add('hidden');

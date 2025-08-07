@@ -1023,3 +1023,128 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     }
 }
 
+/* SVG Icon Styles */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    fill: currentColor;
+    overflow: hidden;
+}
+
+.icon--small {
+    width: 0.875em;
+    height: 0.875em;
+}
+
+.icon--large {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.icon--xl {
+    width: 2em;
+    height: 2em;
+}
+
+/* Icon colors */
+.icon--primary {
+    fill: #B76C4B;
+}
+
+.icon--white {
+    fill: #fff;
+}
+
+.icon--dark {
+    fill: #303030;
+}
+
+.icon--light {
+    fill: #888;
+}
+
+/* Icon usage examples */
+.cart-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+.close-icon {
+    width: 20px;
+    height: 20px;
+    fill: #303030;
+}
+
+.delivery-icon {
+    width: 32px;
+    height: 32px;
+    fill: #B76C4B;
+}
+
+.location-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+.money-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+.takeaway-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+/* Button with icon */
+.btn-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-with-icon .icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Cart badge with icon */
+.cart-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cart-badge .icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Product card with icon */
+.product-card .icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+}
+
+/* Header with icon */
+.header-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+/* Footer with icon */
+.footer-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
