@@ -1385,6 +1385,22 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-bottom: .175rem;
 }
 
+.mb-50 {
+    margin-bottom: .5rem;
+}
+
+.svg-arrow-left {
+    font-size: .5rem;
+    width: 2.25em;
+}
+
+.svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+}
+
 .h-fc {
     -webkit-transition: all .3s ease;
     -o-transition: all .3s ease;
