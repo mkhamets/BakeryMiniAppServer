@@ -10,22 +10,27 @@ html, body {
 
 body {
     font-family: 'Arial', sans-serif;
-    /* Устанавливаем фоновое изображение для всего body с версией для обхода кеша */
-    background-image: url('/bot-app/Hleb.jpg?v=1.0.18'); /* Используем загруженное изображение Hleb.jpg */
+    background-color: #fff; /* Start with white background */
+    color: #333;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    flex-direction: column;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    position: relative; /* For loading overlay */
+    min-height: 100vh;
+}
+
+/* Add background only after loading */
+body.loaded {
+    background-image: url('/bot-app/Hleb.jpg?v=1.0.18');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* Чтобы фон не прокручивался */
-    background-color: #f8f8f8; /* Fallback цвет */
-    color: #333;
-    -webkit-tap-highlight-color: transparent; /* Убираем синюю подсветку при тапе на iOS */
-    display: flex; /* Для центрирования контейнера */
-    flex-direction: column; /* Элементы располагаются вертикально */
-    /* Убраны justify-content и align-items, чтобы содержимое начиналось сверху */
-    -webkit-user-select: none; /* Запрещает выделение текста на iOS */
-    -moz-user-select: none; /* Запрещает выделение текста на Firefox */
-    -ms-user-select: none; /* Запрещает выделение текста на IE/Edge */
-    user-select: none; /* Запрещает выделение текста */
+    background-attachment: fixed;
+    background-color: #f8f8f8;
 }
 
 .container {
@@ -1534,16 +1539,26 @@ body a {
 
 /* Additional CSS rules */
 /* Loading Logo Styles */
-.loading-logo-container {
+.loading-overlay {
     position: fixed;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    padding-top: 1vh;
-    z-index: 1000;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #fff;
+    z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+}
+
+.loading-logo-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 1vh;
 }
 
 .loading-logo {

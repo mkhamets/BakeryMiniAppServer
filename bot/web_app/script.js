@@ -203,11 +203,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         switch (viewName) {
             case 'loading':
-                if (loadingLogoContainer) loadingLogoContainer.classList.remove('hidden');
-                // Keep loading text hidden
-                if (mainCategoryTitle) {
-                    mainCategoryTitle.classList.add('hidden');
-                }
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+                if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
                 Telegram.WebApp.MainButton.hide();
                 break;
             case 'welcome':
@@ -977,24 +975,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initialCategory = getUrlParameter('category');
     const initialView = getUrlParameter('view');
 
-    // Show loading state first
-    displayView('loading');
+    // Show loading overlay first
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+    // Hide all content initially
+    if (mainPageContainer) mainPageContainer.classList.add('hidden');
+    if (welcomeContainer) welcomeContainer.classList.add('hidden');
+
+    // Wait for background image to load
+    const img = new Image();
+    img.src = '/bot-app/Hleb.jpg?v=1.0.18';
+    img.onload = () => {
+        // Add loaded class to body to show background
+        document.body.classList.add('loaded');
+        
+        // Hide loading overlay and show appropriate view after a short delay
+        setTimeout(() => {
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            
+            if (initialView === 'checkout') {
+                displayView('checkout');
+            } else if (initialView === 'cart' || initialCategory === 'cart') {
+                displayView('cart');
+            } else if (initialView === 'categories') {
+                displayView('categories');
+            } else if (initialCategory) {
+                displayView('products', initialCategory);
+            } else {
+                // Only show welcome if no specific view is requested
+                displayView('welcome');
+            }
+        }, 1000); // 1 second delay to show the logo
+    };
     
-    // Then transition to the appropriate view after a short delay
-    setTimeout(() => {
-        if (initialView === 'checkout') {
-            displayView('checkout');
-        } else if (initialView === 'cart' || initialCategory === 'cart') {
-            displayView('cart');
-        } else if (initialView === 'categories') {
-            displayView('categories');
-        } else if (initialCategory) {
-            displayView('products', initialCategory);
-        } else {
-            // Only show welcome if no specific view is requested
-            displayView('welcome');
-        }
-    }, 1000); // 1 second delay to show the logo
+    // Fallback in case image fails to load
+    img.onerror = () => {
+        document.body.classList.add('loaded');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        displayView('welcome');
+    };
 
     if (Telegram.WebApp.MainButton) {
         Telegram.WebApp.MainButton.onClick(() => {

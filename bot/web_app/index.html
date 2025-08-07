@@ -28,6 +28,12 @@
         </div>
     </head>
     <body>
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-logo-container" id="loading-logo-container">
+                <img src="logo-dark.svg" alt="Drazhin Logo" class="loading-logo" id="loading-logo">
+            </div>
+        </div>
         <!-- Welcome Container - теперь находится вне основного контейнера приложения -->
         <div id="welcome-container" class="welcome-container hidden">
             <h1 class="welcome-title">Пекарня Дражина — всегда с теплотой и заботой</h1>
@@ -36,11 +42,8 @@
             <button class="start-shopping-button" id="start-shopping-button">Заказать с доставкой</button>
         </div>
         <!-- Основной контейнер приложения, который будет скрыт на welcome screen -->
-        <div class="container" id="main-page-container">
+        <div class="container hidden" id="main-page-container">
             <!-- Заголовок для продуктов, корзины, оформления заказа (управляется script.js) -->
-            <div class="loading-logo-container" id="loading-logo-container">
-                <img src="logo-dark.svg" alt="Drazhin Logo" class="loading-logo" id="loading-logo">
-            </div>
             <h2 class="category-title hidden" id="main-category-title">Загрузка...</h2>
             <!-- div с id="app-content" будет содержать все динамические контейнеры -->
             <div id="app-content">
