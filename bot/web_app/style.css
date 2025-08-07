@@ -354,40 +354,45 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .quantity-button {
-    background-color: #b76c4b;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 1em;
-    margin: 0 5px;
-    transition: background-color 0.2s;
-    min-width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    color: #333;
 }
 
 .quantity-button:hover {
-    background-color: #a05a3a;
+    background-color: #f5f5f5;
+    border-color: #ccc;
 }
 
 .remove-btn {
-    background-color: #dc3545; /* Красный цвет для кнопки удаления */
-    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
+    background: transparent;
     cursor: pointer;
-    font-size: 0.9em;
-    margin-left: auto; /* Прижимает кнопку к правому краю */
-    transition: background-color 0.2s;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
 }
 
 .remove-btn:hover {
-    background-color: #c82333;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.remove-btn .svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
 }
 
 .cart-total {
@@ -1148,60 +1153,5 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-right: 6px;
 }
 
-/* Delete button styling */
-.remove-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
 
-.remove-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.remove-btn .svg {
-    width: 16px;
-    height: 16px;
-    fill: currentColor;
-}
-
-/* Cart item controls layout */
-.cart-item-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-/* Quantity controls */
-.quantity-button {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #ddd;
-    background: #fff;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-.quantity-button:hover {
-    background-color: #f5f5f5;
-    border-color: #ccc;
-}
-
-.cart-item-quantity {
-    min-width: 30px;
-    text-align: center;
-    font-weight: 500;
-}
 

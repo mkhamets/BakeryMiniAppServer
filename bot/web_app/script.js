@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="quantity-button increase-cart-quantity" data-product-id="${item.id}">+</button>
                         <button class="btn--noborder bgc-t fc-1 h-fc h-fc-acc-1 pr-0 remove-btn" data-product-id="${item.id}" type="button">
                             <svg class="svg svg-as_close fz-125">
-                                <use xlink:href="#as_close"></use>
+                                <use xlink:href="sprite.svg#as_close"></use>
                             </svg>
                         </button>
                     </div>
