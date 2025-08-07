@@ -502,6 +502,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .checkout-button {
+    width: 100%;
     padding: 12px 30px;
     font-size: 1.1em;
     border: none;
