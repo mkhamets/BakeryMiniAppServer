@@ -544,27 +544,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 
 
-.back-button {
-    display: block;
-    width: auto;
-    padding: 12px 30px;
-    margin: 20px auto 0 auto;
-    background-color: #007bff; /* Синий цвет */
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: background-color 0.2s, transform 0.1s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    min-width: 200px;
-}
 
-.back-button:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-}
 
 /* Стили для Welcome Screen */
 .welcome-container {
@@ -1383,6 +1363,111 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .product-screen-content .mx-w-300 {
     max-width: 3.5rem;
+}
+
+/* Continue Shopping Button Styles - from drazhin.by */
+.btn-arrow--left {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    font-size: .875rem;
+}
+
+.btn-arrow--left svg {
+    -webkit-transition: all .3s ease;
+    -o-transition: all .3s ease;
+    transition: all .3s ease;
+    margin-bottom: .175rem;
+}
+
+.h-fc {
+    -webkit-transition: all .3s ease;
+    -o-transition: all .3s ease;
+    transition: all .3s ease;
+}
+
+.fc-1 {
+    color: #303030;
+}
+
+.fz-75 {
+    font-size: .75rem;
+}
+
+.fz-sm-875 {
+    font-size: .875rem;
+}
+
+.pb-25 {
+    padding-bottom: .25rem;
+}
+
+.fw-500 {
+    font-weight: 500;
+}
+
+.tt-u {
+    text-transform: uppercase;
+}
+
+.ls-5 {
+    letter-spacing: .05em;
+}
+
+.d-inline-block {
+    display: inline-block !important;
+}
+
+.dec-line {
+    position: relative;
+    z-index: 1;
+}
+
+.dec-line-bottom-full:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #303030;
+}
+
+.dec-color-1:before {
+    background-color: #303030;
+}
+
+.svg-arrow-left {
+    font-size: .5rem;
+    width: 2.25em;
+}
+
+.svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+}
+
+.mb-50 {
+    margin-bottom: .5rem;
+}
+
+.ml-50 {
+    margin-left: .5rem;
+}
+
+body a {
+    color: #303030;
+    -webkit-transition: all .5s ease;
+    -o-transition: all .5s ease;
+    transition: all .5s ease;
+    text-decoration: none;
 }
 
 /* Additional CSS rules */
