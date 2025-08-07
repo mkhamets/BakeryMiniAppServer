@@ -188,6 +188,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (productScreen) productScreen.classList.add('hidden');
         if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
         if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
+        // Hide loading text when logo is hidden
+        const loadingText = document.getElementById('main-category-title');
+        if (loadingText && loadingText.textContent === 'Загрузка...') {
+            loadingText.style.display = 'none';
+        }
+        // Also hide loading text for all views except loading
+        if (viewName !== 'loading' && mainCategoryTitle) {
+            mainCategoryTitle.style.display = '';
+        }
 
         if (viewName === 'welcome' || viewName === 'categories') {
             Telegram.WebApp.BackButton.hide();
@@ -196,6 +205,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         switch (viewName) {
+            case 'loading':
+                if (loadingLogoContainer) loadingLogoContainer.classList.remove('hidden');
+                // Hide loading text when logo is shown
+                if (mainCategoryTitle) {
+                    mainCategoryTitle.style.display = 'none';
+                }
+                Telegram.WebApp.MainButton.hide();
+                break;
             case 'welcome':
                 if (welcomeContainer) welcomeContainer.classList.remove('hidden');
                 Telegram.WebApp.MainButton.hide();
@@ -963,18 +980,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initialCategory = getUrlParameter('category');
     const initialView = getUrlParameter('view');
 
-    if (initialView === 'checkout') {
-        displayView('checkout');
-    } else if (initialView === 'cart' || initialCategory === 'cart') {
-        displayView('cart');
-    } else if (initialView === 'categories') {
-        displayView('categories');
-    } else if (initialCategory) {
-        displayView('products', initialCategory);
-    } else {
-        // Only show welcome if no specific view is requested
-        displayView('welcome');
-    }
+    // Show loading state first
+    displayView('loading');
+    
+    // Then transition to the appropriate view after a short delay
+    setTimeout(() => {
+        if (initialView === 'checkout') {
+            displayView('checkout');
+        } else if (initialView === 'cart' || initialCategory === 'cart') {
+            displayView('cart');
+        } else if (initialView === 'categories') {
+            displayView('categories');
+        } else if (initialCategory) {
+            displayView('products', initialCategory);
+        } else {
+            // Only show welcome if no specific view is requested
+            displayView('welcome');
+        }
+    }, 1000); // 1 second delay to show the logo
 
     if (Telegram.WebApp.MainButton) {
         Telegram.WebApp.MainButton.onClick(() => {
