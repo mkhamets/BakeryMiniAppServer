@@ -893,6 +893,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.warn('Кнопки выбора способа доставки не найдены.');
     }
 
+    // Add pickup address selection functionality
+    const pickupAddressRadios = document.querySelectorAll('input[name="pickupAddress"]');
+    if (pickupAddressRadios.length > 0) {
+        pickupAddressRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                // Hide all pickup detail blocks
+                document.querySelectorAll('.pickup-details').forEach(block => {
+                    block.style.display = 'none';
+                });
+                
+                // Show the selected pickup detail block
+                const selectedValue = event.target.value;
+                const detailBlock = document.getElementById(`pickup-block_${selectedValue}`);
+                if (detailBlock) {
+                    detailBlock.style.display = 'block';
+                }
+            });
+        });
+    }
+
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', (event) => {
             event.preventDefault();

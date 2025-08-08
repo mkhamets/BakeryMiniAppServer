@@ -152,37 +152,118 @@
                             <div class="form-group">
                                 <label>Выберите адрес самовывоза:</label>
                                 <div class="radio-group" id="pickup-radio-group">
-                                    <!-- Адреса самовывоза будут загружены динамически -->
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ТЦ Green City"> ТЦ "Green City", ул. Притыцкого, 156
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="1" id="pickup_1" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ТЦ "Green City", ул. Притыцкого, 156
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ТЦ Замок"> ТЦ "Замок", пр‑т Победителей, 65
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="2" id="pickup_2" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ТЦ "Замок", пр‑т Победителей, 65
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ул. Л. Беды, 26"> ул. Л. Беды, 26
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="5" id="pickup_5" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ул. Л. Беды, 26
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ул. Мстиславца, 8"> ул. Мстиславца, 8
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="6" id="pickup_6" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ул. Мстиславца, 8
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ул. Лученка, 1"> ул. Лученка, 1
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="8" id="pickup_8" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ул. Лученка, 1
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ул. Авиационная, 8"> ул. Авиационная, 8
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="3" id="pickup_3" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ул. Авиационная, 8
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ул. Нововиленская, 45"> ул. Нововиленская, 45
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="10" id="pickup_10" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ул. Нововиленская, 45
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="ул. Морской риф 1/4"> ул. Морской риф 1/4
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="9" id="pickup_9" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        ул. Морской риф 1/4
                                     </label>
-                                    <label>
-                                        <input type="radio" name="pickupAddress" value="г. Заславль, ул. Вокзальная, 11"> г. Заславль, ул. Вокзальная, 11
+                                    
+                                    <label class="checkbox-container pl-250 mb-100 fz-100 ff-2 fw-400 col-form-label delivery input-parent">
+                                        <input type="radio" name="pickupAddress" value="7" id="pickup_7" data-payments="[5]">
+                                        <span class="checkmark"></span>
+                                        г. Заславль, ул. Вокзальная, 11
                                     </label>
+                                    
                                     <div class="error-message" id="pickupAddress-error">Пожалуйста, выберите адрес самовывоза.</div>
                                 </div>
                             </div>
+                            
+                            <!-- Green city -->
+                            <div id="pickup-block_1" class="toHide pickup-details" style="display: none">
+                                <p><span class="ff-2">Адрес пункта самовывоза:</span> г. Минск, ул. Притыцкого, 156, напротив 7-8 касс</p>
+                                <p><span class="ff-2">Время работы:</span> пн-вс. 10:00 - 22:00</p>
+                            </div>
+                            
+                            <!-- Замок -->
+                            <div id="pickup-block_2" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> г. Минск, пр-т.Победителей, 65, 1-й этаж, на углу магазина "Ив Роше"</p>
+                                <p><strong>Время работы:</strong> пн-вс. 10:00 - 22:00</p>
+                            </div>
+                            
+                            <!-- Новая Боровая -->
+                            <div id="pickup-block_3" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> Копище, ул.Авиационная, 8</p>
+                                <p><strong>Время работы:</strong> пн-вс. 08:30 - 22:00</p>
+                            </div>
+                            
+                            <!-- Арена Сити -->
+                            <div id="pickup-block_5" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> Минск, ул. Л.Беды, 26, внутри помещения винного магазина WINE&SPIRITS</p>
+                                <p><strong>Время работы:</strong> пн-вс. с 09-00 до 21-00</p>
+                            </div>
+                            
+                            <!-- Маяк -->
+                            <div id="pickup-block_6" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> г. Минск, ул. Мстиславца, 8, вход со двора напротив детской площадки, рядом с 3 подъездом жилого дома</p>
+                                <p><strong>Время работы:</strong> пн-вс. с 8:30 до 21:00</p>
+                            </div>
+                            
+                            <!-- Мир -->
+                            <div id="pickup-block_7" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> г. Заславль, ул. Вокзальная, 11, железнодорожная станция "Беларусь"</p>
+                                <p><strong>Время работы:</strong> ежедневно с 7-00 до 19-00</p>
+                            </div>
+                            
+                            <!-- Маяк Минск -->
+                            <div id="pickup-block_8" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> г. Минск, ул. Лученка, 1, внутри помещения винного магазина WINE&SPIRITS</p>
+                                <p><strong>Время работы:</strong> ежедневно с 9:30 до 21:30</p>
+                            </div>
+                            
+                            <!-- Пирс -->
+                            <div id="pickup-block_9" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> а/г Ратомка ул. Морской риф 1/4, вход со стороны улицы вверх по лестнице на второй этаж.</p>
+                                <p><strong>Время работы:</strong> пн-вс. с 8:00 до 20:00</p>
+                            </div>
+                            
+                            <!-- Нововиленская-->
+                            <div id="pickup-block_10" class="toHide pickup-details" style="display: none">
+                                <p><strong>Адрес пункта самовывоза:</strong> г. Минск, ул. Нововиленская 45.</p>
+                                <p><strong>Время работы:</strong> пн-вс. с 8:00 до 20:00</p>
+                            </div>
+                            
                             <div class="form-group">
                                 <label for="comment-pickup">Комментарий к самовывозу:</label>
                                 <textarea id="comment-pickup" name="commentPickup" rows="3" maxlength="250"></textarea>

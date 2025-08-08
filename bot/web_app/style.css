@@ -1638,3 +1638,153 @@ body * {
         appearance: none;
     }
 }
+
+/* Pickup address styles */
+.pickup-details {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    margin-left: 40px;
+}
+
+.pickup-details p {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+.pickup-details .ff-2 {
+    font-family: 'Yeseva One', serif;
+    font-weight: 600;
+    color: #5a2d00;
+}
+
+.pickup-details strong {
+    font-weight: 600;
+    color: #5a2d00;
+}
+
+/* Checkbox container styles for pickup addresses */
+.checkbox-container {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding-left: 35px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    line-height: 1.4;
+    color: #333;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkbox-container .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: #b76c4b;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+    background-color: #a55a3a;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background-color: #b76c4b;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    top: 6px;
+    left: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #f9f9f9;
+}
+
+/* Utility classes for pickup addresses */
+.pl-250 {
+    padding-left: 250px;
+}
+
+.mb-100 {
+    margin-bottom: 100px;
+}
+
+.fz-100 {
+    font-size: 1rem;
+}
+
+.ff-2 {
+    font-family: 'Yeseva One', serif;
+}
+
+.fw-400 {
+    font-weight: 400;
+}
+
+.col-form-label {
+    padding-top: calc(0.375rem + 1px);
+    margin-bottom: 0;
+    font-size: inherit;
+    line-height: 1.5;
+}
+
+.delivery {
+    color: #333;
+}
+
+.input-parent {
+    position: relative;
+}
+
+/* Responsive adjustments for pickup addresses */
+@media (max-width: 480px) {
+    .checkbox-container {
+        padding-left: 30px;
+        font-size: 14px;
+    }
+    
+    .checkbox-container .checkmark {
+        height: 20px;
+        width: 20px;
+    }
+    
+    .checkbox-container .checkmark:after {
+        top: 4px;
+        left: 4px;
+        width: 12px;
+        height: 12px;
+    }
+    
+    .pickup-details {
+        margin-left: 25px;
+        padding: 12px;
+    }
+    
+    .pickup-details p {
+        font-size: 13px;
+    }
+}
