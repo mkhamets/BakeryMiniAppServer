@@ -743,6 +743,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .form-group label:has(.required-star) + .delivery-method-group,
 .form-group label:has(.required-star) + .pickup-addresses-list {
     font-family: 'Yeseva One', serif;
+    font-weight: normal;
 }
 
 /* Specific styling for comment field */
@@ -751,11 +752,20 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .form-group label[for="comment-delivery"],
 .form-group label[for="comment-pickup"] {
     font-family: 'Yeseva One', serif;
+    font-weight: normal;
 }
 
 /* Ensure all labels with asterisks use Yeseva One */
 .form-group label:has(.required-star) {
     font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+/* Placeholder font styling */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    font-family: Arial, sans-serif;
+    font-weight: normal;
 }
 
 .form-group input[type="text"],
