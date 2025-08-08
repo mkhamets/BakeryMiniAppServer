@@ -263,6 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.classList.remove('hidden');
                 }
                 renderCheckoutSummary();
+                updateSubmitButtonState();
                 Telegram.WebApp.MainButton.hide();
                 break;
             default:
@@ -752,6 +753,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
+                // Check minimum order amount (70.00)
+                const totalAmount = parseFloat(checkoutTotalElement.textContent.replace(' р.', ''));
+                if (totalAmount < 70.00) {
+                    if (Telegram.WebApp.showAlert) {
+                        Telegram.WebApp.showAlert('Минимальная сумма заказа составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
+                    } else {
+                        alert('Минимальная сумма заказа составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
+                    }
+                    return;
+                }
+
                 const orderPayload = {
                     action: 'checkout_order',
                     order_details: {
@@ -979,6 +991,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             Telegram.WebApp.MainButton.show();
         } else {
             Telegram.WebApp.MainButton.hide();
+        }
+    }
+
+    function updateSubmitButtonState() {
+        const submitButton = document.querySelector('.submit-order-button');
+        if (submitButton && checkoutTotalElement) {
+            const totalAmount = parseFloat(checkoutTotalElement.textContent.replace(' р.', ''));
+            if (totalAmount < 70.00) {
+                submitButton.disabled = true;
+                submitButton.title = 'Минимальная сумма заказа составляет 70.00 р.';
+            } else {
+                submitButton.disabled = false;
+                submitButton.title = '';
+            }
         }
     }
 

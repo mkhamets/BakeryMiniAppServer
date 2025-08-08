@@ -819,22 +819,31 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .submit-order-button {
-    background-color: #28a745; /* Зеленый цвет */
-    color: white;
+    width: 100%;
+    padding: 12px 30px;
+    font-size: 1.1em;
     border: none;
     border-radius: 8px;
-    padding: 15px 20px;
-    font-size: 1.2em;
-    font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.1s;
-    margin-top: 20px;
+    transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
+    color: white;
+    min-width: 200px;
+    margin-top: 20px;
 }
 
 .submit-order-button:hover {
-    background-color: #218838;
+    background-color: #a05a3a;
     transform: translateY(-2px);
+}
+
+.submit-order-button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .cart-actions-checkout {
