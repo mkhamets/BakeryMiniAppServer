@@ -727,6 +727,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-bottom: 5px;
     font-weight: bold;
     color: #5a3e2b;
+    text-align: left;
 }
 
 .required-star {
@@ -764,6 +765,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 /* Placeholder font styling */
 .form-group input::placeholder,
 .form-group textarea::placeholder {
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+}
+
+/* Date field and dropdown font styling */
+.form-group input[type="date"],
+.form-group select,
+.form-group select option {
     font-family: Arial, sans-serif;
     font-weight: normal;
 }
@@ -1681,6 +1690,7 @@ body * {
     padding: 15px;
     margin: 15px 0;
     margin-left: 40px;
+    width: 100%;
 }
 
 .pickup-details p {
