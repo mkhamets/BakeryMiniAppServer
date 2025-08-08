@@ -794,26 +794,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: normal !important;
 }
 
-/* Hide any icons on form fields */
-.form-group input,
-.form-group select,
-.form-group textarea {
-    background-image: none !important;
-    background-repeat: no-repeat !important;
-    background-position: right center !important;
-    padding-right: 10px !important;
-}
-
-/* Remove any pseudo-elements that might be icons */
-.form-group input::before,
-.form-group input::after,
-.form-group select::before,
-.form-group select::after,
-.form-group textarea::before,
-.form-group textarea::after {
-    display: none !important;
-}
-
 .form-group input[type="text"],
 .form-group input[type="tel"],
 .form-group input[type="email"],
@@ -1727,9 +1707,9 @@ body * {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 15px;
-    margin: 15px auto;
+    margin: 15px 0;
+    margin-left: 40px;
     width: 100%;
-    max-width: 600px;
 }
 
 .pickup-details p {
