@@ -725,14 +725,15 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .form-group label {
     display: block;
     margin-bottom: 5px;
-    font-weight: bold;
+    font-size: 16px;
+    font-weight: normal;
     color: #5a3e2b;
     text-align: left;
 }
 
 .required-star {
     color: #dc3545;
-    font-weight: bold;
+    font-weight: normal;
 }
 
 /* Yeseva One font for labels with asterisks and comment field */
@@ -873,7 +874,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .courier-info-red {
     color: #dc3545; /* Красный текст для важной информации */
-    font-weight: bold;
+    font-weight: normal;
 }
 
 .pickup-info-black {
@@ -889,7 +890,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-weight: bold;
+    font-weight: normal;
     background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
     color: white;
     min-width: 200px;
@@ -1791,7 +1792,7 @@ body * {
     padding: 0;
     font-family: 'Yeseva One', serif;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: normal;
     color: #333;
     cursor: pointer;
     line-height: 1.4;
@@ -1879,7 +1880,7 @@ body * {
     padding: 0;
     font-family: 'Yeseva One', serif;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: normal;
     color: #333;
     cursor: pointer;
     line-height: 1.4;
