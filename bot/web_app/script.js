@@ -818,47 +818,79 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (method === 'courier') {
                 courierDeliveryFields.classList.remove('hidden');
                 pickupAddresses.classList.add('hidden');
-                document.getElementById('last-name').required = true;
-                document.getElementById('first-name').required = true;
-                document.getElementById('middle-name').required = true;
-                document.getElementById('phone-number').required = true;
-                document.getElementById('email').required = true;
-                document.getElementById('delivery-date').required = true;
-                document.getElementById('city').required = true;
-                document.getElementById('address-line').required = true;
+                
+                // Safely set required attributes with null checks
+                const lastNameField = document.getElementById('last-name');
+                const firstNameField = document.getElementById('first-name');
+                const middleNameField = document.getElementById('middle-name');
+                const phoneField = document.getElementById('phone-number');
+                const emailField = document.getElementById('email');
+                const cityField = document.getElementById('city');
+                const addressField = document.getElementById('address-line');
+                const commentPickupField = document.getElementById('comment-pickup');
+                
+                if (lastNameField) lastNameField.required = true;
+                if (firstNameField) firstNameField.required = true;
+                if (middleNameField) middleNameField.required = true;
+                if (phoneField) phoneField.required = true;
+                if (emailField) emailField.required = true;
+                if (cityField) cityField.required = true;
+                if (addressField) addressField.required = true;
+                
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
 
                 // Очищаем поля самовывоза при переключении на доставку курьером
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.checked = false);
-                document.getElementById('comment-pickup').value = '';
+                if (commentPickupField) commentPickupField.value = '';
             } else if (method === 'pickup') {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.remove('hidden');
-                document.getElementById('last-name').required = true;
-                document.getElementById('first-name').required = true;
-                document.getElementById('middle-name').required = true;
-                document.getElementById('phone-number').required = true;
-                document.getElementById('email').required = true;
-                document.getElementById('delivery-date').required = true;
-                document.getElementById('city').required = false;
-                document.getElementById('address-line').required = false;
+                
+                // Safely set required attributes with null checks
+                const lastNameField = document.getElementById('last-name');
+                const firstNameField = document.getElementById('first-name');
+                const middleNameField = document.getElementById('middle-name');
+                const phoneField = document.getElementById('phone-number');
+                const emailField = document.getElementById('email');
+                const cityField = document.getElementById('city');
+                const addressField = document.getElementById('address-line');
+                const commentDeliveryField = document.getElementById('comment-delivery');
+                
+                if (lastNameField) lastNameField.required = true;
+                if (firstNameField) firstNameField.required = true;
+                if (middleNameField) middleNameField.required = true;
+                if (phoneField) phoneField.required = true;
+                if (emailField) emailField.required = true;
+                if (cityField) cityField.required = false;
+                if (addressField) addressField.required = false;
+                
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = true);
 
                 // Очищаем поля доставки курьером при переключении на самовывоз
-                document.getElementById('city').value = '';
-                document.getElementById('address-line').value = '';
-                document.getElementById('comment-delivery').value = '';
+                if (cityField) cityField.value = '';
+                if (addressField) addressField.value = '';
+                if (commentDeliveryField) commentDeliveryField.value = '';
             } else {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.add('hidden');
-                document.getElementById('last-name').required = false;
-                document.getElementById('first-name').required = false;
-                document.getElementById('middle-name').required = false;
-                document.getElementById('phone-number').required = false;
-                document.getElementById('email').required = false;
-                document.getElementById('delivery-date').required = false;
-                document.getElementById('city').required = false;
-                document.getElementById('address-line').required = false;
+                
+                // Safely set required attributes with null checks
+                const lastNameField = document.getElementById('last-name');
+                const firstNameField = document.getElementById('first-name');
+                const middleNameField = document.getElementById('middle-name');
+                const phoneField = document.getElementById('phone-number');
+                const emailField = document.getElementById('email');
+                const cityField = document.getElementById('city');
+                const addressField = document.getElementById('address-line');
+                
+                if (lastNameField) lastNameField.required = false;
+                if (firstNameField) firstNameField.required = false;
+                if (middleNameField) middleNameField.required = false;
+                if (phoneField) phoneField.required = false;
+                if (emailField) emailField.required = false;
+                if (cityField) cityField.required = false;
+                if (addressField) addressField.required = false;
+                
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
             }
         }
