@@ -1700,7 +1700,7 @@ body * {
     -webkit-appearance: none;
     border: 2px solid #b76c4b;
     border-radius: 50%;
-    background-color: white;
+    background-color: #b76c4b;
     position: relative;
     flex-shrink: 0;
 }
@@ -1720,6 +1720,13 @@ body * {
     height: 8px;
     background-color: white;
     border-radius: 50%;
+}
+
+.pickup-address-item.selected {
+    background-color: white;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 0 -12px;
 }
 
 .pickup-address-item label {

@@ -898,6 +898,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (pickupAddressRadios.length > 0) {
         pickupAddressRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
+                // Remove selected class from all items
+                document.querySelectorAll('.pickup-address-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                // Add selected class to the current item
+                const currentItem = event.target.closest('.pickup-address-item');
+                if (currentItem) {
+                    currentItem.classList.add('selected');
+                }
+                
                 // Hide all pickup detail blocks
                 document.querySelectorAll('.pickup-details').forEach(block => {
                     block.style.display = 'none';
