@@ -180,7 +180,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function displayView(viewName, categoryKey = null) {
         if (welcomeContainer) welcomeContainer.classList.add('hidden');
-        if (mainPageContainer) mainPageContainer.classList.add('hidden');
         if (categoriesContainer) categoriesContainer.classList.add('hidden');
         if (productsContainer) productsContainer.classList.add('hidden');
         if (cartContainer) cartContainer.classList.add('hidden');
@@ -216,6 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 break;
             case 'welcome':
                 if (welcomeContainer) welcomeContainer.classList.remove('hidden');
+                if (mainPageContainer) mainPageContainer.classList.add('hidden');
                 Telegram.WebApp.MainButton.hide();
                 break;
             case 'categories':
@@ -225,7 +225,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.textContent = 'Наше меню';
                     mainCategoryTitle.classList.remove('hidden');
                 }
-                if (loadingLogoContainer) loadingLogoContainer.classList.remove('hidden');
                 loadCategories();
                 Telegram.WebApp.MainButton.hide();
                 break;
@@ -233,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
                 if (productsContainer) productsContainer.classList.remove('hidden');
                 if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
-                if (loadingLogoContainer) loadingLogoContainer.classList.remove('hidden');
                 loadProducts(categoryKey);
                 updateMainButtonCartInfo();
                 break;
