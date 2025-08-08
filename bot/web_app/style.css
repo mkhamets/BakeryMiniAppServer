@@ -777,6 +777,16 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: normal;
 }
 
+/* All input fields font styling */
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group textarea {
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+}
+
 .form-group input[type="text"],
 .form-group input[type="tel"],
 .form-group input[type="email"],
