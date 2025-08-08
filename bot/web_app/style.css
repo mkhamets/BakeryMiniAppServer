@@ -576,7 +576,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     height: auto;
     margin: 0 auto 30px auto;
     display: block;
-    filter: brightness(0) invert(1); /* Make logo white */
 }
 
 .welcome-title {
