@@ -335,7 +335,7 @@ async def command_start_handler(message: Message) -> None:
     )
 
 
-@dp.message(F.text == "ℹ️ О нас")
+@dp.message(F.text == "О нас")
 async def about_us(message: Message):
     """Обработчик кнопки 'О нас'."""
     await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
@@ -355,7 +355,7 @@ async def about_us(message: Message):
     )
 
 
-@dp.message(F.text == "📍 Наши адреса")
+@dp.message(F.text == "Наши адреса")
 async def show_addresses(message: Message):
     """Обработчик кнопки 'Наши адреса'."""
     await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
@@ -1046,7 +1046,7 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
 async def block_text_input(message: Message):
     """Блокирует текстовый ввод, если он не является командой или кнопкой."""
     allowed_texts = list(CATEGORY_MAP.keys()) + [
-        "ℹ️ О нас", "📍 Наши адреса", "⚡ О доставке", "/start"
+        "О нас", "Наши адреса", "⚡ О доставке", "/start"
     ]
 
     if (message.text not in allowed_texts and 

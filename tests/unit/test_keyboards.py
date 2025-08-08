@@ -89,7 +89,7 @@ class TestKeyboards(unittest.TestCase):
         menu_button = None
         for row in keyboard.keyboard:
             for button in row:
-                if "📖 Наше меню" in button.text:
+                if "Наше меню" in button.text:
                     menu_button = button
                     break
             if menu_button:
@@ -130,11 +130,11 @@ class TestKeyboards(unittest.TestCase):
                 button_texts.append(button.text)
         
         required_buttons = [
-            "📖 Наше меню",
+            "Наше меню",
             "🛒 Проверить корзину",
-            "📍 Наши адреса",
+            "Наши адреса",
             "⚡ О доставке",
-            "ℹ️ О нас"
+            "О нас"
         ]
         
         for required_button in required_buttons:

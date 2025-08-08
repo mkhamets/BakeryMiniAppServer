@@ -15,15 +15,15 @@ def generate_main_menu(cart_items_count: int = 0) -> ReplyKeyboardMarkup:
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text="📖 Наше меню", web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?view=categories"))
+                KeyboardButton(text="Наше меню", web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?view=categories"))
             ],
             [
                 KeyboardButton(text=cart_button_text, web_app=WebAppInfo(url=f"{BASE_WEBAPP_URL}?view=cart"))
             ],
             [
-                KeyboardButton(text="📍 Наши адреса"),
+                KeyboardButton(text="Наши адреса"),
                 KeyboardButton(text="⚡ О доставке"),
-                KeyboardButton(text="ℹ️ О нас")
+                KeyboardButton(text="О нас")
             ]
         ],
         resize_keyboard=True,
