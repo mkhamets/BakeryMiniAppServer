@@ -419,7 +419,7 @@ async def show_addresses(message: Message):
     )
 
 
-@dp.message(F.text == "⚡ О доставке")
+@dp.message(F.text == "О доставке")
 async def delivery_info(message: Message):
     """Обработчик кнопки 'О доставке'."""
     await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
@@ -1046,7 +1046,7 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
 async def block_text_input(message: Message):
     """Блокирует текстовый ввод, если он не является командой или кнопкой."""
     allowed_texts = list(CATEGORY_MAP.keys()) + [
-        "О нас", "Наши адреса", "⚡ О доставке", "/start"
+        "О нас", "Наши адреса", "О доставке", "/start"
     ]
 
     if (message.text not in allowed_texts and 

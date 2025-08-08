@@ -22,7 +22,7 @@ def generate_main_menu(cart_items_count: int = 0) -> ReplyKeyboardMarkup:
             ],
             [
                 KeyboardButton(text="Наши адреса"),
-                KeyboardButton(text="⚡ О доставке"),
+                KeyboardButton(text="О доставке"),
                 KeyboardButton(text="О нас")
             ]
         ],
