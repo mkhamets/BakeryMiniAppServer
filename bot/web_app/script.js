@@ -1022,37 +1022,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setupDateInput() {
-        const dateInput = document.getElementById('delivery-date');
-        if (dateInput) {
-            // Get today's date
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            // Format dates for input (YYYY-MM-DD)
-            const todayFormatted = today.toISOString().split('T')[0];
-            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
-            
-            // Set min and max dates
-            dateInput.min = todayFormatted;
-            dateInput.max = tomorrowFormatted;
-            
-            // Set default value to today
-            dateInput.value = todayFormatted;
-            
-            // Add event listener to prevent selecting other dates
-            dateInput.addEventListener('input', function() {
-                const selectedDate = new Date(this.value);
-                const today = new Date();
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                
-                // Reset to today if date is not today or tomorrow
-                if (selectedDate < today || selectedDate > tomorrow) {
-                    this.value = today.toISOString().split('T')[0];
+        // Get today's date
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Format dates for display
+        const todayFormatted = today.toISOString().split('T')[0];
+        const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+        
+        // Format dates for display in Russian
+        const formatDateForDisplay = (date) => {
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
+        };
+        
+        // Update the date display elements
+        const todayDateElement = document.getElementById('today-date');
+        const tomorrowDateElement = document.getElementById('tomorrow-date');
+        
+        if (todayDateElement) {
+            todayDateElement.textContent = formatDateForDisplay(today);
+        }
+        if (tomorrowDateElement) {
+            tomorrowDateElement.textContent = formatDateForDisplay(tomorrow);
+        }
+        
+        // Set the values for the radio buttons
+        const todayRadio = document.getElementById('date-today');
+        const tomorrowRadio = document.getElementById('date-tomorrow');
+        
+        if (todayRadio) {
+            todayRadio.value = todayFormatted;
+        }
+        if (tomorrowRadio) {
+            tomorrowRadio.value = tomorrowFormatted;
+        }
+        
+        // Set today as default selected
+        if (todayRadio) {
+            todayRadio.checked = true;
+        }
+        
+        // Add event listeners for date selection
+        const dateRadios = document.querySelectorAll('input[name="deliveryDate"]');
+        dateRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove error styling when a date is selected
+                const errorElement = document.getElementById('deliveryDate-error');
+                if (errorElement) {
+                    errorElement.style.display = 'none';
                 }
             });
-        }
+        });
     }
 
     const initialCategory = getUrlParameter('category');

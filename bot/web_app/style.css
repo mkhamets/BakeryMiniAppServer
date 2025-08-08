@@ -1611,11 +1611,14 @@ body * {
     background-color: white;
     min-height: 44px; /* iOS minimum touch target */
     line-height: 1.2;
+    position: relative;
+    z-index: 1;
 }
 
 /* Fix for iPhone date picker */
 .form-group input[type="date"]::-webkit-datetime-edit {
     padding: 0;
+    color: #333;
 }
 
 .form-group input[type="date"]::-webkit-calendar-picker-indicator {
@@ -1629,6 +1632,7 @@ body * {
     right: 0;
     top: 0;
     width: auto;
+    z-index: 2;
 }
 
 /* Ensure proper display on iOS */
@@ -1636,5 +1640,96 @@ body * {
     .form-group input[type="date"] {
         -webkit-appearance: none;
         appearance: none;
+    }
+}
+
+/* Custom Date Selection Styles */
+.date-selection-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.date-option {
+    position: relative;
+}
+
+.date-option input[type="radio"] {
+    display: none;
+}
+
+.date-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: normal;
+    color: #333;
+}
+
+.date-option input[type="radio"]:checked + .date-label {
+    background-color: #b76c4b;
+    color: white;
+    border-color: #b76c4b;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.date-label:hover {
+    background-color: #e9ecef;
+    border-color: #b76c4b;
+}
+
+.date-option input[type="radio"]:checked + .date-label:hover {
+    background-color: #a05a3a;
+}
+
+.date-day {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.date-date {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* Additional iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .form-group input[type="date"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 16px; /* Prevent zoom on iOS */
+        min-height: 44px;
+    }
+    
+    .form-group input[type="date"]:focus {
+        border-color: #b76c4b;
+        outline: none;
+        box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
+    }
+    
+    /* Disable date input styling on iOS */
+    .form-group input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+        padding: 0;
+    }
+    
+    .form-group input[type="date"]::-webkit-datetime-edit-text {
+        color: #333;
+    }
+    
+    .form-group input[type="date"]::-webkit-datetime-edit-month-field,
+    .form-group input[type="date"]::-webkit-datetime-edit-day-field,
+    .form-group input[type="date"]::-webkit-datetime-edit-year-field {
+        color: #333;
     }
 }
