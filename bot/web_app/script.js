@@ -83,7 +83,7 @@ function initializeIcons() {
     addMoneyIconToCartTotal();
     
     // Add location icons to address fields
-    addLocationIcons();
+    // addLocationIcons(); // Disabled to remove icons from city and address fields
 }
 
 // Function to add icons to delivery method labels
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await fetchProductsData();
     
-    // Initialize icons in the UI
+    // Initialize icons in the UI (excluding location icons for form fields)
     initializeIcons();
 
     function displayView(viewName, categoryKey = null) {
