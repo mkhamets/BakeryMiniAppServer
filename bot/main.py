@@ -762,6 +762,58 @@ def _format_telegram_order_summary(order_number: str, order_details: dict,
     return summary
 
 
+def _get_pickup_details(pickup_address_id: str) -> dict:
+    """Возвращает детальную информацию о пункте самовывоза по ID."""
+    pickup_details = {
+        "1": {
+            "name": "ТЦ Green City",
+            "address": "г. Минск, ул. Притыцкого, 156, напротив 7-8 касс",
+            "hours": "пн-вс. 10:00 - 22:00"
+        },
+        "2": {
+            "name": "ТЦ Замок",
+            "address": "г. Минск, пр-т.Победителей, 65, 1-й этаж, на углу магазина \"Ив Роше\"",
+            "hours": "пн-вс. 10:00 - 22:00"
+        },
+        "3": {
+            "name": "Новая Боровая",
+            "address": "Копище, ул.Авиационная, 8",
+            "hours": "пн-вс. 08:30 - 22:00"
+        },
+        "5": {
+            "name": "ул. Л. Беды 26",
+            "address": "Минск, ул. Л.Беды, 26, внутри помещения винного магазина WINE&SPIRITS",
+            "hours": "пн-вс. с 09-00 до 21-00"
+        },
+        "6": {
+            "name": "Маяк Минска – ул. Мстиславца 8",
+            "address": "г. Минск, ул. Мстиславца, 8, вход со двора напротив детской площадки, рядом с 3 подъездом жилого дома",
+            "hours": "пн-вс. с 8:30 до 21:00"
+        },
+        "7": {
+            "name": "г. Заславль",
+            "address": "г. Заславль, ул. Вокзальная, 11, железнодорожная станция \"Беларусь\"",
+            "hours": "ежедневно с 7-00 до 19-00"
+        },
+        "8": {
+            "name": "Минск Мир, ул. Лученка 1",
+            "address": "г. Минск, ул. Лученка, 1, внутри помещения винного магазина WINE&SPIRITS",
+            "hours": "ежедневно с 9:30 до 21:30"
+        },
+        "9": {
+            "name": "ЖК Пирс, а/г Ратомка Морской риф 1/4",
+            "address": "а/г Ратомка ул. Морской риф 1/4, вход со стороны улицы вверх по лестнице на второй этаж.",
+            "hours": "пн-вс. с 8:00 до 20:00"
+        },
+        "10": {
+            "name": "ул. Нововиленская, 45",
+            "address": "г. Минск, ул. Нововиленская 45.",
+            "hours": "пн-вс. с 8:00 до 20:00"
+        }
+    }
+    return pickup_details.get(pickup_address_id, {"name": "Неизвестный адрес", "address": "N/A", "hours": "N/A"})
+
+
 def _format_email_body(order_number: str, order_details: dict, cart_items: list,
                       total_amount: float, delivery_text: str) -> str:
     """Форматирует тело письма для email уведомления."""
@@ -772,8 +824,21 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
                       if order_details.get('deliveryMethod') == 'courier' else "")
     courier_comment = ("<p><b>Комментарий к доставке:</b> " + order_details.get('comment', 'N/A') + "</p>" 
                       if (order_details.get('deliveryMethod') == 'courier' and order_details.get('comment')) else "")
-    pickup_address = ("<p><b>Адрес самовывоза:</b> " + order_details.get('pickupAddress', 'N/A') + "</p>" 
-                     if order_details.get('deliveryMethod') == 'pickup' else "")
+    
+    # Обработка информации о самовывозе
+    pickup_info = ""
+    if order_details.get('deliveryMethod') == 'pickup':
+        pickup_address_id = order_details.get('pickupAddress')
+        if pickup_address_id:
+            pickup_details = _get_pickup_details(pickup_address_id)
+            pickup_info = f"""
+                <p><b>Пункт самовывоза:</b> {pickup_details['name']}</p>
+                <p><b>Адрес пункта самовывоза:</b> {pickup_details['address']}</p>
+                <p><b>Время работы:</b> {pickup_details['hours']}</p>
+            """
+        else:
+            pickup_info = "<p><b>Адрес самовывоза:</b> N/A</p>"
+    
     pickup_comment = ("<p><b>Комментарий к самовывозу:</b> " + order_details.get('commentPickup', 'N/A') + "</p>" 
                      if (order_details.get('deliveryMethod') == 'pickup' and order_details.get('commentPickup')) else "")
 
@@ -823,7 +888,7 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
                         {courier_city}
                         {courier_address}
                         {courier_comment}
-                        {pickup_address}
+                        {pickup_info}
                         {pickup_comment}
 
                         <h3>🛍️ Состав заказа:</h3>
@@ -928,10 +993,15 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
         """
 
     elif order_details.get('deliveryMethod') == 'pickup':
+        pickup_address_id = order_details.get('pickupAddress')
+        pickup_details = _get_pickup_details(pickup_address_id) if pickup_address_id else {"name": "N/A", "address": "N/A", "hours": "N/A"}
+        
         delivery_info = f"""
         <p style="font-family:Arial;color:#111111;margin:20px">
             <strong>Способ получения:</strong> Самовывоз<br>
-            <strong>Адрес самовывоза:</strong> {order_details.get('pickupAddress', 'N/A')}<br>
+            <strong>Пункт самовывоза:</strong> {pickup_details['name']}<br>
+            <strong>Адрес пункта самовывоза:</strong> {pickup_details['address']}<br>
+            <strong>Время работы:</strong> {pickup_details['hours']}<br>
             <strong>Дата самовывоза:</strong> {order_details.get('deliveryDate', 'N/A')}
         </p>
         """
