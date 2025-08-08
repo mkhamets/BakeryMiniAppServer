@@ -230,6 +230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (Telegram.WebApp.MainButton) {
                     updateMainButtonCartInfo();
                 }
+                // Scroll to top of the page when categories view is displayed
+                window.scrollTo(0, 0);
                 break;
             case 'products':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -240,6 +242,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (Telegram.WebApp.MainButton) {
                     updateMainButtonCartInfo();
                 }
+                // Scroll to top of the page when products view is displayed
+                window.scrollTo(0, 0);
                 break;
             case 'product':
                 if (productScreen) productScreen.classList.remove('hidden');
@@ -254,6 +258,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 renderCart();
                 Telegram.WebApp.MainButton.hide();
+                // Scroll to top of the page when cart view is displayed
+                window.scrollTo(0, 0);
                 break;
             case 'checkout':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -266,6 +272,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 setupDateInput();
                 updateSubmitButtonState();
                 Telegram.WebApp.MainButton.hide();
+                // Scroll to top of the page when checkout view is displayed
+                window.scrollTo(0, 0);
                 break;
             default:
                 console.warn('Неизвестное представление:', viewName);
