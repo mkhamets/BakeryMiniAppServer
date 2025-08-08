@@ -716,7 +716,7 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
 
 def _format_telegram_order_summary(order_number: str, order_details: dict, 
                                   cart_items: list, total_amount: float,
-                                  formatted_phone: str, delivery_text: str, user_id: int | None = None) -> str:
+                                  formatted_phone: str, delivery_text: str, user_id: int = None) -> str:
     """Форматирует сводку заказа для Telegram."""
 
     # Формируем кликабельную ссылку на пользователя, если user_id доступен

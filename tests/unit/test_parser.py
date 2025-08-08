@@ -112,17 +112,13 @@ class TestParser(unittest.TestCase):
         mock_response = AsyncMock()
         mock_response.text.return_value = """
         <html>
-            <div class="product-details">
-                <h1>Test Product</h1>
-                <div class="product-price">25.50 р.</div>
-                <div class="product-description">Test description</div>
-                <div class="product-weight">500 г</div>
-                <div class="product-ingredients">Flour, Sugar, Eggs</div>
-                <div class="product-nutrition">
-                    <div>Calories: 250</div>
-                    <div>Protein: 5g</div>
-                </div>
-            </div>
+            <body>
+                <h1 class="product-title">Test Product</h1>
+                <span class="price">25.50 р.</span>
+                <div class="description">Test description</div>
+                <span class="weight">500 г</span>
+                <div class="ingredients">Flour, Sugar, Eggs</div>
+            </body>
         </html>
         """
         mock_response.raise_for_status.return_value = None
@@ -131,21 +127,18 @@ class TestParser(unittest.TestCase):
         with patch('parser.BeautifulSoup') as mock_soup:
             mock_soup_instance = MagicMock()
             
-            # Mock select_one to return different elements based on selector
             def mock_select_one(selector):
                 mock_element = MagicMock()
-                if 'h1' in selector:
+                if 'product-title' in selector:
                     mock_element.get_text.return_value = "Test Product"
-                elif 'product-price' in selector:
+                elif 'price' in selector:
                     mock_element.get_text.return_value = "25.50 р."
-                elif 'product-description' in selector:
+                elif 'description' in selector:
                     mock_element.get_text.return_value = "Test description"
-                elif 'product-weight' in selector:
+                elif 'weight' in selector:
                     mock_element.get_text.return_value = "500 г"
-                elif 'product-ingredients' in selector:
+                elif 'ingredients' in selector:
                     mock_element.get_text.return_value = "Flour, Sugar, Eggs"
-                elif 'product-nutrition' in selector:
-                    mock_element.get_text.return_value = "Calories: 250\nProtein: 5g"
                 else:
                     return None
                 return mock_element
@@ -183,6 +176,8 @@ class TestParser(unittest.TestCase):
             self.assertIn('name', result)
             self.assertIn('price', result)
             self.assertIn('description', result)
+            self.assertIn('weight', result)
+            self.assertIn('ingredients', result)
 
     @patch('parser.logger')
     def test_get_product_details_http_error(self, mock_logger):
