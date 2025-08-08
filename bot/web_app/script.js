@@ -753,13 +753,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                // Check minimum order amount (70.00)
+                // Check minimum order amount (70.00) only for courier delivery
                 const totalAmount = parseFloat(checkoutTotalElement.textContent.replace(' р.', ''));
-                if (totalAmount < 70.00) {
+                const courierRadio = document.getElementById('delivery-courier-radio');
+                const isCourierSelected = courierRadio && courierRadio.checked;
+                
+                if (isCourierSelected && totalAmount < 70.00) {
                     if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Минимальная сумма заказа составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
+                        Telegram.WebApp.showAlert('Минимальная сумма заказа для доставки курьером составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
                     } else {
-                        alert('Минимальная сумма заказа составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
+                        alert('Минимальная сумма заказа для доставки курьером составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
                     }
                     return;
                 }
@@ -871,10 +874,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         deliveryMethodRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
                 toggleDeliveryFields(event.target.value);
+                updateSubmitButtonState();
             });
         });
         const initialSelectedMethod = document.querySelector('input[name="deliveryMethod"]:checked')?.value;
         toggleDeliveryFields(initialSelectedMethod);
+        updateSubmitButtonState();
     } else {
         console.warn('Кнопки выбора способа доставки не найдены.');
     }
@@ -998,9 +1003,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const submitButton = document.querySelector('.submit-order-button');
         if (submitButton && checkoutTotalElement) {
             const totalAmount = parseFloat(checkoutTotalElement.textContent.replace(' р.', ''));
-            if (totalAmount < 70.00) {
+            const courierRadio = document.getElementById('delivery-courier-radio');
+            const pickupRadio = document.getElementById('delivery-pickup-radio');
+            
+            // Check if courier delivery is selected
+            const isCourierSelected = courierRadio && courierRadio.checked;
+            
+            // Disable button only if courier is selected AND total is less than 70.00
+            if (isCourierSelected && totalAmount < 70.00) {
                 submitButton.disabled = true;
-                submitButton.title = 'Минимальная сумма заказа составляет 70.00 р.';
+                submitButton.title = 'Минимальная сумма заказа для доставки курьером составляет 70.00 р.';
             } else {
                 submitButton.disabled = false;
                 submitButton.title = '';
