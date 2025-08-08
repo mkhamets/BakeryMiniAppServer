@@ -87,37 +87,37 @@
                 <div class="checkout-container hidden" id="checkout-container">
                     <form id="checkout-form" class="checkout-form">
                         <div class="form-group">
-                            <label for="last-name">Фамилия:</label>
+                            <label for="last-name">Фамилия: <span class="required-star">*</span></label>
                             <input type="text" id="last-name" name="lastName" maxlength="50" required>
                             <div class="error-message" id="lastName-error">Пожалуйста, введите вашу фамилию.</div>
                         </div>
                         <div class="form-group">
-                            <label for="first-name">Имя:</label>
+                            <label for="first-name">Имя: <span class="required-star">*</span></label>
                             <input type="text" id="first-name" name="firstName" maxlength="50" required>
                             <div class="error-message" id="firstName-error">Пожалуйста, введите ваше имя.</div>
                         </div>
                         <div class="form-group">
-                            <label for="middle-name">Отчество:</label>
+                            <label for="middle-name">Отчество: <span class="required-star">*</span></label>
                             <input type="text" id="middle-name" name="middleName" maxlength="50" required>
                             <div class="error-message" id="middleName-error">Пожалуйста, введите ваше отчество.</div>
                         </div>
                         <div class="form-group">
-                            <label for="phone-number">Телефон:</label>
+                            <label for="phone-number">Телефон: <span class="required-star">*</span></label>
                             <input type="tel" id="phone-number" name="phoneNumber" placeholder="+375 (XX) XXX-XX-XX" maxlength="50" required>
                             <div class="error-message" id="phoneNumber-error">Пожалуйста, введите корректный номер телефона.</div>
                         </div>
                         <div class="form-group">
-                            <label for="email">Email:</label>
+                            <label for="email">Email: <span class="required-star">*</span></label>
                             <input type="email" id="email" name="email" maxlength="50" required>
                             <div class="error-message" id="email-error">Пожалуйста, введите корректный Email.</div>
                         </div>
                         <div class="form-group">
-                            <label for="delivery-date">Дата доставки/самовывоза:</label>
+                            <label for="delivery-date">Дата доставки/самовывоза: <span class="required-star">*</span></label>
                             <input type="date" id="delivery-date" name="deliveryDate" required>
                             <div class="error-message" id="deliveryDate-error">Пожалуйста, выберите дату.</div>
                         </div>
                         <div class="form-group">
-                            <label>Способ получения:</label>
+                            <label>Способ получения: <span class="required-star">*</span></label>
                             <div class="radio-group">
                                 <input type="radio" id="delivery-courier-radio" name="deliveryMethod" value="courier" checked>
                                 <label for="delivery-courier-radio">Доставка курьером</label>
@@ -127,8 +127,7 @@
                         </div>
                         <div id="courier-delivery-fields" class="delivery-address-fields">
                             <div class="form-group">
-                                <label for="city">Город <span class="required">*</span>
-                                </label>
+                                <label for="city">Город <span class="required-star">*</span></label>
                                 <select id="city" name="city"> 
                                     <!-- required будет управляться JS -->
                                     <option value="">Выберите город</option>
@@ -140,7 +139,7 @@
                                 <div class="error-message" id="city-error">Пожалуйста, выберите город.</div>
                             </div>
                             <div class="form-group">
-                                <label for="address-line">Адрес (улица, дом, квартира):</label>
+                                <label for="address-line">Адрес (улица, дом, квартира): <span class="required-star">*</span></label>
                                 <input type="text" id="address-line" name="addressLine" maxlength="50" required>
                                 <div class="error-message" id="addressLine-error">Пожалуйста, введите адрес.</div>
                             </div>

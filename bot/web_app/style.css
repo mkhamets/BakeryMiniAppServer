@@ -729,6 +729,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: #5a3e2b;
 }
 
+.required-star {
+    color: #dc3545;
+    font-weight: bold;
+}
+
 .form-group input[type="text"],
 .form-group input[type="tel"],
 .form-group input[type="email"],
