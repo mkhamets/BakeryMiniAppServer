@@ -173,12 +173,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         "category_desserts": { name: "Десерты", emoji: "🍰" }
     };
 
-    await fetchProductsData();
-    
-    // Initialize icons in the UI
-    initializeIcons();
+    try {
+        await fetchProductsData();
+        
+        // Initialize icons in the UI
+        initializeIcons();
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
 
     function displayView(viewName, categoryKey = null) {
+        console.log('displayView called with:', viewName, categoryKey);
+        
         if (welcomeContainer) welcomeContainer.classList.add('hidden');
         if (categoriesContainer) categoriesContainer.classList.add('hidden');
         if (productsContainer) productsContainer.classList.add('hidden');
@@ -1022,61 +1028,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setupDateInput() {
-        // Get today's date
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        // Format dates for display
-        const todayFormatted = today.toISOString().split('T')[0];
-        const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
-        
-        // Format dates for display in Russian
-        const formatDateForDisplay = (date) => {
-            const day = date.getDate();
-            const month = date.getMonth() + 1;
-            const year = date.getFullYear();
-            return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
-        };
-        
-        // Update the date display elements
-        const todayDateElement = document.getElementById('today-date');
-        const tomorrowDateElement = document.getElementById('tomorrow-date');
-        
-        if (todayDateElement) {
-            todayDateElement.textContent = formatDateForDisplay(today);
-        }
-        if (tomorrowDateElement) {
-            tomorrowDateElement.textContent = formatDateForDisplay(tomorrow);
-        }
-        
-        // Set the values for the radio buttons
-        const todayRadio = document.getElementById('date-today');
-        const tomorrowRadio = document.getElementById('date-tomorrow');
-        
-        if (todayRadio) {
-            todayRadio.value = todayFormatted;
-        }
-        if (tomorrowRadio) {
-            tomorrowRadio.value = tomorrowFormatted;
-        }
-        
-        // Set today as default selected
-        if (todayRadio) {
-            todayRadio.checked = true;
-        }
-        
-        // Add event listeners for date selection
-        const dateRadios = document.querySelectorAll('input[name="deliveryDate"]');
-        dateRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                // Remove error styling when a date is selected
-                const errorElement = document.getElementById('deliveryDate-error');
-                if (errorElement) {
-                    errorElement.style.display = 'none';
-                }
+        try {
+            // Get today's date
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            // Format dates for display
+            const todayFormatted = today.toISOString().split('T')[0];
+            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+            
+            // Format dates for display in Russian
+            const formatDateForDisplay = (date) => {
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+                return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
+            };
+            
+            // Update the date display elements
+            const todayDateElement = document.getElementById('today-date');
+            const tomorrowDateElement = document.getElementById('tomorrow-date');
+            
+            if (todayDateElement) {
+                todayDateElement.textContent = formatDateForDisplay(today);
+            } else {
+                console.warn('today-date element not found');
+            }
+            if (tomorrowDateElement) {
+                tomorrowDateElement.textContent = formatDateForDisplay(tomorrow);
+            } else {
+                console.warn('tomorrow-date element not found');
+            }
+            
+            // Set the values for the radio buttons
+            const todayRadio = document.getElementById('date-today');
+            const tomorrowRadio = document.getElementById('date-tomorrow');
+            
+            if (todayRadio) {
+                todayRadio.value = todayFormatted;
+            } else {
+                console.warn('date-today radio not found');
+            }
+            if (tomorrowRadio) {
+                tomorrowRadio.value = tomorrowFormatted;
+            } else {
+                console.warn('date-tomorrow radio not found');
+            }
+            
+            // Set today as default selected
+            if (todayRadio) {
+                todayRadio.checked = true;
+            }
+            
+            // Add event listeners for date selection
+            const dateRadios = document.querySelectorAll('input[name="deliveryDate"]');
+            dateRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Remove error styling when a date is selected
+                    const errorElement = document.getElementById('deliveryDate-error');
+                    if (errorElement) {
+                        errorElement.style.display = 'none';
+                    }
+                });
             });
-        });
+        } catch (error) {
+            console.error('Error in setupDateInput:', error);
+        }
     }
 
     const initialCategory = getUrlParameter('category');
@@ -1101,12 +1119,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Wait for background image to load
     const img = new Image();
     img.src = '/bot-app/Hleb.jpg?v=1.0.18';
+    
+    console.log('Loading background image...');
+    
     img.onload = () => {
+        console.log('Background image loaded successfully');
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
         
         // Hide loading overlay and show appropriate view after a short delay
         setTimeout(() => {
+            console.log('Hiding loading overlay and showing view');
             if (loadingOverlay) loadingOverlay.classList.add('hidden');
             
             if (initialView === 'checkout') {
@@ -1126,10 +1149,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Fallback in case image fails to load
     img.onerror = () => {
+        console.log('Background image failed to load, using fallback');
         document.body.classList.add('loaded');
         if (loadingOverlay) loadingOverlay.classList.add('hidden');
         displayView('welcome');
     };
+    
+    // Additional fallback timeout to ensure loading screen is hidden
+    setTimeout(() => {
+        console.log('Fallback timeout: ensuring loading screen is hidden');
+        if (loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+            loadingOverlay.classList.add('hidden');
+            if (!document.body.classList.contains('loaded')) {
+                document.body.classList.add('loaded');
+            }
+            if (initialView === 'checkout') {
+                displayView('checkout');
+            } else if (initialView === 'cart' || initialCategory === 'cart') {
+                displayView('cart');
+            } else if (initialView === 'categories') {
+                displayView('categories');
+            } else if (initialCategory) {
+                displayView('products', initialCategory);
+            } else {
+                displayView('welcome');
+            }
+        }
+    }, 3000); // 3 second fallback timeout
 
     if (Telegram.WebApp.MainButton) {
         Telegram.WebApp.MainButton.onClick(() => {
