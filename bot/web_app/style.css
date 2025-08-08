@@ -1603,3 +1603,38 @@ body * {
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
+
+/* iPhone-specific date input fixes */
+.form-group input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: white;
+    min-height: 44px; /* iOS minimum touch target */
+    line-height: 1.2;
+}
+
+/* Fix for iPhone date picker */
+.form-group input[type="date"]::-webkit-datetime-edit {
+    padding: 0;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+}
+
+/* Ensure proper display on iOS */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .form-group input[type="date"] {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+}

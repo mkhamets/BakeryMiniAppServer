@@ -263,6 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.classList.remove('hidden');
                 }
                 renderCheckoutSummary();
+                setupDateInput();
                 updateSubmitButtonState();
                 Telegram.WebApp.MainButton.hide();
                 break;
@@ -1017,6 +1018,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                 submitButton.disabled = false;
                 submitButton.title = '';
             }
+        }
+    }
+
+    function setupDateInput() {
+        const dateInput = document.getElementById('delivery-date');
+        if (dateInput) {
+            // Get today's date
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            // Format dates for input (YYYY-MM-DD)
+            const todayFormatted = today.toISOString().split('T')[0];
+            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+            
+            // Set min and max dates
+            dateInput.min = todayFormatted;
+            dateInput.max = tomorrowFormatted;
+            
+            // Set default value to today
+            dateInput.value = todayFormatted;
+            
+            // Add event listener to prevent selecting other dates
+            dateInput.addEventListener('input', function() {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                // Reset to today if date is not today or tomorrow
+                if (selectedDate < today || selectedDate > tomorrow) {
+                    this.value = today.toISOString().split('T')[0];
+                }
+            });
         }
     }
 
