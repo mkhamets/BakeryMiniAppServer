@@ -882,6 +882,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (deliveryMethodRadios.length > 0) {
         deliveryMethodRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
+                // Remove selected class from all delivery method items
+                document.querySelectorAll('.delivery-method-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                // Add selected class to the current delivery method item
+                const currentItem = event.target.closest('.delivery-method-item');
+                if (currentItem) {
+                    currentItem.classList.add('selected');
+                }
+                
                 toggleDeliveryFields(event.target.value);
                 updateSubmitButtonState();
             });
@@ -889,6 +900,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const initialSelectedMethod = document.querySelector('input[name="deliveryMethod"]:checked')?.value;
         toggleDeliveryFields(initialSelectedMethod);
         updateSubmitButtonState();
+        
+        // Set initial selected state for delivery method
+        const initialSelectedRadio = document.querySelector('input[name="deliveryMethod"]:checked');
+        if (initialSelectedRadio) {
+            const initialItem = initialSelectedRadio.closest('.delivery-method-item');
+            if (initialItem) {
+                initialItem.classList.add('selected');
+            }
+        }
     } else {
         console.warn('Кнопки выбора способа доставки не найдены.');
     }

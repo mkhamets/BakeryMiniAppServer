@@ -734,6 +734,30 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: bold;
 }
 
+/* Yeseva One font for labels with asterisks and comment field */
+.form-group label:has(.required-star),
+.form-group label:has(.required-star) + input,
+.form-group label:has(.required-star) + select,
+.form-group label:has(.required-star) + textarea,
+.form-group label:has(.required-star) + .radio-group,
+.form-group label:has(.required-star) + .delivery-method-group,
+.form-group label:has(.required-star) + .pickup-addresses-list {
+    font-family: 'Yeseva One', serif;
+}
+
+/* Specific styling for comment field */
+.form-group label[for="comment"],
+.form-group label[for="comment-order"],
+.form-group label[for="comment-delivery"],
+.form-group label[for="comment-pickup"] {
+    font-family: 'Yeseva One', serif;
+}
+
+/* Ensure all labels with asterisks use Yeseva One */
+.form-group label:has(.required-star) {
+    font-family: 'Yeseva One', serif;
+}
+
 .form-group input[type="text"],
 .form-group input[type="tel"],
 .form-group input[type="email"],
@@ -1740,6 +1764,13 @@ body * {
 
 .delivery-method-item label:hover {
     color: #b76c4b;
+}
+
+.delivery-method-item.selected {
+    background-color: white;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 0 -12px;
 }
 
 /* Pickup addresses list styles */
