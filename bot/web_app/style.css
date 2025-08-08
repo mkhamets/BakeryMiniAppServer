@@ -1667,61 +1667,78 @@ body * {
     color: #5a2d00;
 }
 
-/* Checkbox container styles for pickup addresses */
-.checkbox-container {
-    display: block;
-    position: relative;
+/* Pickup addresses list styles */
+.pickup-addresses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.pickup-address-item {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Gap equal to radio button diameter */
     cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    padding-left: 35px;
-    margin-bottom: 15px;
-    font-size: 16px;
-    line-height: 1.4;
-    color: #333;
+    padding: 8px 0;
+    background-color: white;
+    border: none;
+    border-radius: 0;
+    transition: all 0.2s ease;
 }
 
-.checkbox-container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
+.pickup-address-item:hover {
+    background-color: #f8f8f8;
 }
 
-.checkbox-container .checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 24px;
-    width: 24px;
-    background-color: #b76c4b;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
-
-.checkbox-container:hover input ~ .checkmark {
-    background-color: #a55a3a;
-}
-
-.checkbox-container input:checked ~ .checkmark {
-    background-color: #b76c4b;
-}
-
-.checkbox-container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-.checkbox-container .checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-    top: 6px;
-    left: 6px;
+.pickup-address-item input[type="radio"] {
     width: 12px;
     height: 12px;
+    margin: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #b76c4b;
     border-radius: 50%;
-    background: #f9f9f9;
+    background-color: white;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.pickup-address-item input[type="radio"]:checked {
+    background-color: #b76c4b;
+    border-color: #b76c4b;
+}
+
+.pickup-address-item input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.pickup-address-item label {
+    margin: 0;
+    padding: 0;
+    font-family: 'Yeseva One', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    line-height: 1.4;
+    background-color: white;
+    border: none;
+    border-radius: 0;
+    flex: 1;
+}
+
+.pickup-address-item label:hover {
+    color: #b76c4b;
 }
 
 /* Utility classes for pickup addresses */
