@@ -206,7 +206,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const loadingOverlay = document.getElementById('loading-overlay');
                 if (loadingOverlay) loadingOverlay.classList.remove('hidden');
                 if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
-                Telegram.WebApp.MainButton.hide();
+                // Hide all Telegram Web App buttons during loading
+                if (Telegram.WebApp.MainButton) {
+                    Telegram.WebApp.MainButton.hide();
+                }
+                if (Telegram.WebApp.BackButton) {
+                    Telegram.WebApp.BackButton.hide();
+                }
                 break;
             case 'welcome':
                 if (welcomeContainer) welcomeContainer.classList.remove('hidden');
@@ -982,6 +988,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Hide all content initially
     if (mainPageContainer) mainPageContainer.classList.add('hidden');
     if (welcomeContainer) welcomeContainer.classList.add('hidden');
+
+    // Hide Telegram Web App buttons during loading
+    if (Telegram.WebApp.MainButton) {
+        Telegram.WebApp.MainButton.hide();
+    }
+    if (Telegram.WebApp.BackButton) {
+        Telegram.WebApp.BackButton.hide();
+    }
 
     // Wait for background image to load
     const img = new Image();
