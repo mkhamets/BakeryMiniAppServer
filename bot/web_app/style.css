@@ -783,8 +783,15 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .form-group input[type="email"],
 .form-group input[type="date"],
 .form-group textarea {
-    font-family: Arial, sans-serif;
-    font-weight: normal;
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Ensure select dropdowns also use Arial */
+.form-group select,
+.form-group select option {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
 }
 
 .form-group input[type="text"],
@@ -798,6 +805,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border-radius: 8px;
     box-sizing: border-box; /* Учитываем padding в ширине */
     font-size: 1em;
+    font-family: Arial, sans-serif;
+    font-weight: normal;
     transition: border-color 0.2s;
 }
 
