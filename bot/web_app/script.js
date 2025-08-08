@@ -226,14 +226,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.classList.remove('hidden');
                 }
                 loadCategories();
-                Telegram.WebApp.MainButton.hide();
+                // Show basket button for categories view
+                if (Telegram.WebApp.MainButton) {
+                    updateMainButtonCartInfo();
+                }
                 break;
             case 'products':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
                 if (productsContainer) productsContainer.classList.remove('hidden');
                 if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
                 loadProducts(categoryKey);
-                updateMainButtonCartInfo();
+                // Show basket button for products view
+                if (Telegram.WebApp.MainButton) {
+                    updateMainButtonCartInfo();
+                }
                 break;
             case 'product':
                 if (productScreen) productScreen.classList.remove('hidden');
@@ -1032,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         Telegram.WebApp.MainButton.onClick(() => {
             displayView('cart');
         });
-        updateMainButtonCartInfo();
+        // Don't show the button during loading - it will be shown when appropriate views are displayed
     }
 
     // Инициализация кнопок, которые всегда присутствуют в DOM
