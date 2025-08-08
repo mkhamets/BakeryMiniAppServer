@@ -768,17 +768,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                // Convert radio button values to actual dates
-                let actualDeliveryDate = '';
-                if (orderDetails.deliveryDate === 'today') {
-                    const today = new Date();
-                    actualDeliveryDate = today.toISOString().split('T')[0];
-                } else if (orderDetails.deliveryDate === 'tomorrow') {
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    actualDeliveryDate = tomorrow.toISOString().split('T')[0];
-                }
-
                 const orderPayload = {
                     action: 'checkout_order',
                     order_details: {
@@ -787,7 +776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         middleName: orderDetails.middleName,
                         phone: orderDetails.phoneNumber,
                         email: orderDetails.email,
-                        deliveryDate: actualDeliveryDate,
+                        deliveryDate: orderDetails.deliveryDate,
                         deliveryMethod: orderDetails.deliveryMethod,
                         city: orderDetails.city || '',
                         addressLine: orderDetails.addressLine || '',
@@ -828,7 +817,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('middle-name').required = true;
                 document.getElementById('phone-number').required = true;
                 document.getElementById('email').required = true;
-                document.querySelectorAll('input[name="deliveryDate"]').forEach(input => input.required = true);
+                document.getElementById('delivery-date').required = true;
                 document.getElementById('city').required = true;
                 document.getElementById('address-line').required = true;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
@@ -844,7 +833,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('middle-name').required = true;
                 document.getElementById('phone-number').required = true;
                 document.getElementById('email').required = true;
-                document.querySelectorAll('input[name="deliveryDate"]').forEach(input => input.required = true);
+                document.getElementById('delivery-date').required = true;
                 document.getElementById('city').required = false;
                 document.getElementById('address-line').required = false;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = true);
@@ -861,7 +850,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('middle-name').required = false;
                 document.getElementById('phone-number').required = false;
                 document.getElementById('email').required = false;
-                document.querySelectorAll('input[name="deliveryDate"]').forEach(input => input.required = false);
+                document.getElementById('delivery-date').required = false;
                 document.getElementById('city').required = false;
                 document.getElementById('address-line').required = false;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
@@ -1033,42 +1022,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setupDateInput() {
-        const todayRadio = document.querySelector('input[name="deliveryDate"][value="today"]');
-        const tomorrowRadio = document.querySelector('input[name="deliveryDate"][value="tomorrow"]');
-        
-        if (todayRadio && tomorrowRadio) {
+        const dateInput = document.getElementById('delivery-date');
+        if (dateInput) {
             // Get today's date
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
             
-            // Format dates for display
-            const todayFormatted = today.toLocaleDateString('ru-RU', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            // Format dates for input (YYYY-MM-DD)
+            const todayFormatted = today.toISOString().split('T')[0];
+            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+            
+            // Set min and max dates
+            dateInput.min = todayFormatted;
+            dateInput.max = tomorrowFormatted;
+            
+            // Set default value to today
+            dateInput.value = todayFormatted;
+            
+            // Add event listener to prevent selecting other dates
+            dateInput.addEventListener('input', function() {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                // Reset to today if date is not today or tomorrow
+                if (selectedDate < today || selectedDate > tomorrow) {
+                    this.value = today.toISOString().split('T')[0];
+                }
             });
-            const tomorrowFormatted = tomorrow.toLocaleDateString('ru-RU', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            // Update the labels with actual dates
-            const todayLabel = todayRadio.parentElement.querySelector('.date-label');
-            const tomorrowLabel = tomorrowRadio.parentElement.querySelector('.date-label');
-            
-            if (todayLabel) {
-                todayLabel.textContent = `Сегодня (${todayFormatted})`;
-            }
-            if (tomorrowLabel) {
-                tomorrowLabel.textContent = `Завтра (${tomorrowFormatted})`;
-            }
-            
-            // Set default selection to today
-            todayRadio.checked = true;
         }
     }
 

@@ -113,18 +113,7 @@
                         </div>
                         <div class="form-group">
                             <label for="delivery-date">Дата доставки/самовывоза: <span class="required-star">*</span></label>
-                            <div class="custom-date-selector">
-                                <div class="date-options">
-                                    <label class="date-option">
-                                        <input type="radio" name="deliveryDate" value="today" checked>
-                                        <span class="date-label">Сегодня</span>
-                                    </label>
-                                    <label class="date-option">
-                                        <input type="radio" name="deliveryDate" value="tomorrow">
-                                        <span class="date-label">Завтра</span>
-                                    </label>
-                                </div>
-                            </div>
+                            <input type="date" id="delivery-date" name="deliveryDate" required>
                             <div class="error-message" id="deliveryDate-error">Пожалуйста, выберите дату.</div>
                         </div>
                         <div class="form-group">
