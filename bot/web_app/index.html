@@ -118,11 +118,15 @@
                         </div>
                         <div class="form-group">
                             <label>Способ получения: <span class="required-star">*</span></label>
-                            <div class="radio-group">
-                                <input type="radio" id="delivery-courier-radio" name="deliveryMethod" value="courier" checked>
-                                <label for="delivery-courier-radio">Доставка курьером</label>
-                                <input type="radio" id="delivery-pickup-radio" name="deliveryMethod" value="pickup">
-                                <label for="delivery-pickup-radio">Самовывоз</label>
+                            <div class="delivery-method-group">
+                                <div class="delivery-method-item">
+                                    <input type="radio" id="delivery-courier-radio" name="deliveryMethod" value="courier" checked>
+                                    <label for="delivery-courier-radio">Доставка курьером</label>
+                                </div>
+                                <div class="delivery-method-item">
+                                    <input type="radio" id="delivery-pickup-radio" name="deliveryMethod" value="pickup">
+                                    <label for="delivery-pickup-radio">Самовывоз</label>
+                                </div>
                             </div>
                         </div>
                         <div id="courier-delivery-fields" class="delivery-address-fields">

@@ -923,17 +923,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         
-        // Add click handlers for the entire pickup address item
-        const pickupAddressItems = document.querySelectorAll('.pickup-address-item');
-        pickupAddressItems.forEach(item => {
-            item.addEventListener('click', (event) => {
-                const radio = item.querySelector('input[type="radio"]');
-                if (radio && !event.target.matches('input[type="radio"]')) {
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change'));
-                }
-            });
+            // Add click handlers for the entire pickup address item
+    const pickupAddressItems = document.querySelectorAll('.pickup-address-item');
+    pickupAddressItems.forEach(item => {
+        item.addEventListener('click', (event) => {
+            const radio = item.querySelector('input[type="radio"]');
+            if (radio && !event.target.matches('input[type="radio"]')) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+            }
         });
+    });
+    
+    // Add click handlers for delivery method items
+    const deliveryMethodItems = document.querySelectorAll('.delivery-method-item');
+    deliveryMethodItems.forEach(item => {
+        item.addEventListener('click', (event) => {
+            const radio = item.querySelector('input[type="radio"]');
+            if (radio && !event.target.matches('input[type="radio"]')) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+            }
+        });
+    });
     }
 
     if (checkoutForm) {
