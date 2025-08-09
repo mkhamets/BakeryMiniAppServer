@@ -1102,48 +1102,179 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function setupDateInput() {
         const dateInput = document.getElementById('delivery-date');
-        if (dateInput) {
-            // Get today's date
+        if (!dateInput) return;
+
+        // Detect iOS device
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        
+        if (isIOS) {
+            // Create iOS date carousel
+            createIOSDateCarousel(dateInput);
+        } else {
+            // Use enhanced date input for other platforms
+            setupEnhancedDateInput(dateInput);
+        }
+    }
+
+    function createIOSDateCarousel(dateInput) {
+        // Get today's and tomorrow's dates
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Format dates for display
+        const todayFormatted = formatDateForDisplay(today);
+        const tomorrowFormatted = formatDateForDisplay(tomorrow);
+        
+        // Hide the original date input
+        dateInput.style.display = 'none';
+        
+        // Create iOS carousel container
+        const carouselContainer = document.createElement('div');
+        carouselContainer.className = 'ios-date-carousel';
+        carouselContainer.innerHTML = `
+            <div class="ios-date-carousel-header">
+                <span class="ios-date-carousel-title">Выберите дату</span>
+            </div>
+            <div class="ios-date-carousel-content">
+                <div class="ios-date-option" data-date="${today.toISOString().split('T')[0]}" data-selected="true">
+                    <div class="ios-date-label">Сегодня</div>
+                    <div class="ios-date-value">${todayFormatted}</div>
+                </div>
+                <div class="ios-date-option" data-date="${tomorrow.toISOString().split('T')[0]}">
+                    <div class="ios-date-label">Завтра</div>
+                    <div class="ios-date-value">${tomorrowFormatted}</div>
+                </div>
+            </div>
+        `;
+        
+        // Insert carousel after the label
+        const label = dateInput.previousElementSibling;
+        if (label) {
+            label.parentNode.insertBefore(carouselContainer, dateInput.nextSibling);
+        }
+        
+        // Add event listeners to carousel options
+        const dateOptions = carouselContainer.querySelectorAll('.ios-date-option');
+        dateOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selection from all options
+                dateOptions.forEach(opt => {
+                    opt.setAttribute('data-selected', 'false');
+                    opt.classList.remove('selected');
+                });
+                
+                // Select current option
+                this.setAttribute('data-selected', 'true');
+                this.classList.add('selected');
+                
+                // Update hidden input value
+                const selectedDate = this.getAttribute('data-date');
+                dateInput.value = selectedDate;
+                
+                // Trigger change event
+                dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+                
+                // Add iOS-style selection animation
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+        
+        // Set default value to today
+        dateInput.value = today.toISOString().split('T')[0];
+        
+        // Add touch/swipe support for iOS
+        let startX = 0;
+        let currentIndex = 0;
+        
+        carouselContainer.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+        });
+        
+        carouselContainer.addEventListener('touchend', function(e) {
+            const endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+            const threshold = 50;
+            
+            if (Math.abs(diffX) > threshold) {
+                if (diffX > 0 && currentIndex < 1) {
+                    // Swipe left - go to next date
+                    currentIndex++;
+                    selectDateOption(dateOptions[currentIndex]);
+                } else if (diffX < 0 && currentIndex > 0) {
+                    // Swipe right - go to previous date
+                    currentIndex--;
+                    selectDateOption(dateOptions[currentIndex]);
+                }
+            }
+        });
+        
+        function selectDateOption(option) {
+            dateOptions.forEach(opt => {
+                opt.setAttribute('data-selected', 'false');
+                opt.classList.remove('selected');
+            });
+            option.setAttribute('data-selected', 'true');
+            option.classList.add('selected');
+            dateInput.value = option.getAttribute('data-date');
+            dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
+    function setupEnhancedDateInput(dateInput) {
+        // Get today's date
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Format dates for input (YYYY-MM-DD)
+        const todayFormatted = today.toISOString().split('T')[0];
+        const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+        
+        // Set min and max dates
+        dateInput.min = todayFormatted;
+        dateInput.max = tomorrowFormatted;
+        
+        // Set default value to today
+        dateInput.value = todayFormatted;
+        
+        // Universal date input enhancements for all platforms
+        dateInput.classList.add('enhanced-date-input');
+        
+        // Add event listener to prevent selecting other dates
+        dateInput.addEventListener('input', function() {
+            const selectedDate = new Date(this.value);
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
             
-            // Format dates for input (YYYY-MM-DD)
-            const todayFormatted = today.toISOString().split('T')[0];
-            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
-            
-            // Set min and max dates
-            dateInput.min = todayFormatted;
-            dateInput.max = tomorrowFormatted;
-            
-            // Set default value to today
-            dateInput.value = todayFormatted;
-            
-            // Universal date input enhancements for all platforms
-            dateInput.classList.add('enhanced-date-input');
-            
-            // Add event listener to prevent selecting other dates
-            dateInput.addEventListener('input', function() {
-                const selectedDate = new Date(this.value);
-                const today = new Date();
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                
-                // Reset to today if date is not today or tomorrow
-                if (selectedDate < today || selectedDate > tomorrow) {
-                    this.value = today.toISOString().split('T')[0];
-                }
-            });
-            
-            // Prevent calendar scrolling on all platforms
-            dateInput.addEventListener('focus', function() {
-                this.classList.add('date-focused');
-            });
-            
-            dateInput.addEventListener('blur', function() {
-                this.classList.remove('date-focused');
-            });
-        }
+            // Reset to today if date is not today or tomorrow
+            if (selectedDate < today || selectedDate > tomorrow) {
+                this.value = today.toISOString().split('T')[0];
+            }
+        });
+        
+        // Prevent calendar scrolling on all platforms
+        dateInput.addEventListener('focus', function() {
+            this.classList.add('date-focused');
+        });
+        
+        dateInput.addEventListener('blur', function() {
+            this.classList.remove('date-focused');
+        });
+    }
+
+    function formatDateForDisplay(date) {
+        const options = { 
+            day: 'numeric', 
+            month: 'long',
+            weekday: 'short'
+        };
+        return date.toLocaleDateString('ru-RU', options);
     }
 
     const initialCategory = getUrlParameter('category');
