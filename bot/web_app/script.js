@@ -718,10 +718,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `;
 
-            // Вставляем контейнер после списка товаров в корзине, но перед итоговой суммой
-            const cartSummaryRow = document.querySelector('.cart-summary-row');
-            if (cartSummaryRow && cartItemsList) {
-                cartItemsList.parentNode.insertBefore(container, cartSummaryRow);
+            // Вставляем контейнер после итоговой суммы, но перед кнопками действий (place order button)
+            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+            if (cartActionsBottom) {
+                cartActionsBottom.parentNode.insertBefore(container, cartActionsBottom);
             }
         }
     }
