@@ -755,7 +755,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (Telegram.WebApp.showAlert) {
                         Telegram.WebApp.showAlert(errorMessages.join('\n'));
                     } else {
-                        alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                        alert('Пожалуйста, заполните все обязательные поля:\n' + errorMessages.join('\n'));
                     }
                     return;
                 }
@@ -787,7 +787,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         city: orderDetails.city || '',
                         addressLine: orderDetails.addressLine || '',
                         comment: orderDetails.commentDelivery || '',
-                        pickupAddress: orderDetails.pickupAddress || ''
+                        pickupAddress: orderDetails.pickupAddress || '',
+                        commentPickup: orderDetails.commentPickup || ''
                     },
                     cart_items: Object.values(cart).map(item => ({
                         id: item.id,
@@ -798,15 +799,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                     total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
                 };
 
-                Telegram.WebApp.sendData(JSON.stringify(orderPayload));
-
-                clearCart();
-                if (Telegram.WebApp.showAlert) {
-                    Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
-                } else {
-                    alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в вами в ближайшее время.');
+                try {
+                    console.log('Отправка заказа:', orderPayload);
+                    Telegram.WebApp.sendData(JSON.stringify(orderPayload));
+                    
+                    clearCart();
+                    
+                    if (Telegram.WebApp.showAlert) {
+                        Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                    } else {
+                        alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+                    }
+                    
+                    // Добавляем задержку перед закрытием WebApp, чтобы убедиться, что данные отправлены
+                    setTimeout(() => {
+                        Telegram.WebApp.close();
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Ошибка при отправке заказа:', error);
+                    if (Telegram.WebApp.showAlert) {
+                        Telegram.WebApp.showAlert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте снова.');
+                    } else {
+                        alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте снова.');
+                    }
                 }
-                Telegram.WebApp.close();
             });
         } else {
             console.error('Элемент с ID "checkout-form" не найден. Невозможно прикрепить слушатель отправки.');
@@ -966,96 +983,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     }
 
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', (event) => {
-            event.preventDefault();
 
-            const formData = new FormData(checkoutForm);
-            const orderDetails = {};
-            for (let [key, value] of formData.entries()) {
-                orderDetails[key] = value;
-            }
-
-            let isValid = true;
-            const errorMessages = [];
-
-            if (!orderDetails.lastName) { isValid = false; errorMessages.push('Пожалуйста, введите вашу фамилию.'); }
-            if (!orderDetails.firstName) { isValid = false; errorMessages.push('Пожалуйста, введите ваше имя.'); }
-            if (!orderDetails.middleName) { isValid = false; errorMessages.push('Пожалуйста, введите ваше отчество.'); }
-
-            const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
-            if (!orderDetails.phoneNumber || !phoneRegex.test(orderDetails.phoneNumber)) {
-                isValid = false;
-                errorMessages.push('Пожалуйста, введите корректный номер телефона.');
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!orderDetails.email || !emailRegex.test(orderDetails.email)) {
-                isValid = false;
-                errorMessages.push('Пожалуйста, введите корректный Email.');
-            }
-
-            if (!orderDetails.deliveryDate) { isValid = false; errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.'); }
-
-            if (!orderDetails.deliveryMethod) {
-                isValid = false;
-                errorMessages.push('Пожалуйста, выберите способ получения.');
-            } else {
-                if (orderDetails.deliveryMethod === 'courier') {
-                    if (!orderDetails.city) { isValid = false; errorMessages.push('Пожалуйста, выберите город для доставки.'); }
-                    if (!orderDetails.addressLine) { isValid = false; errorMessages.push('Пожалуйста, введите адрес доставки.'); }
-                } else if (orderDetails.deliveryMethod === 'pickup') {
-                    if (!orderDetails.pickupAddress) { isValid = false; errorMessages.push('Пожалуйста, выберите адрес самовывоза.'); }
-                }
-            }
-
-            if (!isValid) {
-                if (Telegram.WebApp.showAlert) {
-                    Telegram.WebApp.showAlert(errorMessages.join('\n'));
-                } else {
-                    alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
-                }
-                return;
-            }
-
-            const orderPayload = {
-                action: 'checkout_order',
-                order_details: {
-                    lastName: orderDetails.lastName,
-                    firstName: orderDetails.firstName,
-                    middleName: orderDetails.middleName,
-                    phone: orderDetails.phoneNumber,
-                    email: orderDetails.email,
-                    deliveryDate: orderDetails.deliveryDate,
-                    deliveryMethod: orderDetails.deliveryMethod,
-                    city: orderDetails.city || '',
-                    addressLine: orderDetails.addressLine || '',
-                    comment: orderDetails.commentDelivery || '',
-                    pickupAddress: orderDetails.pickupAddress || '',
-                    commentPickup: orderDetails.commentPickup || ''
-                },
-                cart_items: Object.values(cart).map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price
-                })),
-                total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
-            };
-
-            Telegram.WebApp.sendData(JSON.stringify(orderPayload));
-
-            clearCart();
-            if (Telegram.WebApp.showAlert) {
-                Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
-            } else {
-                alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в вами в ближайшее время.');
-            }
-            Telegram.WebApp.close();
-        });
-    } else {
-        console.error('Элемент с ID "checkout-form" не найден. Невозможно прикрепить слушатель отправки.');
-    }
 
     function updateMainButtonCartInfo() {
         const currentView = getCurrentView();
