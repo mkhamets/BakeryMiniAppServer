@@ -175,6 +175,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await fetchProductsData();
     
+    // Only initialize cart rendering after products data is loaded
+    renderCart();
+    
     // Initialize icons in the UI (excluding location icons for form fields)
     initializeIcons();
 
@@ -1151,8 +1154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Элемент с ID "empty-cart-menu-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');
     }
 
-    // Инициализируем отображение корзины
-    renderCart();
+    // Cart rendering is now initialized earlier after products data is loaded
 
     // Функция для показа экрана с информацией о продукте
     function showProductScreen(productId, categoryKey) {
