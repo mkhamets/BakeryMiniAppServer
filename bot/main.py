@@ -579,20 +579,18 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
         except Exception as e:
             logger.error(f"Ошибка при очистке корзины: {e}")
 
-        # Отправляем подтверждение пользователю
+        # Отправляем краткое подтверждение пользователю
         try:
             await message.answer(
-                f"Спасибо за ваш заказ! Мы свяжемся с вами в ближайшее время для подтверждения.\n"
-                f"<b>Ваш номер заказа:</b> <code>{order_number}</code>",
-                parse_mode=ParseMode.HTML,
+                f"✅ Заказ оформлен! Детали отправлены вам в личные сообщения.",
                 reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
             )
-            logger.info(f"Ответ пользователю {user_id} отправлен успешно")
+            logger.info(f"Краткий ответ пользователю {user_id} отправлен успешно")
         except Exception as e:
             logger.error(f"Ошибка при отправке ответа пользователю: {e}")
             # Пытаемся отправить простой ответ без форматирования
             try:
-                await message.answer(f"Спасибо за ваш заказ! Номер заказа: {order_number}")
+                await message.answer(f"Заказ {order_number} оформлен!")
             except Exception as e2:
                 logger.error(f"Критическая ошибка при отправке ответа: {e2}")
 
@@ -691,6 +689,24 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         else:
             logger.warning("ADMIN_EMAIL не установлен. Email уведомление не будет отправлено.")
 
+        # Отправляем подтверждение заказа клиенту в Telegram
+        if user_id:
+            try:
+                logger.info(f"Отправляем подтверждение заказа клиенту {user_id} в Telegram")
+                customer_message = _format_customer_telegram_message(
+                    order_number, order_details, cart_items, total_amount, delivery_text
+                )
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=customer_message,
+                    parse_mode=ParseMode.MARKDOWN
+                )
+                logger.info(f"Подтверждение заказа {order_number} успешно отправлено клиенту {user_id} в Telegram")
+            except Exception as e:
+                logger.error(f"Ошибка при отправке подтверждения заказа клиенту {user_id} в Telegram: {e}")
+        else:
+            logger.warning("User ID не доступен. Подтверждение заказа в Telegram клиенту не будет отправлено.")
+
         # Отправляем письмо пользователю
         user_email = order_details.get('email')
         if user_email:
@@ -712,6 +728,60 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         logger.error(f"Детали ошибки: {type(e).__name__}: {str(e)}")
         # Не перебрасываем ошибку, чтобы не прерывать обработку заказа
         logger.warning("Продолжаем обработку заказа без уведомлений")
+
+
+def _format_customer_telegram_message(order_number: str, order_details: dict, 
+                                     cart_items: list, total_amount: float, delivery_text: str) -> str:
+    """Форматирует сообщение с подтверждением заказа для клиента в Telegram."""
+    
+    # Формируем список товаров
+    items_text = ""
+    for item in cart_items:
+        item_total = float(item['price']) * int(item['quantity'])
+        items_text += f"• {item['name']} — {item['quantity']} шт. x {item['price']} р. = {item_total:.2f} р.\n"
+    
+    # Формируем информацию о доставке
+    delivery_info = ""
+    if order_details.get('deliveryMethod') == 'courier':
+        delivery_info = f"""📍 *Адрес доставки:*
+{order_details.get('city', 'N/A')}, {order_details.get('addressLine', 'N/A')}
+📅 *Дата доставки:* {order_details.get('deliveryDate', 'N/A')}"""
+        if order_details.get('comment'):
+            delivery_info += f"\n💬 *Комментарий:* {order_details.get('comment')}"
+    
+    elif order_details.get('deliveryMethod') == 'pickup':
+        pickup_address_id = order_details.get('pickupAddress')
+        pickup_details = _get_pickup_details(pickup_address_id) if pickup_address_id else {"name": "N/A", "address": "N/A", "hours": "N/A"}
+        
+        delivery_info = f"""📍 *Адрес самовывоза:*
+{pickup_details['name']}
+{pickup_details['address']}
+🕐 *Время работы:* {pickup_details['hours']}
+📅 *Дата самовывоза:* {order_details.get('deliveryDate', 'N/A')}"""
+        if order_details.get('commentPickup'):
+            delivery_info += f"\n💬 *Комментарий:* {order_details.get('commentPickup')}"
+    
+    message = f"""✅ *ЗАКАЗ ПОДТВЕРЖДЕН!*
+
+🧾 *Номер заказа:* `{order_number}`
+
+👤 *Ваши данные:*
+{order_details.get('lastName', 'N/A')} {order_details.get('firstName', 'N/A')} {order_details.get('middleName', 'N/A')}
+📞 Телефон: `{order_details.get('phone', 'N/A')}`
+📧 Email: `{order_details.get('email', 'N/A')}`
+
+🛒 *Ваш заказ:*
+{items_text}
+💰 *Общая сумма: {total_amount:.2f} р.*
+
+🚚 *Способ получения:* {delivery_text}
+{delivery_info}
+
+📞 *Мы свяжемся с вами в ближайшее время для подтверждения заказа.*
+
+Спасибо за ваш заказ! 🙏"""
+    
+    return message
 
 
 def _format_telegram_order_summary(order_number: str, order_details: dict, 
