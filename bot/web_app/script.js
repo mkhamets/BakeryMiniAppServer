@@ -166,174 +166,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isSubmitting = false; // Флаг для предотвращения двойной отправки
     let currentProductCategory = null; // Для отслеживания категории продукта
 
-    // ==================== CUSTOMER DATA STORAGE (TELEGRAM CLOUD) ====================
-    
-    const CustomerDataStorage = {
-        // Save customer data to Telegram CloudStorage
-        async save(customerData) {
-            if (!window.Telegram?.WebApp?.CloudStorage) {
-                console.warn('Telegram CloudStorage not available');
-                return false;
-            }
-            
-            try {
-                const dataToSave = {
-                    lastName: customerData.lastName || '',
-                    firstName: customerData.firstName || '',
-                    middleName: customerData.middleName || '',
-                    phoneNumber: customerData.phoneNumber || '',
-                    email: customerData.email || '',
-                    city: customerData.city || '',
-                    addressLine: customerData.addressLine || '',
-                    deliveryMethod: customerData.deliveryMethod || 'courier',
-                    pickupAddress: customerData.pickupAddress || '',
-                    savedAt: new Date().toISOString()
-                };
-                
-                await window.Telegram.WebApp.CloudStorage.setItem('customer_data', JSON.stringify(dataToSave));
-                console.log('Customer data saved to Telegram CloudStorage');
-                return true;
-            } catch (error) {
-                console.error('Error saving customer data:', error);
-                return false;
-            }
-        },
-
-        // Load customer data from Telegram CloudStorage
-        async load() {
-            if (!window.Telegram?.WebApp?.CloudStorage) {
-                console.warn('Telegram CloudStorage not available');
-                return null;
-            }
-            
-            try {
-                const savedData = await window.Telegram.WebApp.CloudStorage.getItem('customer_data');
-                if (savedData) {
-                    const customerData = JSON.parse(savedData);
-                    console.log('Customer data loaded from Telegram CloudStorage');
-                    return customerData;
-                }
-                return null;
-            } catch (error) {
-                console.error('Error loading customer data:', error);
-                return null;
-            }
-        },
-
-        // Clear customer data from Telegram CloudStorage
-        async clear() {
-            if (!window.Telegram?.WebApp?.CloudStorage) {
-                console.warn('Telegram CloudStorage not available');
-                return false;
-            }
-            
-            try {
-                await window.Telegram.WebApp.CloudStorage.removeItem('customer_data');
-                console.log('Customer data cleared from Telegram CloudStorage');
-                return true;
-            } catch (error) {
-                console.error('Error clearing customer data:', error);
-                return false;
-            }
-        }
-    };
-
-    // Function to populate checkout form with saved customer data
-    async function populateCheckoutForm() {
-        const savedData = await CustomerDataStorage.load();
-        if (!savedData) {
-            console.log('No saved customer data found');
-            return;
-        }
-
-        console.log('Populating form with saved customer data');
-
-        // Populate text inputs
-        const fieldsToPopulate = {
-            'last-name': savedData.lastName,
-            'first-name': savedData.firstName,
-            'middle-name': savedData.middleName,
-            'phone-number': savedData.phoneNumber,
-            'email': savedData.email,
-            'city': savedData.city,
-            'address-line': savedData.addressLine
-        };
-
-        Object.entries(fieldsToPopulate).forEach(([fieldId, value]) => {
-            const field = document.getElementById(fieldId);
-            if (field && value) {
-                field.value = value;
-            }
-        });
-
-        // Set delivery method radio buttons
-        if (savedData.deliveryMethod) {
-            const methodRadio = document.getElementById(`delivery-${savedData.deliveryMethod}-radio`);
-            if (methodRadio) {
-                methodRadio.checked = true;
-                // Trigger the change event to update UI
-                methodRadio.dispatchEvent(new Event('change'));
-            }
-        }
-
-        // Set pickup address if saved
-        if (savedData.pickupAddress && savedData.deliveryMethod === 'pickup') {
-            setTimeout(() => {
-                const pickupRadio = document.querySelector(`input[name="pickupAddress"][value="${savedData.pickupAddress}"]`);
-                if (pickupRadio) {
-                    pickupRadio.checked = true;
-                    // Trigger change event for UI updates
-                    pickupRadio.dispatchEvent(new Event('change'));
-                }
-            }, 100); // Small delay to ensure pickup addresses are rendered
-        }
-
-        console.log('Form populated with saved data');
-    }
-
-    // Auto-save customer data as user types (debounced)
-    let autoSaveTimeout;
-    function setupAutoSave() {
-        const formFields = [
-            'last-name', 'first-name', 'middle-name', 
-            'phone-number', 'email', 'city', 'address-line'
-        ];
-        
-        formFields.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.addEventListener('input', () => {
-                    clearTimeout(autoSaveTimeout);
-                    autoSaveTimeout = setTimeout(async () => {
-                        const formData = new FormData(checkoutForm);
-                        const orderDetails = {};
-                        for (let [key, value] of formData.entries()) {
-                            orderDetails[key] = value;
-                        }
-                        
-                        await CustomerDataStorage.save(orderDetails);
-                        console.log('Auto-saved customer data');
-                    }, 2000); // Save 2 seconds after user stops typing
-                });
-            }
-        });
-
-        // Also save when delivery method changes
-        const deliveryRadios = document.querySelectorAll('input[name="deliveryMethod"]');
-        deliveryRadios.forEach(radio => {
-            radio.addEventListener('change', async () => {
-                const formData = new FormData(checkoutForm);
-                const orderDetails = {};
-                for (let [key, value] of formData.entries()) {
-                    orderDetails[key] = value;
-                }
-                
-                await CustomerDataStorage.save(orderDetails);
-                console.log('Auto-saved delivery method preference');
-            });
-        });
-    }
-
     const CATEGORY_DISPLAY_MAP = {
         "category_bakery": { name: "Выпечка", emoji: "🥨" },
         "category_croissants": { name: "Круассаны", emoji: "🥐" },
@@ -442,10 +274,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderCheckoutSummary();
                 setupDateInput();
                 updateSubmitButtonState();
-                // Populate form with saved customer data
-                populateCheckoutForm();
-                // Setup auto-save functionality
-                setupAutoSave();
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when checkout view is displayed
                 window.scrollTo(0, 0);
@@ -1026,11 +854,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     console.log('Отправка заказа:', orderPayload);
                     Telegram.WebApp.sendData(JSON.stringify(orderPayload));
-                    
-                    // Save customer data to Telegram CloudStorage after successful order
-                    CustomerDataStorage.save(orderDetails).catch(error => {
-                        console.error('Failed to save customer data:', error);
-                    });
                     
                     clearCart();
                     
