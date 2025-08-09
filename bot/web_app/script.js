@@ -658,14 +658,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const checkoutButton = document.getElementById('checkout-button');
         if (checkoutButton) {
             checkoutButton.addEventListener('click', () => {
-                if (Object.keys(cart).length === 0) {
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Ваша корзина пуста. Добавьте товары, чтобы оформить заказ.');
-                    } else {
-                        alert('Ваша корзина пуста. Добавьте товары, чтобы оформить заказ.');
-                    }
-                    return;
-                }
+                // Remove empty basket popup - proceed to checkout regardless
                 displayView('checkout');
             });
         } else {
@@ -678,11 +671,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('cart');
         renderCart();
         updateMainButtonCartInfo();
-        if (Telegram.WebApp.showAlert) {
-            Telegram.WebApp.showAlert('Корзина очищена!');
-        } else {
-            alert('Корзина очищена!');
-        }
+
     }
 
     function renderCheckoutSummary() {
