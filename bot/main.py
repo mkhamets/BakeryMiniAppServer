@@ -252,6 +252,16 @@ async def generate_order_number():
 
 
 # Утилиты для форматирования
+def parse_price_to_float(price_str) -> float:
+    """Парсит строку цены в float, удаляя символы валюты."""
+    try:
+        if isinstance(price_str, (int, float)):
+            return float(price_str)
+        price_clean = str(price_str).replace(' р.', '').replace('р.', '').replace(' ', '').replace(',', '.')
+        return float(price_clean)
+    except (ValueError, TypeError):
+        return 0.0
+
 def format_phone_telegram(phone: str) -> str:
     """
     Преобразует белорусский номер в формат +37544746-01-99 для Telegram.
@@ -828,15 +838,18 @@ def _format_telegram_order_summary(order_number: str, order_details: dict,
         if order_details.get('comment'):
             summary += f"Комментарий к доставке: `{order_details.get('comment', 'N/A')}`\n"
     elif order_details.get('deliveryMethod') == 'pickup':
+        pickup_address_id = order_details.get('pickupAddress')
+        pickup_details = _get_pickup_details(pickup_address_id) if pickup_address_id else {"name": "N/A", "address": "N/A", "hours": "N/A"}
         summary += (f"Способ получения: {delivery_text}\n"
-                   f"Адрес самовывоза: `{order_details.get('pickupAddress', 'N/A')}`\n")
+                   f"Адрес самовывоза: `{pickup_details['name']}`\n"
+                   f"Адрес: `{pickup_details['address']}`\n")
         if order_details.get('commentPickup'):
             summary += f"Комментарий к самовывозу: `{order_details.get('commentPickup', 'N/A')}`\n"
 
     summary += f"\n*Состав заказа:*\n"
     for item in cart_items:
         try:
-            price_float = float(item.get('price', 0))
+            price_float = parse_price_to_float(item.get('price', 0))
             quantity = int(item.get('quantity', 0))
             total_item_float = price_float * quantity
             summary += (f"- `{item.get('name', 'N/A')}` x `{quantity}` шт. "
@@ -935,7 +948,7 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
     table_rows = ""
     for item in cart_items:
         try:
-            price_float = float(item.get('price', 0))
+            price_float = parse_price_to_float(item.get('price', 0))
             quantity = int(item.get('quantity', 0))
             total_item = price_float * quantity
             table_rows += f"""
@@ -1019,7 +1032,7 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
     table_rows = ""
     for item in cart_items:
         try:
-            price_float = float(item.get('price', 0))
+            price_float = parse_price_to_float(item.get('price', 0))
             quantity = int(item.get('quantity', 0))
             total_item = price_float * quantity
 
