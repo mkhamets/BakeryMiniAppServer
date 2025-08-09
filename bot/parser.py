@@ -17,7 +17,7 @@ for handler in logging.root.handlers[:]:
 
 # Настраиваем логирование с уровнем DEBUG и выводом в консоль
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.ERROR,  # Changed from DEBUG to ERROR for performance
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 )
 logger = logging.getLogger(__name__)

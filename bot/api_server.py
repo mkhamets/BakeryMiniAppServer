@@ -7,7 +7,7 @@ import aiohttp_cors
 # Настраиваем логирование для API сервера
 logger = logging.getLogger(__name__)
 if not logger.handlers:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")  # Changed from INFO to WARNING
 
 # Путь к файлу с данными о продуктах
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,12 +19,21 @@ logger.info(f"API: Директория Web App: {WEB_APP_DIR}")
 
 # Глобальная переменная для хранения данных о продуктах
 products_data = {}
+products_data_last_modified = 0
 
 async def load_products_data_for_api():
     """Загружает данные о продуктах из JSON-файла для API."""
-    global products_data
+    global products_data, products_data_last_modified
     if os.path.exists(PRODUCTS_DATA_FILE):
         try:
+            # Проверяем время модификации файла
+            current_mtime = os.path.getmtime(PRODUCTS_DATA_FILE)
+            if current_mtime <= products_data_last_modified and products_data:
+                # Файл не изменился, используем кешированные данные
+                logger.debug("API: Файл продуктов не изменился, используем кешированные данные")
+                return
+            
+            products_data_last_modified = current_mtime
             with open(PRODUCTS_DATA_FILE, 'r', encoding='utf-8') as f:
                 products_data = json.load(f)
             logger.info(f"API: Данные о продуктах успешно загружены из {PRODUCTS_DATA_FILE}.")
@@ -52,10 +61,16 @@ async def get_products_for_webapp(request):
         if not products_in_category:
             logger.warning(f"API: Категория '{category_key}' не найдена или пуста.")
             return web.json_response({"error": "Category not found or empty"}, status=404)
-        return web.json_response(products_in_category)
+        response = web.json_response(products_in_category)
+        response.headers['Cache-Control'] = 'no-cache, must-revalidate'
+        response.headers['Expires'] = '0'
+        return response
     else:
         # Если категория не указана, отдаем все продукты, сгруппированные по категориям
-        return web.json_response(products_data)
+        response = web.json_response(products_data)
+        response.headers['Cache-Control'] = 'no-cache, must-revalidate'
+        response.headers['Expires'] = '0'
+        return response
 
 async def get_categories_for_webapp(request):
     """Отдает список категорий для Web App."""
@@ -74,12 +89,19 @@ async def get_categories_for_webapp(request):
                 "name": products[0].get('category_name', key), # Используем название категории из первого продукта
                 "image": category_image
             })
-    return web.json_response(categories_list)
+    response = web.json_response(categories_list)
+    response.headers['Cache-Control'] = 'no-cache, must-revalidate'
+    response.headers['Expires'] = '0'
+    return response
 
 async def serve_main_app_page(request):
     """Отдает главный HTML файл Web App."""
     logger.info(f"API: Serving index.html for Web App entry point: {request.path}")
-    return web.FileResponse(os.path.join(WEB_APP_DIR, 'index.html'))
+    response = web.FileResponse(os.path.join(WEB_APP_DIR, 'index.html'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 async def setup_api_server():
     """Настраивает и возвращает AioHTTP Web Application Runner."""

@@ -4,6 +4,7 @@ import json
 import os
 import re
 import smtplib
+import time
 import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -23,9 +24,16 @@ from bot.config import (
 from bot.keyboards import generate_main_menu  # ИЗМЕНЕНО: Абсолютный импорт
 
 
-# Настраиваем логирование
+# Настраиваем логирование с контролем через переменную окружения
+log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
+log_level_map = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO, 
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR
+}
 logging.basicConfig(
-    level=logging.INFO,
+    level=log_level_map.get(log_level, logging.WARNING),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
@@ -47,6 +55,7 @@ logger.info(f"Ожидаемый путь к файлу счетчика: {ORDER
 
 # Глобальные переменные
 products_data = {}
+products_data_last_modified = 0
 order_counter = 0
 last_reset_month = 0
 # ИЗМЕНЕНИЕ: Создаем Lock для безопасной работы с файлом счетчика
@@ -74,9 +83,17 @@ user_carts = {}  # user_id: {product_id: quantity, ...}
 # Функции для загрузки данных
 async def load_products_data():
     """Загружает данные о продуктах из JSON-файла."""
-    global products_data
+    global products_data, products_data_last_modified
     if os.path.exists(PRODUCTS_DATA_FILE):
         try:
+            # Проверяем время модификации файла
+            current_mtime = os.path.getmtime(PRODUCTS_DATA_FILE)
+            if current_mtime <= products_data_last_modified and products_data:
+                # Файл не изменился, используем кешированные данные
+                logger.debug("Файл продуктов не изменился, используем кешированные данные")
+                return
+            
+            products_data_last_modified = current_mtime
             with open(PRODUCTS_DATA_FILE, 'r', encoding='utf-8') as f:
                 products_data = json.load(f)
             logger.info(f"Данные о продуктах успешно загружены из {PRODUCTS_DATA_FILE}. "
@@ -452,12 +469,12 @@ async def handle_web_app_data(message: Message):
     """Обработчик данных из Web App."""
     user_id = message.from_user.id
     web_app_data_raw = message.web_app_data.data
-    logger.info(f"Получены данные из Web App для пользователя {user_id}: {web_app_data_raw}")
+    # logger.info(f"Получены данные из Web App для пользователя {user_id}: {web_app_data_raw}")  # Commented for performance
 
     try:
         data = json.loads(web_app_data_raw)
         action = data.get('action')
-        logger.info(f"Действие Web App: {action}")
+        # logger.info(f"Действие Web App: {action}")  # Commented for performance
 
         if action == 'update_cart':
             await _handle_update_cart(message, data, user_id)
@@ -1194,6 +1211,16 @@ async def block_text_input(message: Message):
         await message.answer("⚠️ Пожалуйста, используйте кнопки внизу для управления ботом 👇")
 
 
+async def products_data_refresh_task():
+    """Фоновая задача для периодического обновления данных о продуктах."""
+    while True:
+        try:
+            await asyncio.sleep(300)  # Проверяем каждые 5 минут
+            await load_products_data()
+        except Exception as e:
+            logger.error(f"Ошибка в задаче обновления данных о продуктах: {e}")
+            await asyncio.sleep(60)  # При ошибке ждем 1 минуту
+
 async def main():
     """Главная функция для запуска бота."""
     logger.info("Загрузка данных о продуктах при запуске бота...")
@@ -1215,8 +1242,11 @@ async def main():
     logger.info(f"API сервер запущен на http://0.0.0.0:{port}")
     logger.info("Бот начал опрос...")
 
+    # Запускаем фоновую задачу обновления данных о продуктах
+    refresh_task = asyncio.create_task(products_data_refresh_task())
+    
     try:
-        await asyncio.gather(bot_polling_task, web_server_task)
+        await asyncio.gather(bot_polling_task, web_server_task, refresh_task)
     except asyncio.CancelledError:
         pass
     finally:

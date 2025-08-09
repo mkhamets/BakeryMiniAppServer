@@ -17,7 +17,7 @@ from bot.parser import main as parser_main
 
 # Настройка логирования
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,  # Changed from INFO to WARNING for performance
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 )
 logger = logging.getLogger(__name__)
