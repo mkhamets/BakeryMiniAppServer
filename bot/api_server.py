@@ -103,6 +103,45 @@ async def setup_api_server():
     app.router.add_get('/bot-app/', serve_main_app_page)
 
     # 4. Маршрут для статических файлов Web App (CSS, JS, images) внутри /bot-app/
+    # Добавляем обработчик для статических файлов с контролем кеширования
+    async def serve_static_with_cache_control(request):
+        """Serves static files with proper cache control headers."""
+        file_path = request.match_info.get('filename', '')
+        full_path = os.path.join(WEB_APP_DIR, file_path)
+        
+        if os.path.exists(full_path) and os.path.isfile(full_path):
+            # Определяем тип содержимого на основе расширения файла
+            content_type = 'text/html'
+            if file_path.endswith('.css'):
+                content_type = 'text/css'
+            elif file_path.endswith('.js'):
+                content_type = 'application/javascript'
+            elif file_path.endswith('.png'):
+                content_type = 'image/png'
+            elif file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
+                content_type = 'image/jpeg'
+            elif file_path.endswith('.svg'):
+                content_type = 'image/svg+xml'
+            
+            with open(full_path, 'rb') as f:
+                content = f.read()
+            
+            # Устанавливаем заголовки для предотвращения кеширования
+            headers = {
+                'Content-Type': content_type,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+            
+            return web.Response(body=content, headers=headers)
+        else:
+            return web.Response(status=404, text="File not found")
+    
+    # Маршруты для конкретных статических файлов
+    app.router.add_get('/bot-app/{filename:.+\.(css|js|png|jpg|jpeg|svg|ico)}', serve_static_with_cache_control)
+    
+    # Обычный статический маршрут для остальных файлов
     app.router.add_static('/bot-app/', path=WEB_APP_DIR, name='web_app_static')
 
     # 5. Маршрут-заглушка для любых других путей внутри /bot-app/, которые не являются статическими файлами
