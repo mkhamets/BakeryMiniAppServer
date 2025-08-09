@@ -875,16 +875,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     clearCart();
                     
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
-                    } else {
-                        alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
-                    }
-                    
-                    // Добавляем задержку перед закрытием WebApp, чтобы убедиться, что данные отправлены
-                    setTimeout(() => {
-                        Telegram.WebApp.close();
-                    }, 2000);
+                    // Закрываем WebApp без показа popup
+                    Telegram.WebApp.close();
                     
                 } catch (error) {
                     console.error('Ошибка при отправке заказа:', error);
