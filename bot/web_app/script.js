@@ -623,6 +623,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (cartTotalElement) cartTotalElement.textContent = `Общая сумма: ${total.toFixed(2)} р.`;
 
+        // Добавляем контейнер с информацией об условиях реализации продуктов
+        renderAvailabilityInfo(cartItems);
+
         // Добавляем обработчики для кнопок в корзине
         if (cartItemsList) {
             cartItemsList.querySelectorAll('.increase-cart-quantity').forEach(button => {
@@ -663,6 +666,63 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         } else {
             console.error('Элемент с ID "checkout-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');
+        }
+    }
+
+    function getProductById(productId) {
+        if (!productsData) return null;
+        
+        // Поиск продукта во всех категориях
+        for (const category of Object.values(productsData)) {
+            if (Array.isArray(category)) {
+                const product = category.find(p => p.id === productId);
+                if (product) return product;
+            }
+        }
+        return null;
+    }
+
+    function renderAvailabilityInfo(cartItems) {
+        // Удаляем существующий контейнер если он есть
+        const existingContainer = document.getElementById('availability-info-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+
+        // Находим продукты с особыми условиями реализации (availability_days не равно "N/A")
+        const productsWithAvailability = cartItems.filter(item => {
+            const product = getProductById(item.id);
+            return product && product.availability_days && product.availability_days !== 'N/A' && product.availability_days.trim() !== '';
+        });
+
+        // Если есть продукты с особыми условиями, показываем контейнер
+        if (productsWithAvailability.length > 0) {
+            const container = document.createElement('div');
+            container.id = 'availability-info-container';
+            container.className = 'availability-info-container';
+            
+            let productsListHTML = '';
+            productsWithAvailability.forEach(item => {
+                const product = getProductById(item.id);
+                if (product && product.availability_days) {
+                    productsListHTML += `<li><strong>${product.name}:</strong> ${product.availability_days}</li>`;
+                }
+            });
+
+            container.innerHTML = `
+                <div class="availability-info-content">
+                    <p class="availability-info-title">Обратите внимание, что некоторые из продуктов имеют особые условия реализации:</p>
+                    <ul class="availability-info-list">
+                        ${productsListHTML}
+                    </ul>
+                </div>
+            `;
+
+            // Вставляем контейнер после списка товаров в корзине, но перед итоговой суммой
+            const cartSummaryRow = document.querySelector('.cart-summary-row');
+            if (cartSummaryRow && cartItemsList) {
+                cartItemsList.parentNode.insertBefore(container, cartSummaryRow);
+            }
         }
     }
 

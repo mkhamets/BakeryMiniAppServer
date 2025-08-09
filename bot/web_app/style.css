@@ -1962,3 +1962,43 @@ body * {
         font-size: 13px;
     }
 }
+
+/* ==================== AVAILABILITY INFO CONTAINER ==================== */
+.availability-info-container {
+    background-color: white;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.availability-info-content {
+    margin: 0;
+}
+
+.availability-info-title {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.availability-info-list {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.availability-info-list li {
+    margin: 8px 0;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.availability-info-list li strong {
+    color: #333;
+    font-weight: 600;
+}
