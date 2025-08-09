@@ -217,11 +217,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 break;
             case 'welcome':
+                // Ensure loading overlay is hidden
+                const loadingOverlayWelcome = document.getElementById('loading-overlay');
+                if (loadingOverlayWelcome) {
+                    loadingOverlayWelcome.classList.add('hidden');
+                    loadingOverlayWelcome.style.display = 'none';
+                    loadingOverlayWelcome.style.visibility = 'hidden';
+                    loadingOverlayWelcome.style.opacity = '0';
+                    loadingOverlayWelcome.style.zIndex = '-1';
+                }
                 if (welcomeContainer) welcomeContainer.classList.remove('hidden');
                 if (mainPageContainer) mainPageContainer.classList.add('hidden');
                 Telegram.WebApp.MainButton.hide();
                 break;
             case 'categories':
+                // Ensure loading overlay is hidden
+                const loadingOverlayCategories = document.getElementById('loading-overlay');
+                if (loadingOverlayCategories) {
+                    loadingOverlayCategories.classList.add('hidden');
+                    loadingOverlayCategories.style.display = 'none';
+                    loadingOverlayCategories.style.visibility = 'hidden';
+                    loadingOverlayCategories.style.opacity = '0';
+                    loadingOverlayCategories.style.zIndex = '-1';
+                }
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
                 if (categoriesContainer) categoriesContainer.classList.remove('hidden');
                 if (mainCategoryTitle) {
@@ -1156,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Hide loading overlay and show appropriate view after a short delay
         setTimeout(() => {
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            hideLoadingOverlay();
             
             if (initialView === 'checkout') {
                 displayView('checkout');
@@ -1176,9 +1194,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fallback in case image fails to load
     img.onerror = () => {
         document.body.classList.add('loaded');
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        hideLoadingOverlay();
         displayView('welcome');
     };
+
+    // Add timeout fallback to ensure loading overlay is hidden
+    setTimeout(() => {
+        if (document.body.classList.contains('loaded')) {
+            hideLoadingOverlay();
+        }
+    }, 5000); // 5 second timeout fallback
+
+    // Helper function to hide loading overlay
+    function hideLoadingOverlay() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+            // Force remove any inline styles that might interfere
+            loadingOverlay.style.display = 'none';
+            loadingOverlay.style.visibility = 'hidden';
+            loadingOverlay.style.opacity = '0';
+            loadingOverlay.style.zIndex = '-1';
+        }
+    }
+
+    // Global function to forcefully hide loading overlay (can be called from anywhere)
+    window.forceHideLoadingOverlay = function() {
+        hideLoadingOverlay();
+    };
+
+    // Add event listener for when the page becomes visible (helps with mobile app switching)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // Page became visible, ensure loading overlay is hidden
+            setTimeout(hideLoadingOverlay, 100);
+        }
+    });
 
     if (Telegram.WebApp.MainButton) {
         Telegram.WebApp.MainButton.onClick(() => {

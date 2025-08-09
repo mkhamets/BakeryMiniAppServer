@@ -61,14 +61,14 @@ h1 {
 
 /* Скрытие элементов */
 .hidden {
-    display: none !important; /* !important для переопределения любых других стилей */
-    visibility: hidden !important; /* Дополнительно скрываем для скринридеров */
-    opacity: 0 !important; /* Для плавного скрытия, если нужно */
-    height: 0 !important; /* Чтобы не занимал место */
-    overflow: hidden !important; /* Скрываем содержимое */
-    margin: 0 !important; /* Убираем отступы */
-    padding: 0 !important; /* Убираем внутренние отступы */
-    border: none !important; /* Убираем рамки */
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    z-index: -1 !important;
 }
 
 /* Запрет масштабирования на интерактивных элементах */
@@ -1635,6 +1635,15 @@ body a {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Ensure loading overlay is properly hidden */
+.loading-overlay.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
 }
 
 .loading-logo-container {
