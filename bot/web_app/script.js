@@ -386,9 +386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                 `;
-                console.log('DEBUG: Attaching click listener to categoryCard for:', category.key, categoryCard); // NEW LOG
-                categoryCard.addEventListener('click', () => {
-                    console.log('DEBUG: Category card clicked for:', category.key); // NEW LOG
+                            categoryCard.addEventListener('click', () => {
                     displayView('products', category.key);
                     localStorage.setItem('lastProductCategory', category.key);
                 });
