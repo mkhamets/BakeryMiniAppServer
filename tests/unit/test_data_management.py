@@ -192,11 +192,13 @@ class TestDataManagement(unittest.TestCase):
 
         mock_open.assert_called_once()
 
-    @patch('bot.main.load_order_counter')
     @patch('bot.main.save_order_counter')
-    def test_generate_order_number_success(self, mock_save, mock_load):
+    def test_generate_order_number_success(self, mock_save):
         """Test successful order number generation."""
-        mock_load.return_value = {"counter": 42, "last_reset_month": 8}
+        # Set global variables directly since the function uses them
+        import bot.main
+        bot.main.order_counter = 42
+        bot.main.last_reset_month = 8  # Current month, no reset
         
         result = asyncio.run(generate_order_number())
 
@@ -204,33 +206,35 @@ class TestDataManagement(unittest.TestCase):
         self.assertTrue(result.startswith("#"))
         mock_save.assert_called_once()
 
-    @patch('bot.main.load_order_counter')
     @patch('bot.main.save_order_counter')
-    def test_generate_order_number_month_reset(self, mock_save, mock_load):
+    def test_generate_order_number_month_reset(self, mock_save):
         """Test order number generation with month reset."""
-        # Simulate month change
-        mock_load.return_value = {"counter": 100, "last_reset_month": 7}  # Previous month
+        # Set global variables directly since the function uses them
+        import bot.main
+        bot.main.order_counter = 100
+        bot.main.last_reset_month = 7  # Previous month (July), current is August (8)
         
         result = asyncio.run(generate_order_number())
 
         self.assertIsInstance(result, str)
         self.assertTrue(result.startswith("#"))
         # Counter should reset to 1 for new month
-        self.assertIn("1", result)
+        self.assertIn("001", result)  # Counter 1 padded to 3 digits
 
-    @patch('bot.main.load_order_counter')
     @patch('bot.main.save_order_counter')
-    def test_generate_order_number_year_change(self, mock_save, mock_load):
+    def test_generate_order_number_year_change(self, mock_save):
         """Test order number generation with year change."""
-        # Simulate year change
-        mock_load.return_value = {"counter": 100, "last_reset_month": 12}  # December
+        # Set global variables directly since the function uses them
+        import bot.main
+        bot.main.order_counter = 100
+        bot.main.last_reset_month = 12  # December, current is August (8) - month changed
         
         result = asyncio.run(generate_order_number())
 
         self.assertIsInstance(result, str)
         self.assertTrue(result.startswith("#"))
-        # Counter should reset to 1 for new year
-        self.assertIn("1", result)
+        # Counter should reset to 1 for new year/month
+        self.assertIn("001", result)  # Counter 1 padded to 3 digits
 
 
 class TestDataValidation(unittest.TestCase):

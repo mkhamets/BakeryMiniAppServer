@@ -1702,6 +1702,140 @@ body * {
     }
 }
 
+/* iOS Telegram WebApp Date Picker Fixes */
+/* Target iOS devices specifically */
+@supports (-webkit-touch-callout: none) {
+    /* iOS-specific date picker overrides for Telegram WebApp */
+    .form-group input[type="date"] {
+        /* Force proper contrast for iOS Telegram WebApp */
+        color: #333 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        padding: 8px 12px !important;
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        line-height: 1.2 !important;
+        min-height: 44px !important; /* iOS minimum touch target */
+    }
+    
+    /* iOS Telegram WebApp date picker calendar styling */
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+        background-color: #f0f0f0 !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        padding: 4px !important;
+        cursor: pointer !important;
+        opacity: 0.8 !important;
+    }
+    
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        background-color: #e0e0e0 !important;
+        opacity: 1 !important;
+    }
+    
+    /* iOS Telegram WebApp date input focus state */
+    .form-group input[type="date"]:focus {
+        outline: none !important;
+        border-color: #b76c4b !important;
+        box-shadow: 0 0 0 2px rgba(183, 108, 75, 0.2) !important;
+    }
+    
+    /* iOS Telegram WebApp date input placeholder */
+    .form-group input[type="date"]::-webkit-datetime-edit {
+        color: #333 !important;
+        font-weight: normal !important;
+    }
+    
+    /* iOS Telegram WebApp date input when no date selected */
+    .form-group input[type="date"]:invalid::-webkit-datetime-edit {
+        color: #999 !important;
+    }
+}
+
+/* Additional Telegram WebApp specific fixes for iOS */
+@media screen and (max-width: 767px) and (-webkit-min-device-pixel-ratio: 2) {
+    /* Target high-DPI iOS devices (iPhone, iPad) */
+    .form-group input[type="date"] {
+        /* Ensure proper rendering in Telegram WebApp */
+        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+    }
+}
+
+/* iOS Telegram WebApp Calendar Picker Enhancement */
+@supports (-webkit-touch-callout: none) {
+    /* Override iOS Telegram WebApp calendar picker styles */
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+        /* Enhanced calendar button styling */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: 16px 16px !important;
+        width: 24px !important;
+        height: 24px !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        background-color: #f8f8f8 !important;
+        cursor: pointer !important;
+        opacity: 0.9 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        background-color: #e8e8e8 !important;
+        border-color: #b76c4b !important;
+        opacity: 1 !important;
+        transform: scale(1.05) !important;
+    }
+    
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator:active {
+        transform: scale(0.95) !important;
+    }
+}
+
+/* iOS-specific date input enhancements */
+.ios-date-input {
+    /* Enhanced iOS date input styling */
+    background-color: #ffffff !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.ios-date-input:focus,
+.ios-date-focused {
+    border-color: #b76c4b !important;
+    box-shadow: 0 0 0 3px rgba(183, 108, 75, 0.15) !important;
+    background-color: #fefefe !important;
+    transform: translateY(-1px) !important;
+}
+
+.ios-date-input[data-ios-date="true"] {
+    /* Additional iOS Telegram WebApp specific styling */
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    cursor: pointer !important;
+}
+
+/* iOS Telegram WebApp date input placeholder enhancement */
+.ios-date-input::-webkit-datetime-edit {
+    color: #333 !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.5px !important;
+}
+
+.ios-date-input:invalid::-webkit-datetime-edit {
+    color: #999 !important;
+    font-style: italic !important;
+}
+
 /* Pickup address styles */
 .pickup-details {
     background-color: #f9f9f9;

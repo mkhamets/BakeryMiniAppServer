@@ -1101,6 +1101,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Set default value to today
             dateInput.value = todayFormatted;
             
+            // iOS Telegram WebApp specific enhancements
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                // Add iOS-specific classes for better styling
+                dateInput.classList.add('ios-date-input');
+                
+                // Force iOS to show proper date picker
+                dateInput.setAttribute('data-ios-date', 'true');
+                
+                // Add touch-friendly styling
+                dateInput.style.webkitAppearance = 'none';
+                dateInput.style.appearance = 'none';
+                
+                // Ensure proper font size to prevent zoom
+                dateInput.style.fontSize = '16px';
+                
+                // Add iOS-specific event listeners
+                dateInput.addEventListener('focus', function() {
+                    this.classList.add('ios-date-focused');
+                });
+                
+                dateInput.addEventListener('blur', function() {
+                    this.classList.remove('ios-date-focused');
+                });
+            }
+            
             // Add event listener to prevent selecting other dates
             dateInput.addEventListener('input', function() {
                 const selectedDate = new Date(this.value);
@@ -1111,6 +1136,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Reset to today if date is not today or tomorrow
                 if (selectedDate < today || selectedDate > tomorrow) {
                     this.value = today.toISOString().split('T')[0];
+                }
+                
+                // iOS Telegram WebApp: Force visual update
+                if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                    this.style.webkitTransform = 'translateZ(0)';
+                    this.style.transform = 'translateZ(0)';
                 }
             });
         }
