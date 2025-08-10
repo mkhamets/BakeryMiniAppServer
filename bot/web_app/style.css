@@ -321,6 +321,9 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     padding: 20px;
     margin-bottom: 20px;
     width: 100%; /* Занимает всю доступную ширину */
+    max-width: 600px; /* Стандартизируем максимальную ширину */
+    margin-left: auto;
+    margin-right: auto;
     box-sizing: border-box; /* Учитываем padding в ширине */
 }
 
@@ -592,9 +595,9 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     background-color: rgba(0, 0, 0, 0.6); /* Полупрозрачный черный фон, немного темнее */
     border-radius: 12px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-    padding: 30px;
-    max-width: 500px;
-    width: 90%;
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -1009,6 +1012,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin: 0 auto;
     min-height: 100vh;
     box-sizing: border-box;
+    width: 100%; /* Добавляем полную ширину для консистентности */
 }
 
 #product-screen-body {
@@ -1796,7 +1800,7 @@ body * {
     padding: 15px;
     margin: 15px auto;
     width: calc(100% - 30px);
-    max-width: 500px;
+    max-width: 600px; /* Стандартизируем максимальную ширину */
     box-sizing: border-box;
 }
 
@@ -2040,7 +2044,7 @@ body * {
         margin: 15px auto;
         padding: 12px;
         width: calc(100% - 20px);
-        max-width: 450px;
+        max-width: 600px; /* Стандартизируем максимальную ширину */
         box-sizing: border-box;
     }
     
@@ -2055,7 +2059,10 @@ body * {
     border: 2px solid #ff0000;
     border-radius: 8px;
     padding: 16px;
-    margin: 16px 0;
+    margin: 16px auto; /* Центрируем контейнер */
+    max-width: 600px; /* Стандартизируем максимальную ширину */
+    width: calc(100% - 32px); /* Учитываем отступы */
+    box-sizing: border-box;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
