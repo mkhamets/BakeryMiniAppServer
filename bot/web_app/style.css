@@ -327,6 +327,17 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     box-sizing: border-box; /* Учитываем padding в ширине */
 }
 
+/* FIX FOR DELIVERY SCREEN: Override max-width to allow proper form layout */
+.checkout-container {
+    max-width: 800px; /* Allow delivery screen to be wider for form fields */
+}
+
+/* Ensure delivery form elements have proper spacing */
+.checkout-form {
+    width: 100%;
+    max-width: 100%;
+}
+
 .cart-item {
     display: flex;
     align-items: flex-start;
