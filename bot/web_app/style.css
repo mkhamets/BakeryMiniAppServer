@@ -757,6 +757,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: normal;
 }
 
+.category-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 10px;
+    display: block;
+    object-fit: contain;
+}
+
 .category-link-text {
     display: flex;
     align-items: center;

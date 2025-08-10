@@ -211,10 +211,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", emoji: "🥨" },
-        "category_croissants": { name: "Круассаны", emoji: "🥐" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", emoji: "🍞" },
-        "category_desserts": { name: "Десерты", emoji: "🍰" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg" }
     };
 
     await fetchProductsData();
@@ -436,9 +436,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             categoriesGrid.className = 'categories-grid';
 
             categoriesData.forEach(category => {
-                const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, emoji: '' };
+                const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, icon: '' };
                 const categoryDisplayName = categoryInfo.name;
-                const categoryEmoji = categoryInfo.emoji;
+                const categoryIcon = categoryInfo.icon;
 
                 const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
                     ? productsData[category.key][0].image_url
@@ -454,6 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          class="category-image"
                          onerror="this.onerror=null;this.src='https://placehold.co/300x200/cccccc/333333?text=No+Image';">
                     <div class="category-text-wrapper">
+                        ${categoryIcon ? `<img src="${categoryIcon}" alt="${categoryDisplayName}" class="category-icon">` : ''}
                         <h3 class="category-title-text">${categoryDisplayName}</h3>
                         <div class="category-link-text">
                             <span>перейти в каталог</span>
