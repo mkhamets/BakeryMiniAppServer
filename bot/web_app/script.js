@@ -211,10 +211,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg" }
+        "category_bakery": { name: "Выпечка", emoji: "🥨", image: "images/bakery.svg" },
+        "category_croissants": { name: "Круассаны", emoji: "🥐", image: "images/crouasan.svg" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", emoji: "🍞", image: "images/bread1.svg" },
+        "category_desserts": { name: "Десерты", emoji: "🍰", image: "images/cookie.svg" }
     };
 
     await fetchProductsData();
@@ -499,7 +499,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const products = productsData[categoryKey];
-        if (mainCategoryTitle) mainCategoryTitle.textContent = CATEGORY_DISPLAY_MAP[categoryKey] ? CATEGORY_DISPLAY_MAP[categoryKey].name : 'Продукты';
+        
+        // Update category title with icon for category screens (not main menu)
+        if (mainCategoryTitle) {
+            const categoryInfo = CATEGORY_DISPLAY_MAP[categoryKey];
+            if (categoryInfo && categoryInfo.image) {
+                // Create icon + title container
+                mainCategoryTitle.innerHTML = `
+                    <div class="category-title-with-icon">
+                        <img src="${categoryInfo.image}" alt="${categoryInfo.name}" class="category-icon" onerror="this.style.display='none';">
+                        <span>${categoryInfo.name}</span>
+                    </div>
+                `;
+            } else {
+                mainCategoryTitle.textContent = 'Продукты';
+            }
+        }
+        
         if (productListElement) productListElement.innerHTML = '';
 
         products.forEach(product => {

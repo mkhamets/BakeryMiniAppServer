@@ -66,6 +66,21 @@ h1 {
     font-weight: bold;
 }
 
+/* Category title with icon styling for category screens */
+.category-title-with-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.category-icon {
+    width: 1.5em;
+    height: 1.5em;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 /* Скрытие элементов */
 .hidden {
     display: none !important;
