@@ -27,7 +27,7 @@ body {
 
 /* Add background only after loading */
 body.loaded {
-    background-image: url('/bot-app/Hleb.jpg?v=1.0.18');
+    background-image: url('/bot-app/images/Hleb.jpg?v=1.0.18');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -52,6 +52,9 @@ h1 {
     text-align: center;
     color: #5a2d00;
     margin-bottom: 20px;
+    font-size: 1.8em;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
 }
 
 .category-title {
@@ -179,6 +182,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-name {
+    font-family: 'Yeseva One', serif;
     font-weight: normal;
     font-size: 1rem;
     margin-bottom: 3px;
@@ -195,12 +199,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 /* Стиль для информации о доступности в скобках */
 .product-name .availability-info {
     font-size: 0.9rem; 
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
     color: #bc5757;
     font-weight: normal;
 }
 
 .product-price {
     font-size: 1.1rem;
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
     color: #000000;
     font-weight: bold;
     flex-shrink: 0;
@@ -367,8 +373,19 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     flex-direction: column;
 }
 
+.cart-item-details p {
+    margin: 0 0 10px 0;
+    color: #666;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 0.9em;
+    display: flex;
+}
+
 .cart-item-name {
     margin: 0 0 5px 0;
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
+    font-weight: normal;
     font-size: 1.1em;
     color: #5a3e2b;
 }
@@ -376,6 +393,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .cart-item-price {
     margin: 0 0 10px 0;
     color: #666;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
     font-size: 0.9em;
     display: flex;
     justify-content: space-between;
@@ -470,7 +489,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .cart-total {
     font-size: 1.3em;
-    font-weight: bold;
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
+    font-weight: normal;
     color: #333;
     text-align: center;
     margin: 20px 0;
@@ -516,7 +536,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .cart-total {
     font-size: 1.3em;
-    font-weight: bold;
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
+    font-weight: normal;
     color: #333;
     text-align: center;
     margin: 0;
