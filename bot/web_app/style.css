@@ -715,11 +715,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .checkout-form {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Пространство между группами полей */
+    gap: 10px; /* Пространство между группами полей */
 }
 
 .form-group {
-    margin-bottom: 7.5px;
+    margin-bottom: 5px;
 }
 
 .form-group label {
@@ -1788,8 +1788,8 @@ body * {
 .delivery-method-group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 5px;
+    margin-top: 5px;
 }
 
 .delivery-method-item {
@@ -1870,8 +1870,8 @@ body * {
 .pickup-addresses-list {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Reduced by 1/3 from 15px to 10px */
-    margin-top: 15px;
+    gap: 5px; /* Reduced by 1/3 from 15px to 10px */
+    margin-top: 10px;
 }
 
 .pickup-address-item {
