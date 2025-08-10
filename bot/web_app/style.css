@@ -1788,6 +1788,195 @@ body * {
     font-style: italic !important;
 }
 
+/* iOS Date Picker Modal Styles */
+.ios-date-picker-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.ios-date-picker-modal.hidden {
+    display: none;
+}
+
+.ios-date-picker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.ios-date-picker-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    background-color: #ffffff;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.ios-date-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f8f8;
+    border-radius: 16px 16px 0 0;
+}
+
+.ios-date-picker-cancel,
+.ios-date-picker-done {
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: #007aff;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.ios-date-picker-cancel:hover,
+.ios-date-picker-done:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.ios-date-picker-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.ios-date-picker-wheels {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    background-color: #ffffff;
+}
+
+.ios-date-picker-wheel {
+    flex: 1;
+    text-align: center;
+}
+
+.ios-date-picker-wheel-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ios-date-picker-wheel-content {
+    height: 120px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+}
+
+.ios-date-picker-wheel-item {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.ios-date-picker-wheel-item:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.ios-date-picker-wheel-item.selected {
+    background-color: #007aff;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.ios-date-picker-wheel-item.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+/* iOS-specific enhancements */
+@supports (-webkit-touch-callout: none) {
+    .ios-date-picker-container {
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .ios-date-picker-header {
+        background-color: #f2f2f7;
+    }
+    
+    .ios-date-picker-wheel-content {
+        background-color: #f2f2f7;
+        border-color: #d1d1d6;
+    }
+}
+
+/* iOS Date Button Styling */
+.ios-date-button {
+    background-color: #ffffff !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.3s ease !important;
+    min-height: 44px !important;
+    line-height: 1.2 !important;
+    cursor: pointer !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    text-align: left !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.ios-date-button:hover {
+    border-color: #b76c4b !important;
+    box-shadow: 0 0 0 3px rgba(183, 108, 75, 0.15) !important;
+    background-color: #fefefe !important;
+    transform: translateY(-1px) !important;
+}
+
+.ios-date-button:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
 /* Pickup address styles */
 .pickup-details {
     background-color: #f9f9f9;

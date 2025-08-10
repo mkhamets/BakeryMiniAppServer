@@ -1148,6 +1148,174 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // iOS detection function
+    function isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+
+    // iOS Date Picker functions
+    function createIOSDatePicker() {
+        const dayWheel = document.getElementById('day-wheel');
+        const monthWheel = document.getElementById('month-wheel');
+        const yearWheel = document.getElementById('year-wheel');
+        
+        if (!dayWheel || !monthWheel || !yearWheel) return;
+        
+        // Clear existing content
+        dayWheel.innerHTML = '';
+        monthWheel.innerHTML = '';
+        yearWheel.innerHTML = '';
+        
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Create day options (today and tomorrow only)
+        const days = [];
+        for (let i = 0; i < 2; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            days.push({
+                value: date.getDate(),
+                label: date.getDate().toString(),
+                date: date
+            });
+        }
+        
+        // Create month options
+        const months = [];
+        const monthNames = [
+            'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+        ];
+        
+        // Get unique months from available dates
+        const uniqueMonths = [...new Set(days.map(day => day.date.getMonth()))];
+        uniqueMonths.forEach(monthIndex => {
+            months.push({
+                value: monthIndex,
+                label: monthNames[monthIndex]
+            });
+        });
+        
+        // Create year options
+        const years = [];
+        const uniqueYears = [...new Set(days.map(day => day.date.getFullYear()))];
+        uniqueYears.forEach(year => {
+            years.push({
+                value: year,
+                label: year.toString()
+            });
+        });
+        
+        // Populate wheels
+        days.forEach(day => {
+            const item = document.createElement('div');
+            item.className = 'ios-date-picker-wheel-item';
+            item.textContent = day.label;
+            item.dataset.value = day.value;
+            item.dataset.date = day.date.toISOString().split('T')[0];
+            
+            if (day.date.getTime() === today.getTime()) {
+                item.classList.add('selected');
+            }
+            
+            item.addEventListener('click', () => selectWheelItem(dayWheel, item));
+            dayWheel.appendChild(item);
+        });
+        
+        months.forEach(month => {
+            const item = document.createElement('div');
+            item.className = 'ios-date-picker-wheel-item';
+            item.textContent = month.label;
+            item.dataset.value = month.value;
+            
+            if (month.value === today.getMonth()) {
+                item.classList.add('selected');
+            }
+            
+            item.addEventListener('click', () => selectWheelItem(monthWheel, item));
+            monthWheel.appendChild(item);
+        });
+        
+        years.forEach(year => {
+            const item = document.createElement('div');
+            item.className = 'ios-date-picker-wheel-item';
+            item.textContent = year.label;
+            item.dataset.value = year.value;
+            
+            if (year.value === today.getFullYear()) {
+                item.classList.add('selected');
+            }
+            
+            item.addEventListener('click', () => selectWheelItem(yearWheel, item));
+            yearWheel.appendChild(item);
+        });
+    }
+    
+    function selectWheelItem(wheel, selectedItem) {
+        // Remove selection from all items in this wheel
+        wheel.querySelectorAll('.ios-date-picker-wheel-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Add selection to clicked item
+        selectedItem.classList.add('selected');
+    }
+    
+    function getSelectedDate() {
+        const dayWheel = document.getElementById('day-wheel');
+        const monthWheel = document.getElementById('month-wheel');
+        const yearWheel = document.getElementById('year-wheel');
+        
+        const selectedDay = dayWheel.querySelector('.ios-date-picker-wheel-item.selected');
+        const selectedMonth = monthWheel.querySelector('.ios-date-picker-wheel-item.selected');
+        const selectedYear = yearWheel.querySelector('.ios-date-picker-wheel-item.selected');
+        
+        if (selectedDay && selectedMonth && selectedYear) {
+            const day = parseInt(selectedDay.dataset.value);
+            const month = parseInt(selectedMonth.dataset.value);
+            const year = parseInt(selectedYear.dataset.value);
+            
+            // Create date object
+            const date = new Date(year, month, day);
+            return date.toISOString().split('T')[0];
+        }
+        
+        return null;
+    }
+    
+    function showIOSDatePicker() {
+        const modal = document.getElementById('ios-date-picker-modal');
+        if (modal) {
+            createIOSDatePicker();
+            modal.classList.remove('hidden');
+            
+            // Add event listeners
+            const cancelBtn = modal.querySelector('.ios-date-picker-cancel');
+            const doneBtn = modal.querySelector('.ios-date-picker-done');
+            const overlay = modal.querySelector('.ios-date-picker-overlay');
+            
+            cancelBtn.addEventListener('click', hideIOSDatePicker);
+            doneBtn.addEventListener('click', () => {
+                const selectedDate = getSelectedDate();
+                if (selectedDate) {
+                    document.getElementById('delivery-date').value = selectedDate;
+                }
+                hideIOSDatePicker();
+            });
+            overlay.addEventListener('click', hideIOSDatePicker);
+        }
+    }
+    
+    function hideIOSDatePicker() {
+        const modal = document.getElementById('ios-date-picker-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
     function setupDateInput() {
         const dateInput = document.getElementById('delivery-date');
         if (dateInput) {
@@ -1191,6 +1359,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             dateInput.addEventListener('blur', function() {
                 this.classList.remove('date-focused');
             });
+            
+            // Add iOS-specific date picker for iPhones
+            if (isIOS()) {
+                // Hide the native date input
+                dateInput.style.display = 'none';
+                
+                // Create a custom button that looks like the date input
+                const customDateButton = document.createElement('button');
+                customDateButton.type = 'button';
+                customDateButton.className = 'enhanced-date-input ios-date-button';
+                customDateButton.textContent = todayFormatted;
+                customDateButton.style.width = '100%';
+                customDateButton.style.textAlign = 'left';
+                customDateButton.style.cursor = 'pointer';
+                
+                // Insert the custom button after the label
+                const label = dateInput.previousElementSibling;
+                if (label) {
+                    label.parentNode.insertBefore(customDateButton, dateInput.nextSibling);
+                }
+                
+                // Add click event to show iOS date picker
+                customDateButton.addEventListener('click', showIOSDatePicker);
+                
+                // Update button text when date changes
+                dateInput.addEventListener('change', function() {
+                    customDateButton.textContent = this.value;
+                });
+            }
         }
     }
 

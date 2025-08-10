@@ -118,6 +118,32 @@
                             <input type="date" id="delivery-date" name="deliveryDate" required>
                             <div class="error-message" id="deliveryDate-error">Пожалуйста, выберите дату.</div>
                         </div>
+                        
+                        <!-- iOS Date Picker Modal -->
+                        <div id="ios-date-picker-modal" class="ios-date-picker-modal hidden">
+                            <div class="ios-date-picker-overlay"></div>
+                            <div class="ios-date-picker-container">
+                                <div class="ios-date-picker-header">
+                                    <button type="button" class="ios-date-picker-cancel">Отмена</button>
+                                    <h3 class="ios-date-picker-title">Выберите дату</h3>
+                                    <button type="button" class="ios-date-picker-done">Готово</button>
+                                </div>
+                                <div class="ios-date-picker-wheels">
+                                    <div class="ios-date-picker-wheel">
+                                        <div class="ios-date-picker-wheel-label">День</div>
+                                        <div class="ios-date-picker-wheel-content" id="day-wheel"></div>
+                                    </div>
+                                    <div class="ios-date-picker-wheel">
+                                        <div class="ios-date-picker-wheel-label">Месяц</div>
+                                        <div class="ios-date-picker-wheel-content" id="month-wheel"></div>
+                                    </div>
+                                    <div class="ios-date-picker-wheel">
+                                        <div class="ios-date-picker-wheel-label">Год</div>
+                                        <div class="ios-date-picker-wheel-content" id="year-wheel"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label>Способ получения: <span class="required-star">*</span></label>
                             <div class="delivery-method-group">
