@@ -5,7 +5,9 @@ html, body {
     margin: 0;
     padding: 0;
     overflow-x: hidden; /* Предотвращаем горизонтальную прокрутку */
+    overflow-y: auto; /* Разрешаем вертикальную прокрутку */
     touch-action: manipulation; /* Запрещает двойное нажатие для масштабирования */
+    -webkit-overflow-scrolling: touch; /* Плавная прокрутка для iOS */
 }
 
 body {
@@ -43,6 +45,7 @@ body.loaded {
     box-sizing: border-box; /* Учитываем padding в общей высоте */
     flex-grow: 1; /* Позволяет контейнеру занимать доступное пространство в flex-контейнере body */
     overflow-y: auto; /* Добавляем прокрутку для содержимого контейнера, если оно превышает высоту */
+    -webkit-overflow-scrolling: touch; /* Плавная прокрутка для iOS */
 }
 
 h1 {
@@ -69,6 +72,18 @@ h1 {
     left: -9999px !important;
     top: -9999px !important;
     z-index: -1 !important;
+}
+
+/* Ensure proper scrolling behavior for all views */
+#main-page-container,
+#welcome-container,
+#categories-container,
+#products-container,
+#cart-container,
+#checkout-container,
+#product-screen {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Запрет масштабирования на интерактивных элементах */

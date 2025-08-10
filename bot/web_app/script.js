@@ -2,6 +2,29 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
+// Helper function to scroll to top with fallbacks
+function scrollToTop() {
+    // Try smooth scrolling first
+    try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+        // Fallback to immediate scroll if smooth scrolling is not supported
+        window.scrollTo(0, 0);
+    }
+    
+    // Additional fallback for mobile devices
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+        // Also try scrolling the document body
+        if (document.body) {
+            document.body.scrollTop = 0;
+        }
+        if (document.documentElement) {
+            document.documentElement.scrollTop = 0;
+        }
+    }, 100);
+}
+
 // Helper function to create SVG icons
 function createIcon(iconName, className = '') {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -229,6 +252,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (welcomeContainer) welcomeContainer.classList.remove('hidden');
                 if (mainPageContainer) mainPageContainer.classList.add('hidden');
                 Telegram.WebApp.MainButton.hide();
+                // Scroll to top of the page when welcome view is displayed
+                setTimeout(() => scrollToTop(), 50);
                 break;
             case 'categories':
                 // Ensure loading overlay is hidden
@@ -252,7 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateMainButtonCartInfo();
                 }
                 // Scroll to top of the page when categories view is displayed
-                window.scrollTo(0, 0);
+                setTimeout(() => scrollToTop(), 50);
                 break;
             case 'products':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -264,11 +289,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateMainButtonCartInfo();
                 }
                 // Scroll to top of the page when products view is displayed
-                window.scrollTo(0, 0);
+                setTimeout(() => scrollToTop(), 50);
                 break;
             case 'product':
                 if (productScreen) productScreen.classList.remove('hidden');
                 Telegram.WebApp.MainButton.hide();
+                // Scroll to top of the page when product view is displayed
+                setTimeout(() => scrollToTop(), 50);
                 break;
             case 'cart':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -280,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderCart();
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when cart view is displayed
-                window.scrollTo(0, 0);
+                setTimeout(() => scrollToTop(), 50);
                 break;
             case 'checkout':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -294,7 +321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateSubmitButtonState();
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when checkout view is displayed
-                window.scrollTo(0, 0);
+                setTimeout(() => scrollToTop(), 50);
                 break;
             default:
                 console.warn('Неизвестное представление:', viewName);
@@ -1364,6 +1391,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Показываем экран продукта
         displayView('product');
+        
+        // Ensure we scroll to top when showing product screen
+        setTimeout(() => scrollToTop(), 50);
 
         // Добавляем обработчики для кнопок управления количеством в экране продукта
         const decreaseButton = screenBody.querySelector('.screen-decrease-quantity');
