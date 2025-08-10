@@ -62,6 +62,7 @@ h1 {
     color: #5a2d00;
     margin-bottom: 20px;
     font-size: 1.8em;
+    font-family: 'Yeseva One', serif;
     font-weight: bold;
 }
 
@@ -1059,6 +1060,21 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin: 0 auto 20px;
     display: block;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.main-page-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.main-page-logo {
+    width: 33.333%;
+    height: auto;
+    max-width: 200px;
+    object-fit: contain;
 }
 
 .product-screen-name {
