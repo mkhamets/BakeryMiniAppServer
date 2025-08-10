@@ -1141,11 +1141,18 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-screen-info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
+    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.product-screen-info-item-weight {
+    background-color: #f8f8f8;
+}
+
+.product-screen-info-item-availability {
+    background-color: #fff;
+    border: 2px solid #b76c4b;
 }
 
 .product-screen-info-item:last-child {
