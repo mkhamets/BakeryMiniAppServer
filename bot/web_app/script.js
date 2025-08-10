@@ -4,25 +4,46 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // Helper function to scroll to top with fallbacks
 function scrollToTop() {
-    // Try smooth scrolling first
+    console.log('Attempting to scroll to top...');
+    
+    // Multiple immediate attempts
+    window.scrollTo(0, 0);
+    if (document.body) document.body.scrollTop = 0;
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    
+    // Try smooth scrolling
     try {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
-        // Fallback to immediate scroll if smooth scrolling is not supported
-        window.scrollTo(0, 0);
+        console.log('Smooth scrolling not supported, using immediate scroll');
     }
     
-    // Additional fallback for mobile devices
+    // Multiple delayed attempts to ensure it works
     setTimeout(() => {
         window.scrollTo(0, 0);
-        // Also try scrolling the document body
-        if (document.body) {
-            document.body.scrollTop = 0;
-        }
-        if (document.documentElement) {
-            document.documentElement.scrollTop = 0;
-        }
-    }, 100);
+        if (document.body) document.body.scrollTop = 0;
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+    }, 50);
+    
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+        if (document.body) document.body.scrollTop = 0;
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+    }, 150);
+    
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+        if (document.body) document.body.scrollTop = 0;
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+    }, 300);
+    
+    // Force scroll on the main container if it exists
+    const mainContainer = document.querySelector('.container');
+    if (mainContainer) {
+        mainContainer.scrollTop = 0;
+    }
+    
+    console.log('Scroll to top completed');
 }
 
 // Helper function to create SVG icons
@@ -253,7 +274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (mainPageContainer) mainPageContainer.classList.add('hidden');
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when welcome view is displayed
-                setTimeout(() => scrollToTop(), 50);
+                setTimeout(() => scrollToTop(), 100);
                 break;
             case 'categories':
                 // Ensure loading overlay is hidden
@@ -277,7 +298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateMainButtonCartInfo();
                 }
                 // Scroll to top of the page when categories view is displayed
-                setTimeout(() => scrollToTop(), 50);
+                setTimeout(() => scrollToTop(), 100);
                 break;
             case 'products':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -289,13 +310,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateMainButtonCartInfo();
                 }
                 // Scroll to top of the page when products view is displayed
-                setTimeout(() => scrollToTop(), 50);
+                setTimeout(() => scrollToTop(), 100);
                 break;
             case 'product':
                 if (productScreen) productScreen.classList.remove('hidden');
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when product view is displayed
-                setTimeout(() => scrollToTop(), 50);
+                setTimeout(() => scrollToTop(), 100);
                 break;
             case 'cart':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -307,7 +328,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderCart();
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when cart view is displayed
-                setTimeout(() => scrollToTop(), 50);
+                setTimeout(() => {
+                    scrollToTop();
+                    // Additional force scroll for cart view
+                    setTimeout(() => window.forceScrollToTop(), 200);
+                }, 100);
                 break;
             case 'checkout':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -321,7 +346,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateSubmitButtonState();
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when checkout view is displayed
-                setTimeout(() => scrollToTop(), 50);
+                setTimeout(() => {
+                    scrollToTop();
+                    // Additional force scroll for checkout view
+                    setTimeout(() => window.forceScrollToTop(), 200);
+                }, 100);
                 break;
             default:
                 console.warn('Неизвестное представление:', viewName);
@@ -1393,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         displayView('product');
         
         // Ensure we scroll to top when showing product screen
-        setTimeout(() => scrollToTop(), 50);
+        setTimeout(() => scrollToTop(), 100);
 
         // Добавляем обработчики для кнопок управления количеством в экране продукта
         const decreaseButton = screenBody.querySelector('.screen-decrease-quantity');
@@ -1430,5 +1459,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Делаем функции доступными глобально
     window.showProductScreen = showProductScreen;
+
+    // Add a global scroll to top function that can be called from anywhere
+    window.forceScrollToTop = function() {
+        console.log('Force scrolling to top...');
+        
+        // Multiple immediate attempts
+        window.scrollTo(0, 0);
+        if (document.body) document.body.scrollTop = 0;
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+        
+        // Force scroll on all possible containers
+        const containers = document.querySelectorAll('.container, #main-page-container, .main-page-container');
+        containers.forEach(container => {
+            if (container && container.scrollTop !== undefined) {
+                container.scrollTop = 0;
+            }
+        });
+        
+        // Additional attempts with delays
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            if (document.body) document.body.scrollTop = 0;
+            if (document.documentElement) document.documentElement.scrollTop = 0;
+        }, 200);
+        
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            if (document.body) document.body.scrollTop = 0;
+            if (document.documentElement) document.documentElement.scrollTop = 0;
+        }, 500);
+    };
+
+    // Add event listener for view changes to ensure scrolling works
+    document.addEventListener('DOMContentLoaded', function() {
+        // Force scroll to top when the page loads
+        setTimeout(() => {
+            window.forceScrollToTop();
+        }, 100);
+    });
 
 });

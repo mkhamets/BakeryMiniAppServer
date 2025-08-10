@@ -86,6 +86,25 @@ h1 {
     -webkit-overflow-scrolling: touch;
 }
 
+/* Force scroll to top for all view containers */
+.container,
+.main-page-container,
+.welcome-container,
+.categories-container,
+.products-container,
+.cart-container,
+.checkout-container,
+.product-screen {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure the main container can scroll */
+.container {
+    overflow-y: auto !important;
+    scroll-behavior: smooth;
+}
+
 /* Запрет масштабирования на интерактивных элементах */
 button, a, input, select, textarea, .clickable-image, .details-text {
     touch-action: manipulation;
