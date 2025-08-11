@@ -1,0 +1,15 @@
+{
+  "webhook_security": {
+    "secure": true,
+    "status": "No webhook set",
+    "recommendation": "Safe"
+  },
+  "bot_activity": {
+    "secure": true,
+    "status": "No suspicious activity detected",
+    "total_updates": 0,
+    "suspicious_count": 0
+  },
+  "timestamp": "2025-08-11T10:45:24.800584",
+  "overall_secure": true
+}
