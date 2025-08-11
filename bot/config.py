@@ -1,7 +1,7 @@
 import os
 
 # Получаем токен бота из переменных окружения Heroku
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8127391261:AAHCgjsz5co4REog4Tmgn6MY-WBdltuASjs")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 
 # Получаем URL веб-приложения из переменных окружения
 BASE_WEBAPP_URL = os.environ.get("BASE_WEBAPP_URL", "https://bakery-mini-app-server-440955f475ad.herokuapp.com/bot-app/")
