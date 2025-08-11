@@ -1,13 +1,18 @@
 import json
 import logging
 import os
+import time
 from aiohttp import web
 import aiohttp_cors
+from collections import defaultdict
+
+from bot.config import config
+from bot.security_manager import security_manager
 
 # Настраиваем логирование для API сервера
 logger = logging.getLogger(__name__)
 if not logger.handlers:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=getattr(logging, config.LOG_LEVEL), format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 # Путь к файлу с данными о продуктах
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +24,9 @@ logger.info(f"API: Директория Web App: {WEB_APP_DIR}")
 
 # Глобальная переменная для хранения данных о продуктах
 products_data = {}
+
+# API rate limiting store
+api_rate_limit_store = defaultdict(list)
 
 async def load_products_data_for_api():
     """Загружает данные о продуктах из JSON-файла для API."""
@@ -38,8 +46,45 @@ async def load_products_data_for_api():
         logger.warning(f"API: Файл '{PRODUCTS_DATA_FILE}' не найден. API не сможет отдавать данные о продуктах.")
         products_data = {}
 
+async def check_api_rate_limit(request, action: str = "api_request") -> bool:
+    """Check API rate limiting."""
+    if not config.ENABLE_RATE_LIMITING:
+        return True
+    
+    # Get client IP
+    client_ip = request.headers.get('X-Forwarded-For', request.remote)
+    if not client_ip:
+        client_ip = "unknown"
+    
+    current_time = time.time()
+    key = f"api_{client_ip}_{action}"
+    
+    # Clean old entries
+    api_rate_limit_store[key] = [
+        timestamp for timestamp in api_rate_limit_store[key]
+        if current_time - timestamp < config.RATE_LIMIT_WINDOW
+    ]
+    
+    # Check if limit exceeded
+    if len(api_rate_limit_store[key]) >= config.RATE_LIMIT_MAX_REQUESTS:
+        logger.warning(f"🚫 API rate limit exceeded for IP {client_ip}, action: {action}")
+        security_manager._log_security_event("api_rate_limit_exceeded", {
+            "client_ip": client_ip,
+            "action": action,
+            "current_count": len(api_rate_limit_store[key])
+        })
+        return False
+    
+    # Add current request
+    api_rate_limit_store[key].append(current_time)
+    return True
+
 async def get_products_for_webapp(request):
     """Отдает данные о продуктах для Web App, с возможностью фильтрации по категории."""
+    # Check rate limiting
+    if not await check_api_rate_limit(request, "get_products"):
+        return web.json_response({"error": "Rate limit exceeded"}, status=429)
+    
     category_key = request.query.get('category')
     logger.info(f"API: Запрос продуктов для категории: {category_key}")
 
@@ -59,6 +104,10 @@ async def get_products_for_webapp(request):
 
 async def get_categories_for_webapp(request):
     """Отдает список категорий для Web App."""
+    # Check rate limiting
+    if not await check_api_rate_limit(request, "get_categories"):
+        return web.json_response({"error": "Rate limit exceeded"}, status=429)
+    
     logger.info("API: Запрос списка категорий.")
     if not products_data:
         logger.warning("API: Данные о продуктах не загружены для категорий.")

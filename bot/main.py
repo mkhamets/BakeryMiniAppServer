@@ -18,14 +18,16 @@ from aiohttp import web  # Импортируем web для TCPSite
 
 from bot.api_server import setup_api_server  # ИЗМЕНЕНО: Абсолютный импорт
 from bot.config import (
-    BOT_TOKEN, BASE_WEBAPP_URL, ADMIN_CHAT_ID, ADMIN_EMAIL
+    BOT_TOKEN, BASE_WEBAPP_URL, ADMIN_CHAT_ID, ADMIN_EMAIL, config
 )  # ИЗМЕНЕНО: Абсолютный импорт
 from bot.keyboards import generate_main_menu  # ИЗМЕНЕНО: Абсолютный импорт
+from bot.security_manager import security_manager  # ИЗМЕНЕНО: Добавлен импорт security manager
+from bot.security_middleware import security_middleware, fsm_context_middleware  # ИЗМЕНЕНО: Добавлен импорт security middleware
 
 
 # Настраиваем логирование
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, config.LOG_LEVEL),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
@@ -34,6 +36,12 @@ logger = logging.getLogger(__name__)
 # Инициализация бота и диспетчера
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+
+# Регистрируем security middleware
+dp.message.middleware(security_middleware)
+dp.callback_query.middleware(security_middleware)
+dp.message.middleware(fsm_context_middleware)
+dp.callback_query.middleware(fsm_context_middleware)
 
 
 # Константы и пути к файлам
@@ -283,43 +291,67 @@ async def clear_user_cart_messages(chat_id: int):
 # ИЗМЕНЕНИЕ: Новая асинхронная функция для отправки email
 async def send_email_notification(recipient_email: str, subject: str, body: str, sender_name: str = "Пекарня Дражина"):
     """Отправляет email уведомление."""
+    if not config.ENABLE_EMAIL_NOTIFICATIONS:
+        logger.info("Email уведомления отключены")
+        return
+    
     try:
         logger.info(f"Начинаем отправку email на {recipient_email}")
 
-        sender_email = ADMIN_EMAIL  # Email отправителя из переменных окружения
-        sender_password = os.environ.get("ADMIN_EMAIL_PASSWORD")  # Пароль отправителя из переменных окружения
-        smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")  # SMTP сервер (по умолчанию Gmail)
-        smtp_port = int(os.environ.get("SMTP_PORT", 587))  # Порт SMTP (по умолчанию для TLS)
-
-        if not sender_email or not sender_password:
-            logger.error("Переменные окружения ADMIN_EMAIL или ADMIN_EMAIL_PASSWORD не установлены. "
-                        "Email не будет отправлен.")
-            return
-
-        logger.info(f"Настройки SMTP: сервер={smtp_server}, порт={smtp_port}, отправитель={sender_email}")
-
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = f"{sender_name} <{sender_email}>"
+        msg['From'] = f"{sender_name} <{ADMIN_EMAIL}>"
         msg['To'] = recipient_email
 
         msg.attach(MIMEText(body, 'html', 'utf-8'))
 
         logger.info("Подключаемся к SMTP серверу...")
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            logger.info("Запускаем TLS...")
-            server.starttls()  # Начать TLS шифрование
+        with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as server:
+            if config.SMTP_USE_TLS:
+                logger.info("Запускаем TLS...")
+                server.starttls()
             logger.info("Авторизуемся на сервере...")
-            server.login(sender_email, sender_password)
+            server.login(ADMIN_EMAIL, config.ADMIN_EMAIL_PASSWORD)
             logger.info("Отправляем сообщение...")
             server.send_message(msg)
 
         logger.info(f"Email успешно отправлен на {recipient_email} с темой '{subject}'.")
+        
+        # Log security event
+        security_manager._log_security_event("email_sent", {
+            "recipient": recipient_email,
+            "subject": subject
+        })
 
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"Ошибка аутентификации SMTP: {e}")
+        logger.error("Убедитесь, что ADMIN_EMAIL_PASSWORD установлен правильно")
+        logger.error("Для Gmail используйте App Password, а не обычный пароль")
+        
+        # Log security event
+        security_manager._log_security_event("email_auth_failure", {
+            "recipient": recipient_email,
+            "error": str(e)
+        })
+        
     except smtplib.SMTPException as e:
         logger.error(f"Ошибка SMTP при отправке email: {e}")
+        
+        # Log security event
+        security_manager._log_security_event("email_smtp_error", {
+            "recipient": recipient_email,
+            "error": str(e)
+        })
+        
     except Exception as e:
         logger.error(f"Неизвестная ошибка при отправке email на {recipient_email}: {e}")
+        
+        # Log security event
+        security_manager._log_security_event("email_error", {
+            "recipient": recipient_email,
+            "error": str(e),
+            "error_type": type(e).__name__
+        })
 
 
 # Хендлеры команд и сообщений
@@ -1209,6 +1241,12 @@ async def main():
     port = int(os.environ.get("PORT", 8080))
     site = web.TCPSite(runner, '0.0.0.0', port)
 
+    # Запускаем security monitoring если включено
+    security_task = None
+    if config.ENABLE_SECURITY_MONITORING:
+        security_task = asyncio.create_task(security_monitoring_loop())
+        logger.info("🔒 Security monitoring запущен")
+
     web_server_task = asyncio.create_task(site.start())
     bot_polling_task = asyncio.create_task(dp.start_polling(bot))
 
@@ -1216,7 +1254,10 @@ async def main():
     logger.info("Бот начал опрос...")
 
     try:
-        await asyncio.gather(bot_polling_task, web_server_task)
+        tasks = [bot_polling_task, web_server_task]
+        if security_task:
+            tasks.append(security_task)
+        await asyncio.gather(*tasks)
     except asyncio.CancelledError:
         pass
     finally:
@@ -1226,6 +1267,39 @@ async def main():
         logger.info("Закрытие сессии бота...")
         await bot.session.close()
         logger.info("Сессия бота закрыта.")
+
+
+async def security_monitoring_loop():
+    """Loop для постоянного мониторинга безопасности."""
+    while True:
+        try:
+            # Проверяем webhook security
+            webhook_status = await security_manager.monitor_webhook_security()
+            if not webhook_status.get("secure", True):
+                logger.warning(f"🚨 Webhook security issue detected: {webhook_status}")
+                
+                # Автоматически удаляем подозрительные webhooks
+                if webhook_status.get("status") in ["Suspicious webhook detected", "Untrusted webhook domain"]:
+                    logger.warning("🚨 Attempting to delete suspicious webhook...")
+                    delete_result = await security_manager.delete_webhook()
+                    if delete_result.get("success"):
+                        logger.info("✅ Suspicious webhook deleted successfully")
+                    else:
+                        logger.error(f"❌ Failed to delete suspicious webhook: {delete_result}")
+            
+            # Очищаем старые данные
+            await security_manager.cleanup_old_data()
+            
+            # Получаем security report
+            report = security_manager.get_security_report()
+            logger.info(f"🔒 Security report: {report}")
+            
+            # Ждем 1 час перед следующей проверкой
+            await asyncio.sleep(3600)
+            
+        except Exception as e:
+            logger.error(f"🚨 Error in security monitoring loop: {e}")
+            await asyncio.sleep(300)  # Ждем 5 минут при ошибке
 
 
 if __name__ == "__main__":
