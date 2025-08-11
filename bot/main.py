@@ -355,11 +355,37 @@ async def send_email_notification(recipient_email: str, subject: str, body: str,
 
 
 # Хендлеры команд и сообщений
-@dp.message(F.text == "/start")
+@dp.message(F.text.startswith("/start"))
 async def command_start_handler(message: Message) -> None:
-    """Обработчик команды /start."""
+    """Обработчик команды /start с поддержкой WebApp URL параметра."""
     user_id = message.from_user.id
     cart_count = sum(get_user_cart(user_id).values())
+    
+    # Проверяем, есть ли WebApp URL в параметре
+    command_parts = message.text.split()
+    if len(command_parts) > 1:
+        webapp_url = command_parts[1]
+        
+        # Проверяем, что это действительно URL для WebApp
+        if webapp_url.startswith('http') and 'bot-app' in webapp_url:
+            logger.info(f"Пользователь {user_id} открывает WebApp по URL: {webapp_url}")
+            
+            # Создаем inline кнопку для открытия WebApp
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(
+                    text="🥖 Открыть приложение пекарни",
+                    web_app=WebAppInfo(url=f"{webapp_url}?view=welcome")
+                )]
+            ])
+            
+            await message.answer(
+                "Добро пожаловать в пекарню Дражина! 🥖\n\n"
+                "Нажмите кнопку ниже, чтобы открыть наше приложение:",
+                reply_markup=keyboard
+            )
+            return
+    
+    # Стандартный /start без параметров
     await message.answer(
         "Привет! Я бот-помощник пекарни Дражина. Используй меню ниже, "
         "чтобы выбрать категорию товаров или узнать информацию о нас.",

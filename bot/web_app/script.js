@@ -135,6 +135,23 @@ function addLocationIcons() {
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
+    // 🔧 ОБРАБОТКА URL ПАРАМЕТРОВ: Проверяем параметр view для автоматического открытия экранов
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewParam = urlParams.get('view');
+        console.log('🔧 URL параметр view:', viewParam);
+        
+        if (viewParam === 'welcome') {
+            console.log('✅ Параметр view=welcome обнаружен, показываем welcome screen');
+            // Небольшая задержка для корректной инициализации
+            setTimeout(() => {
+                displayView('welcome');
+            }, 100);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка при обработке URL параметров:', error);
+    }
+
     const mainPageContainer = document.getElementById('main-page-container');
     const welcomeContainer = document.getElementById('welcome-container');
     const categoriesContainer = document.getElementById('categories-container');
