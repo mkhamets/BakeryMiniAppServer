@@ -735,12 +735,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: white;
 }
 
-.category-icon {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 10px;
-    display: block;
+/* Category icon styling - only for category titles, not main menu */
+.category-title-with-icon .category-icon {
+    width: 1.5em;
+    height: 1.5em;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .category-arrow-svg {

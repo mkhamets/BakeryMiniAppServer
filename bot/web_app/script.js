@@ -376,7 +376,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                          class="category-image"
                          onerror="this.onerror=null;this.src='https://placehold.co/300x200/cccccc/333333?text=No+Image';">
                     <div class="category-text-wrapper">
-                        ${categoryIcon ? `<img src="${categoryIcon}" alt="${categoryDisplayName}" class="category-icon">` : ''}
                         <h3 class="category-title-text">${categoryDisplayName}</h3>
                         <div class="category-link-text">
                             <span>перейти в каталог</span>
