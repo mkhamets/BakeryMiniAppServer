@@ -340,11 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             productsData = data;
         } catch (error) {
             console.error('Ошибка при загрузке данных о продуктах:', error);
-            if (Telegram.WebApp.showAlert) {
-                Telegram.WebApp.showAlert('Не удалось загрузить данные о продуктах. Пожалуйста, попробуйте позже.');
-            } else {
-                alert('Не удалось загрузить данные о продуктах. Пожалуйста, попробуйте позже.');
-            }
+            console.error('Failed to load products data. Please try again later.');
         }
     }
 
@@ -401,11 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
         } catch (error) {
             console.error('Ошибка при загрузке категорий:', error);
-            if (Telegram.WebApp.showAlert) {
-                Telegram.WebApp.showAlert('Не удалось загрузить категории. Пожалуйста, попробуйте позже.');
-            } else {
-                alert('Не удалось загрузить категории. Пожалуйста, попробуйте позже.');
-            }
+            console.error('Failed to load categories. Please try again later.');
         }
     }
 
@@ -413,11 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!productsData[categoryKey]) {
             await fetchProductsData();
             if (!productsData[categoryKey]) {
-                if (Telegram.WebApp.showAlert) {
-                    Telegram.WebApp.showAlert('Продукты для этой категории не найдены.');
-                } else {
-                    alert('Продукты для этой категории не найдены.');
-                }
+                console.warn('No products found for this category.');
                 displayView('categories');
                 return;
             }
@@ -659,11 +647,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (checkoutButton) {
             checkoutButton.addEventListener('click', () => {
                 if (Object.keys(cart).length === 0) {
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Ваша корзина пуста. Добавьте товары, чтобы оформить заказ.');
-                    } else {
-                        alert('Ваша корзина пуста. Добавьте товары, чтобы оформить заказ.');
-                    }
+                                    console.warn('Cart is empty. Add items to checkout.');
                     return;
                 }
                 displayView('checkout');
@@ -678,11 +662,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('cart');
         renderCart();
         updateMainButtonCartInfo();
-        if (Telegram.WebApp.showAlert) {
-            Telegram.WebApp.showAlert('Корзина очищена!');
-        } else {
-            alert('Корзина очищена!');
-        }
+        console.log('Cart cleared successfully.');
     }
 
     function renderCheckoutSummary() {
@@ -755,11 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 if (!isValid) {
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert(errorMessages.join('\n'));
-                    } else {
-                        alert('Пожалуйста, заполните все обязательные поля:\n' + errorMessages.join('\n'));
-                    }
+                    console.error('Validation errors:', errorMessages.join('\n'));
                     return;
                 }
 
@@ -769,11 +745,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isCourierSelected = courierRadio && courierRadio.checked;
                 
                 if (isCourierSelected && totalAmount < 70.00) {
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Минимальная сумма заказа для доставки курьером составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
-                    } else {
-                        alert('Минимальная сумма заказа для доставки курьером составляет 70.00 р. Пожалуйста, добавьте товары в корзину.');
-                    }
+                    console.error('Minimum order amount not met for courier delivery');
                     return;
                 }
 
@@ -808,24 +780,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     clearCart();
                     
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
-                    } else {
-                        alert('Ваш заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
-                    }
-                    
-                    // Добавляем задержку перед закрытием WebApp, чтобы убедиться, что данные отправлены
+                    // Order sent successfully - close WebApp after delay to ensure data is sent
                     setTimeout(() => {
-                        Telegram.WebApp.close();
+                        try {
+                            if (Telegram.WebApp.close) {
+                                Telegram.WebApp.close();
+                            }
+                        } catch (closeError) {
+                            console.warn('Could not close WebApp automatically');
+                        }
                     }, 2000);
                     
                 } catch (error) {
                     console.error('Ошибка при отправке заказа:', error);
-                    if (Telegram.WebApp.showAlert) {
-                        Telegram.WebApp.showAlert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте снова.');
-                    } else {
-                        alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте снова.');
-                    }
+                    // Show error in console only - no popups
                 }
             });
         } else {
