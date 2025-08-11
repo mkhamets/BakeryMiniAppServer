@@ -1011,14 +1011,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-}
-
-.product-screen-content {
     padding: 20px;
     max-width: 600px;
     margin: 0 auto;
     min-height: 100vh;
     box-sizing: border-box;
+    width: 100%; /* Добавляем полную ширину для консистентности */
 }
 
 #product-screen-body {
@@ -1099,11 +1097,18 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-screen-info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
+    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.product-screen-info-item-weight {
+    background-color: #f8f8f8;
+}
+
+.product-screen-info-item-availability {
+    background-color: #fff;
+    border: 2px solid #b76c4b;
 }
 
 .product-screen-info-item:last-child {
@@ -1169,7 +1174,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Адаптивность для экрана продукта */
 @media (max-width: 480px) {
-    .product-screen-content {
+    .product-screen {
         padding: 15px;
     }
     
@@ -1480,23 +1485,23 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 /* Product screen quantity controls - medium size */
-.product-screen-content .w-200 {
+.product-screen .w-200 {
     width: 2.5rem;
 }
 
-.product-screen-content .h-200 {
+.product-screen .h-200 {
     height: 2.5rem;
 }
 
-.product-screen-content .fz-150 {
+.product-screen .fz-150 {
     font-size: 1.8rem;
 }
 
-.product-screen-content .fz-175 {
+.product-screen .fz-175 {
     font-size: 2rem;
 }
 
-.product-screen-content .mx-w-300 {
+.product-screen .mx-w-300 {
     max-width: 3.5rem;
 }
 

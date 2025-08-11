@@ -1249,18 +1249,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Добавляем информацию о весе
         if (product.weight && product.weight !== 'N/A') {
             screenHTML += `
-                <div class="product-screen-info-item">
-                    <div class="product-screen-info-label">Вес:</div>
-                    <div class="product-screen-info-value">${product.weight} гр.</div>
+                <div class="product-screen-info-item product-screen-info-item-weight">
+                    <div class="product-screen-info-label">Вес: ${product.weight} гр.</div>
                 </div>`;
         }
 
         // Добавляем информацию о доступности
         if (product.availability_days && product.availability_days !== 'N/A') {
             screenHTML += `
-                <div class="product-screen-info-item">
-                    <div class="product-screen-info-label">Доступен для заказа:</div>
-                    <div class="product-screen-info-value">${product.availability_days}</div>
+                <div class="product-screen-info-item product-screen-info-item-availability">
+                    <div class="product-screen-info-label">Доступен для заказа: ${product.availability_days}</div>
                 </div>`;
         }
 
