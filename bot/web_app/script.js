@@ -167,10 +167,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", emoji: "🥨" },
-        "category_croissants": { name: "Круассаны", emoji: "🥐" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", emoji: "🍞" },
-        "category_desserts": { name: "Десерты", emoji: "🍰" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg", image: "images/bakery.svg" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg", image: "images/crouasan.svg" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg", image: "images/bread1.svg" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg", image: "images/cookie.svg" }
     };
 
     await fetchProductsData();
@@ -358,9 +358,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             categoriesGrid.className = 'categories-grid';
 
             categoriesData.forEach(category => {
-                const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, emoji: '' };
+                const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, icon: '' };
                 const categoryDisplayName = categoryInfo.name;
-                const categoryEmoji = categoryInfo.emoji;
+                const categoryIcon = categoryInfo.icon;
 
                 const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
                     ? productsData[category.key][0].image_url
@@ -376,6 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          class="category-image"
                          onerror="this.onerror=null;this.src='https://placehold.co/300x200/cccccc/333333?text=No+Image';">
                     <div class="category-text-wrapper">
+                        ${categoryIcon ? `<img src="${categoryIcon}" alt="${categoryDisplayName}" class="category-icon">` : ''}
                         <h3 class="category-title-text">${categoryDisplayName}</h3>
                         <div class="category-link-text">
                             <span>перейти в каталог</span>
@@ -412,7 +413,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const products = productsData[categoryKey];
-        if (mainCategoryTitle) mainCategoryTitle.textContent = CATEGORY_DISPLAY_MAP[categoryKey] ? CATEGORY_DISPLAY_MAP[categoryKey].name : 'Продукты';
+        
+        // Update category title with icon for category screens (not main menu)
+        if (mainCategoryTitle) {
+            const categoryInfo = CATEGORY_DISPLAY_MAP[categoryKey];
+            if (categoryInfo && categoryInfo.image) {
+                // Create icon + title container
+                mainCategoryTitle.innerHTML = `
+                    <div class="category-title-with-icon">
+                        <img src="${categoryInfo.image}" alt="${categoryInfo.name}" class="category-icon" onerror="this.style.display='none';">
+                        <span>${categoryInfo.name}</span>
+                    </div>
+                `;
+            } else {
+                mainCategoryTitle.textContent = 'Продукты';
+            }
+        }
         if (productListElement) productListElement.innerHTML = '';
 
         products.forEach(product => {
@@ -611,6 +627,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (cartTotalElement) cartTotalElement.textContent = `Общая сумма: ${total.toFixed(2)} р.`;
 
+        // Добавляем контейнер с информацией об условиях реализации продуктов
+        renderAvailabilityInfo(cartItems);
+
         // Добавляем обработчики для кнопок в корзине
         if (cartItemsList) {
             cartItemsList.querySelectorAll('.increase-cart-quantity').forEach(button => {
@@ -657,12 +676,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function getProductById(productId) {
+        if (!productsData) return null;
+        
+        // Поиск продукта во всех категориях
+        for (const category of Object.values(productsData)) {
+            if (Array.isArray(category)) {
+                const product = category.find(p => p.id === productId);
+                if (product) return product;
+            }
+        }
+        return null;
+    }
+
+    function renderAvailabilityInfo(cartItems) {
+        // Удаляем существующий контейнер если он есть
+        const existingContainer = document.getElementById('availability-info-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+
+        // Находим продукты с особыми условиями реализации (availability_days не равно "N/A")
+        const productsWithAvailability = cartItems.filter(item => {
+            const product = getProductById(item.id);
+            return product && product.availability_days && product.availability_days !== 'N/A' && product.availability_days.trim() !== '';
+        });
+
+        // Если есть продукты с особыми условиями, показываем контейнер
+        if (productsWithAvailability.length > 0) {
+            const container = document.createElement('div');
+            container.id = 'availability-info-container';
+            container.className = 'availability-info-container';
+            
+            let productsListHTML = '';
+            productsWithAvailability.forEach(item => {
+                const product = getProductById(item.id);
+                if (product && product.availability_days) {
+                    productsListHTML += `<li><strong>${product.name}:</strong> ${product.availability_days}</li>`;
+                }
+            });
+
+            container.innerHTML = `
+                <div class="availability-info-content">
+                    <p class="availability-info-title">Обратите внимание, что некоторые из продуктов имеют особые условия реализации:</p>
+                    <ul class="availability-info-list">
+                        ${productsListHTML}
+                    </ul>
+                </div>
+            `;
+
+            // Вставляем контейнер после итоговой суммы, но перед кнопками действий (place order button)
+            const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+            if (cartActionsBottom) {
+                cartActionsBottom.parentNode.insertBefore(container, cartActionsBottom);
+            }
+        }
+    }
+
     function clearCart() {
         cart = {};
         localStorage.removeItem('cart');
         renderCart();
         updateMainButtonCartInfo();
-        console.log('Cart cleared successfully.');
     }
 
     function renderCheckoutSummary() {
@@ -1056,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/Hleb.jpg?v=1.0.18';
+    img.src = '/bot-app/images/Hleb.jpg?v=1.0.18';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');

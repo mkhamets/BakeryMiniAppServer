@@ -25,7 +25,7 @@ body {
 
 /* Add background only after loading */
 body.loaded {
-    background-image: url('/bot-app/Hleb.jpg?v=1.0.18');
+    background-image: url('/bot-app/images/Hleb.jpg?v=1.0.18');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -43,12 +43,32 @@ body.loaded {
     box-sizing: border-box; /* Учитываем padding в общей высоте */
     flex-grow: 1; /* Позволяет контейнеру занимать доступное пространство в flex-контейнере body */
     overflow-y: auto; /* Добавляем прокрутку для содержимого контейнера, если оно превышает высоту */
+    -webkit-overflow-scrolling: touch; /* Плавная прокрутка для iOS */
+}
+
+/* Main page logo container */
+.main-page-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.main-page-logo {
+    width: 33.333%;
+    height: auto;
+    max-width: 200px;
+    object-fit: contain;
 }
 
 h1 {
     text-align: center;
     color: #5a2d00;
     margin-bottom: 20px;
+    font-size: 1.8em;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
 }
 
 .category-title {
@@ -56,7 +76,23 @@ h1 {
     color: #5a2d00;
     margin-bottom: 20px;
     font-size: 1.8em;
+    font-family: 'Yeseva One', serif;
     font-weight: bold;
+}
+
+/* Category title with icon styling for category screens */
+.category-title-with-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.category-icon {
+    width: 1.5em;
+    height: 1.5em;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 /* Скрытие элементов */
@@ -697,6 +733,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .category-card-item:hover .category-link-text {
     color: white;
+}
+
+.category-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 10px;
+    display: block;
+    object-fit: contain;
 }
 
 .category-arrow-svg {
@@ -1961,4 +2005,47 @@ body * {
     .pickup-details p {
         font-size: 13px;
     }
+}
+
+/* ==================== AVAILABILITY INFO CONTAINER ==================== */
+.availability-info-container {
+    background-color: white;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px auto; /* Центрируем контейнер */
+    max-width: 600px; /* Стандартизируем максимальную ширину */
+    width: calc(100% - 32px); /* Учитываем отступы */
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.availability-info-content {
+    margin: 0;
+}
+
+.availability-info-title {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.availability-info-list {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.availability-info-list li {
+    margin: 8px 0;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.availability-info-list li strong {
+    color: #333;
+    font-weight: 600;
 }
