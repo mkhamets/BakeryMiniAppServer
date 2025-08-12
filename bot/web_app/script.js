@@ -71,6 +71,17 @@ async function initializeCacheManagement() {
             }
         }, 300000); // Check every 5 minutes
         
+        // Set up periodic cart expiration check
+        setInterval(() => {
+            const cartExpired = checkCartExpiration();
+            if (cartExpired) {
+                console.log('⏰ Periodic check: Cart expired, clearing...');
+                cart = {};
+                renderCart();
+                updateMainButtonCartInfo();
+            }
+        }, 600000); // Check every 10 minutes
+        
         console.log('✅ Cache management initialized');
     } catch (error) {
         console.error('❌ Error initializing cache management:', error);
@@ -91,6 +102,128 @@ async function checkCacheHealth() {
 }
 
 // ===== END PHASE 4 =====
+
+// ===== PHASE 5: LOCALSTORAGE CACHE MANAGEMENT =====
+// Cart data structure and versioning
+const CART_DATA_VERSION = '1.0.0';
+const CART_EXPIRATION_DAYS = 7; // Cart expires after 7 days
+const CART_EXPIRATION_MS = CART_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
+
+// Enhanced cart data structure with metadata
+function createCartWithMetadata(cartData) {
+    return {
+        version: CART_DATA_VERSION,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + CART_EXPIRATION_MS,
+        data: cartData || {}
+    };
+}
+
+// Load cart with expiration check and migration
+function loadCartWithExpiration() {
+    try {
+        const cartItem = localStorage.getItem('cart');
+        if (!cartItem) {
+            console.log('📦 No cart found in localStorage');
+            return {};
+        }
+
+        let cartData;
+        try {
+            cartData = JSON.parse(cartItem);
+        } catch (parseError) {
+            console.error('❌ Error parsing cart data:', parseError);
+            localStorage.removeItem('cart');
+            return {};
+        }
+
+        // Check if this is the new format with metadata
+        if (cartData && typeof cartData === 'object' && cartData.version && cartData.timestamp) {
+            console.log('📦 Cart data version:', cartData.version);
+            
+            // Check expiration
+            if (Date.now() > cartData.expiresAt) {
+                console.log('⏰ Cart expired, clearing...');
+                localStorage.removeItem('cart');
+                return {};
+            }
+            
+            // Check if version needs migration
+            if (cartData.version !== CART_DATA_VERSION) {
+                console.log(`🔄 Cart version ${cartData.version} needs migration to ${CART_DATA_VERSION}`);
+                // For now, just clear and start fresh (can be enhanced later)
+                localStorage.removeItem('cart');
+                return {};
+            }
+            
+            console.log('✅ Cart loaded successfully with metadata');
+            return cartData.data;
+        } else {
+            // Legacy cart format - migrate to new format
+            console.log('🔄 Migrating legacy cart to new format');
+            const migratedCart = createCartWithMetadata(cartData);
+            localStorage.setItem('cart', JSON.stringify(migratedCart));
+            console.log('✅ Cart migrated successfully');
+            return cartData;
+        }
+    } catch (error) {
+        console.error('❌ Error loading cart:', error);
+        return {};
+    }
+}
+
+// Save cart with metadata
+function saveCartWithMetadata(cartData) {
+    try {
+        const cartWithMetadata = createCartWithMetadata(cartData);
+        localStorage.setItem('cart', JSON.stringify(cartWithMetadata));
+        console.log('💾 Cart saved with metadata');
+        return true;
+    } catch (error) {
+        console.error('❌ Error saving cart:', error);
+        return false;
+    }
+}
+
+// Check cart expiration and clean up if needed
+function checkCartExpiration() {
+    try {
+        const cartItem = localStorage.getItem('cart');
+        if (!cartItem) return false;
+        
+        const cartData = JSON.parse(cartItem);
+        if (cartData && cartData.expiresAt && Date.now() > cartData.expiresAt) {
+            console.log('⏰ Cart expired, cleaning up...');
+            localStorage.removeItem('cart');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('❌ Error checking cart expiration:', error);
+        return false;
+    }
+}
+
+// Get cart age in days
+function getCartAge() {
+    try {
+        const cartItem = localStorage.getItem('cart');
+        if (!cartItem) return null;
+        
+        const cartData = JSON.parse(cartItem);
+        if (cartData && cartData.timestamp) {
+            const ageMs = Date.now() - cartData.timestamp;
+            const ageDays = ageMs / (24 * 60 * 60 * 1000);
+            return Math.round(ageDays * 100) / 100; // Round to 2 decimal places
+        }
+        return null;
+    } catch (error) {
+        console.error('❌ Error getting cart age:', error);
+        return null;
+    }
+}
+
+// ===== END PHASE 5 =====
 
 // Helper function to create SVG icons
 function createIcon(iconName, className = '') {
@@ -251,7 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const continueShoppingButton = document.getElementById('continue-shopping-button');
     const startShoppingButton = document.getElementById('start-shopping-button');
 
-    let cart = JSON.parse(localStorage.getItem('cart')) || {};
+    let cart = loadCartWithExpiration();
     let productsData = {};
     let isSubmitting = false; // Флаг для предотвращения двойной отправки
     let currentProductCategory = null; // Для отслеживания категории продукта
@@ -267,6 +400,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Initialize cache management system
     await initializeCacheManagement();
+    
+    // Check cart expiration on app start
+    const cartExpired = checkCartExpiration();
+    if (cartExpired) {
+        cart = {};
+        console.log('⏰ Expired cart cleared on app start');
+    }
     
     // Only initialize cart rendering after products data is loaded
     renderCart();
@@ -681,7 +821,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             delete cart[productId];
         }
 
-        localStorage.setItem('cart', JSON.stringify(cart));
+        saveCartWithMetadata(cart);
         updateProductCardUI(productId);
         updateMainButtonCartInfo();
     }
@@ -807,7 +947,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     e.preventDefault();
                     const productId = e.currentTarget.dataset.productId;
                     delete cart[productId];
-                    localStorage.setItem('cart', JSON.stringify(cart));
+                    saveCartWithMetadata(cart);
                     renderCart();
                     updateMainButtonCartInfo();
                 });
@@ -902,6 +1042,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('cart');
         renderCart();
         updateMainButtonCartInfo();
+        console.log('🗑️ Cart cleared successfully');
     }
 
     // Manual cache clearing function for debugging/development
@@ -930,7 +1071,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 storedVersion: localStorage.getItem('app_version'),
                 cacheSupported: 'caches' in window,
                 localStorageSize: JSON.stringify(localStorage).length,
-                sessionStorageSize: JSON.stringify(sessionStorage).length
+                sessionStorageSize: JSON.stringify(sessionStorage).length,
+                cartInfo: {
+                    version: CART_DATA_VERSION,
+                    expirationDays: CART_EXPIRATION_DAYS,
+                    currentAge: getCartAge(),
+                    itemCount: Object.keys(cart).length,
+                    totalValue: Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                }
             };
             
             if ('caches' in window) {
@@ -1587,5 +1735,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.clearAllCaches = clearAllCaches;
     window.getCacheStatus = getCacheStatus;
     window.CACHE_VERSION = CACHE_VERSION;
+    
+    // Cart management functions for debugging
+    window.getCartAge = getCartAge;
+    window.checkCartExpiration = checkCartExpiration;
+    window.CART_DATA_VERSION = CART_DATA_VERSION;
+    window.CART_EXPIRATION_DAYS = CART_EXPIRATION_DAYS;
 
 });
