@@ -181,6 +181,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize icons in the UI (excluding location icons for form fields)
     initializeIcons();
 
+    // Helper function to ensure screen scrolls to top
+    function scrollToTop() {
+        // Multiple methods to ensure scroll to top works in all contexts
+        try {
+            // Method 1: Standard scrollTo
+            window.scrollTo(0, 0);
+            
+            // Method 2: Scroll to top of body
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+            
+            // Method 3: Scroll to top of main container
+            const mainContainer = document.getElementById('main-page-container');
+            if (mainContainer) {
+                mainContainer.scrollTop = 0;
+            }
+            
+            // Method 4: Scroll to top of specific containers
+            const categoriesContainer = document.getElementById('categories-container');
+            if (categoriesContainer) {
+                categoriesContainer.scrollTop = 0;
+            }
+            
+            const productsContainer = document.getElementById('products-container');
+            if (productsContainer) {
+                productsContainer.scrollTop = 0;
+            }
+            
+            const cartContainer = document.getElementById('cart-container');
+            if (cartContainer) {
+                cartContainer.scrollTop = 0;
+            }
+            
+            const checkoutContainer = document.getElementById('checkout-container');
+            if (checkoutContainer) {
+                checkoutContainer.scrollTop = 0;
+            }
+            
+            // Method 5: Force scroll after a small delay
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+            }, 100);
+            
+            console.log('🔧 Scroll to top executed');
+        } catch (error) {
+            console.error('❌ Error during scroll to top:', error);
+        }
+    }
+
     function displayView(viewName, categoryKey = null) {
         if (welcomeContainer) welcomeContainer.classList.add('hidden');
         if (categoriesContainer) categoriesContainer.classList.add('hidden');
@@ -220,6 +271,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (welcomeContainer) welcomeContainer.classList.remove('hidden');
                 if (mainPageContainer) mainPageContainer.classList.add('hidden');
                 Telegram.WebApp.MainButton.hide();
+                // Scroll to top of the page when welcome view is displayed
+                scrollToTop();
                 break;
             case 'categories':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -234,7 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateMainButtonCartInfo();
                 }
                 // Scroll to top of the page when categories view is displayed
-                window.scrollTo(0, 0);
+                scrollToTop();
                 break;
             case 'products':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -246,11 +299,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateMainButtonCartInfo();
                 }
                 // Scroll to top of the page when products view is displayed
-                window.scrollTo(0, 0);
+                scrollToTop();
                 break;
             case 'product':
                 if (productScreen) productScreen.classList.remove('hidden');
                 Telegram.WebApp.MainButton.hide();
+                // Scroll to top of the page when product view is displayed
+                scrollToTop();
                 break;
             case 'cart':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -262,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderCart();
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when cart view is displayed
-                window.scrollTo(0, 0);
+                scrollToTop();
                 break;
             case 'checkout':
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
@@ -276,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateSubmitButtonState();
                 Telegram.WebApp.MainButton.hide();
                 // Scroll to top of the page when checkout view is displayed
-                window.scrollTo(0, 0);
+                scrollToTop();
                 break;
             default:
                 console.warn('Неизвестное представление:', viewName);
