@@ -29,7 +29,7 @@ def generate_main_menu(cart_items_count: int = 0) -> ReplyKeyboardMarkup:
         resize_keyboard=True,
         is_persistent=True, # Добавлено обратно
         one_time_keyboard=False,
-        input_field_placeholder="Выберите категорию или действие ⬇️" # Добавлено обратно
+        input_field_placeholder="Используйте меню ⬇️" # Добавлено обратно
     )
     return keyboard
 
