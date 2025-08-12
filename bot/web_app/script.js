@@ -2,6 +2,96 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
+// ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
+// Cache versioning and management system
+const CACHE_VERSION = '1.2.0';
+const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
+
+// Cache management functions
+async function clearBrowserCache() {
+    try {
+        if ('caches' in window) {
+            // Clear all caches
+            const cacheNames = await caches.keys();
+            await Promise.all(
+                cacheNames.map(cacheName => caches.delete(cacheName))
+            );
+            console.log('🧹 Browser cache cleared successfully');
+        }
+        
+        // Clear localStorage and sessionStorage
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log('🧹 Local storage cleared successfully');
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error clearing browser cache:', error);
+        return false;
+    }
+}
+
+async function invalidateCacheOnUpdate() {
+    try {
+        const storedVersion = localStorage.getItem('app_version');
+        
+        if (storedVersion !== CACHE_VERSION) {
+            console.log(`🔄 App version changed from ${storedVersion} to ${CACHE_VERSION}, invalidating cache`);
+            
+            // Clear all caches
+            await clearBrowserCache();
+            
+            // Store new version
+            localStorage.setItem('app_version', CACHE_VERSION);
+            
+            // Force reload to ensure fresh content
+            window.location.reload();
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('❌ Error during cache invalidation:', error);
+        return false;
+    }
+}
+
+// Initialize cache management on app start
+async function initializeCacheManagement() {
+    try {
+        // Check if cache invalidation is needed
+        await invalidateCacheOnUpdate();
+        
+        // Set up periodic cache health check
+        setInterval(async () => {
+            const cacheHealth = await checkCacheHealth();
+            if (!cacheHealth) {
+                console.warn('⚠️ Cache health check failed, clearing cache');
+                await clearBrowserCache();
+            }
+        }, 300000); // Check every 5 minutes
+        
+        console.log('✅ Cache management initialized');
+    } catch (error) {
+        console.error('❌ Error initializing cache management:', error);
+    }
+}
+
+async function checkCacheHealth() {
+    try {
+        if ('caches' in window) {
+            const cache = await caches.open(CACHE_NAME);
+            return cache !== null;
+        }
+        return true; // If caches not supported, consider healthy
+    } catch (error) {
+        console.error('❌ Cache health check error:', error);
+        return false;
+    }
+}
+
+// ===== END PHASE 4 =====
+
 // Helper function to create SVG icons
 function createIcon(iconName, className = '') {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -174,6 +264,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     await fetchProductsData();
+    
+    // Initialize cache management system
+    await initializeCacheManagement();
     
     // Only initialize cart rendering after products data is loaded
     renderCart();
@@ -811,6 +904,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateMainButtonCartInfo();
     }
 
+    // Manual cache clearing function for debugging/development
+    async function clearAllCaches() {
+        try {
+            const success = await clearBrowserCache();
+            if (success) {
+                console.log('✅ All caches cleared successfully');
+                // Optionally show user feedback
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('Кеш очищен успешно!');
+                }
+            } else {
+                console.error('❌ Failed to clear caches');
+            }
+        } catch (error) {
+            console.error('❌ Error clearing caches:', error);
+        }
+    }
+
+    // Cache status function for debugging
+    async function getCacheStatus() {
+        try {
+            const status = {
+                appVersion: CACHE_VERSION,
+                storedVersion: localStorage.getItem('app_version'),
+                cacheSupported: 'caches' in window,
+                localStorageSize: JSON.stringify(localStorage).length,
+                sessionStorageSize: JSON.stringify(sessionStorage).length
+            };
+            
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                status.cacheNames = cacheNames;
+                status.cacheCount = cacheNames.length;
+            }
+            
+            console.log('📊 Cache Status:', status);
+            return status;
+        } catch (error) {
+            console.error('❌ Error getting cache status:', error);
+            return null;
+        }
+    }
+
     function renderCheckoutSummary() {
         if (checkoutItemsList) checkoutItemsList.innerHTML = '';
         let total = 0;
@@ -1446,5 +1582,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Делаем функции доступными глобально
     window.showProductScreen = showProductScreen;
+    
+    // Cache management functions for debugging
+    window.clearAllCaches = clearAllCaches;
+    window.getCacheStatus = getCacheStatus;
+    window.CACHE_VERSION = CACHE_VERSION;
 
 });
