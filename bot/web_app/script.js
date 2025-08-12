@@ -1243,10 +1243,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (startShoppingButton) {
         startShoppingButton.addEventListener('click', () => {
-            // 🔗 ПЕРЕНАПРАВЛЕНИЕ В БОТ ЧАТ: Кнопка "Узнать об условиях доставки" 
-            // перенаправляет пользователя в основной чат бота для получения информации о доставке
-            console.log('🔗 Перенаправление в бот чат для получения информации о доставке');
-            Telegram.WebApp.openTelegramLink('https://t.me/drazhin_bakery_bot');
+            // 🔗 ЗАКРЫТИЕ WEBAPP И ПЕРЕНАПРАВЛЕНИЕ В БОТ ЧАТ: Кнопка "Заказать с доставкой" 
+            // закрывает WebApp и перенаправляет пользователя в основной чат бота
+            console.log('🔗 Закрытие WebApp и перенаправление в бот чат');
+            
+            // Close the WebApp first
+            try {
+                if (Telegram.WebApp.close) {
+                    Telegram.WebApp.close();
+                }
+            } catch (closeError) {
+                console.warn('Could not close WebApp automatically:', closeError);
+            }
+            
+            // Redirect to bot chat (this will happen after WebApp closes)
+            setTimeout(() => {
+                try {
+                    Telegram.WebApp.openTelegramLink('https://t.me/drazhin_bakery_bot');
+                } catch (redirectError) {
+                    console.warn('Could not redirect to bot chat:', redirectError);
+                    // Fallback: try to open in new window/tab
+                    window.open('https://t.me/drazhin_bakery_bot', '_blank');
+                }
+            }, 100);
         });
     } else {
         console.error('Элемент с ID "start-shopping-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');
