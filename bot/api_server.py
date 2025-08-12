@@ -190,7 +190,21 @@ async def setup_api_server():
         file_path = request.match_info.get('filename', '')
         full_path = os.path.join(WEB_APP_DIR, file_path)
         
+        # Debug logging for service worker requests
+        if file_path.endswith('sw.js'):
+            logger.info(f"Service Worker requested: {file_path} -> {full_path}")
+            logger.info(f"File exists: {os.path.exists(full_path)}")
+            logger.info(f"Is file: {os.path.isfile(full_path)}")
+        
         if os.path.exists(full_path) and os.path.isfile(full_path):
+            # Read file content first
+            try:
+                with open(full_path, 'rb') as f:
+                    content = f.read()
+            except Exception as e:
+                logger.error(f"Error reading file {full_path}: {e}")
+                return web.Response(status=500, text="Error reading file")
+            
             # Определяем тип содержимого на основе расширения файла
             content_type = 'text/html'
             if file_path.endswith('.css'):
@@ -213,9 +227,6 @@ async def setup_api_server():
                     'Expires': '0'
                 }
                 return web.Response(body=content, headers=headers)
-            
-            with open(full_path, 'rb') as f:
-                content = f.read()
             
             # Check if file has version query parameter (e.g., ?v=1.2.0)
             query_string = request.query_string
