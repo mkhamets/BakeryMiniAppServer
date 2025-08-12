@@ -1061,7 +1061,7 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
                                                     </td>
                                                     <td style="font-family:Arial;text-align:left;color:#111111">{quantity} шт.</td>
                                                     <td style="font-family:Arial;text-align:left;color:#111111">{product_weight} гр.</td>
-                                                    <td style="font-family:Arial;text-align:left;color:#111111">{price_float:.0f} р.</td>
+                                                    <td style="font-family:Arial;text-align:left;color:#111111">{price_float:.2f} р.</td>
                                                 </tr>
                                                 """
         except (ValueError, TypeError) as e:
@@ -1164,7 +1164,7 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
                                                     </table>
 
                                                     <h3 style="font-family:Arial;color:#111111;font-weight:200;line-height:1.2em;margin:40px 20px;font-size:22px">
-                                                        Итого: <strong>{total_amount:.0f}</strong> р.
+                                                        Итого: <strong>{total_amount:.2f}</strong> р.
                                                     </h3>
 
                                                     <p style="font-family:Arial;color:#111111;margin:20px">
