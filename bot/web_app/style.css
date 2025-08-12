@@ -1878,7 +1878,7 @@ body * {
 }
 
 .pickup-address-item:hover {
-    background-color: #f8f8f8;
+    background-color: white; /* Keep white background consistent across all platforms */
 }
 
 .pickup-address-item input[type="radio"] {
