@@ -167,10 +167,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg", image: "images/bakery.svg" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg", image: "images/crouasan.svg" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg", image: "images/bread1.svg" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg", image: "images/cookie.svg" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.2.0", image: "images/bakery.svg?v=1.2.0" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.2.0", image: "images/crouasan.svg?v=1.2.0" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.2.0", image: "images/bread1.svg?v=1.2.0" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.2.0", image: "images/cookie.svg?v=1.2.0" }
     };
 
     await fetchProductsData();
