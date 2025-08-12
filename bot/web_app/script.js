@@ -616,6 +616,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayView(viewName, categoryKey = null) {
+        console.log(`🔄 Displaying view: ${viewName}${categoryKey ? ` (category: ${categoryKey})` : ''}`);
+        
         if (welcomeContainer) welcomeContainer.classList.add('hidden');
         if (categoriesContainer) categoriesContainer.classList.add('hidden');
         if (productsContainer) productsContainer.classList.add('hidden');
@@ -658,12 +660,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 scrollToTop();
                 break;
             case 'categories':
+                console.log('🏪 Categories view selected - showing menu screen');
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
                 if (categoriesContainer) categoriesContainer.classList.remove('hidden');
                 if (mainCategoryTitle) {
                     mainCategoryTitle.textContent = 'Наше меню';
                     mainCategoryTitle.classList.remove('hidden');
                 }
+                console.log('📋 Calling loadCategories() function...');
                 loadCategories();
                 // Show basket button for categories view
                 if (Telegram.WebApp.MainButton) {
