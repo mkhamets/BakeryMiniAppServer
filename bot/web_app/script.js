@@ -599,6 +599,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
             quantitySpan.textContent = currentQuantity;
         }
+        
+        // Also update product screen counter if it exists
+        const productScreenCounter = document.getElementById(`screen-quantity-${productId}`);
+        if (productScreenCounter) {
+            const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
+            productScreenCounter.value = currentQuantity;
+        }
+        
         if (cartContainer && !cartContainer.classList.contains('hidden')) {
             renderCart();
         }
@@ -1353,7 +1361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const quantityDisplay = document.getElementById(`screen-quantity-${product.id}`);
         if (quantityDisplay) {
             const currentQuantity = cart[product.id] ? cart[product.id].quantity : 0;
-            quantityDisplay.textContent = currentQuantity;
+            quantityDisplay.value = currentQuantity;
         }
 
         // Показываем экран продукта
