@@ -958,21 +958,23 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .back-from-checkout-button {
-    background-color: #6c757d; /* Серый цвет */
-    color: white;
-    border: none;
+    background-color: white; /* Match clear-cart-button */
+    color: #666; /* Match clear-cart-button */
+    border: 2px solid #ccc; /* Match clear-cart-button */
     border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 1em;
+    padding: 6px 8px; /* Match clear-cart-button */
+    font-size: 0.9em; /* Match clear-cart-button */
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.1s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease; /* Match clear-cart-button */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Match clear-cart-button */
 }
 
 .back-from-checkout-button:hover {
-    background-color: #5a6268;
-    transform: translateY(-2px);
+    background-color: #f8f9fa; /* Match clear-cart-button */
+    border-color: #000; /* Match clear-cart-button */
+    transform: translateY(-1px); /* Match clear-cart-button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Match clear-cart-button */
 }
 
 .checkout-item-summary {
