@@ -82,10 +82,10 @@ async function initializeCacheManagement() {
             }
         }, 600000); // Check every 10 minutes
         
-        // Initialize service worker integration
-        await initializeServiceWorkerIntegration();
+        // TEMPORARILY DISABLED SERVICE WORKER INTEGRATION FOR TWITCHING FIX TESTING
+        // await initializeServiceWorkerIntegration();
         
-        console.log('✅ Cache management initialized');
+        console.log('✅ Cache management initialized (Service Worker disabled)');
     } catch (error) {
         console.error('❌ Error initializing cache management:', error);
     }
@@ -616,8 +616,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayView(viewName, categoryKey = null) {
-        console.log(`🔄 Displaying view: ${viewName}${categoryKey ? ` (category: ${categoryKey})` : ''}`);
-        
         if (welcomeContainer) welcomeContainer.classList.add('hidden');
         if (categoriesContainer) categoriesContainer.classList.add('hidden');
         if (productsContainer) productsContainer.classList.add('hidden');
@@ -660,14 +658,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 scrollToTop();
                 break;
             case 'categories':
-                console.log('🏪 Categories view selected - showing menu screen');
                 if (mainPageContainer) mainPageContainer.classList.remove('hidden');
                 if (categoriesContainer) categoriesContainer.classList.remove('hidden');
                 if (mainCategoryTitle) {
                     mainCategoryTitle.textContent = 'Наше меню';
                     mainCategoryTitle.classList.remove('hidden');
                 }
-                console.log('📋 Calling loadCategories() function...');
                 loadCategories();
                 // Show basket button for categories view
                 if (Telegram.WebApp.MainButton) {
@@ -788,27 +784,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadCategories() {
         try {
-            console.log('🔄 Loading categories...');
             const response = await fetch('/bot-app/api/categories');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const categoriesData = await response.json();
-            console.log('📊 Categories data received:', categoriesData);
 
-            if (categoriesContainer) {
-                categoriesContainer.innerHTML = '';
-                console.log('✅ Categories container cleared');
-            } else {
-                console.error('❌ Categories container not found');
-                return;
-            }
+            if (categoriesContainer) categoriesContainer.innerHTML = '';
 
             const categoriesGrid = document.createElement('div');
             categoriesGrid.className = 'categories-grid';
 
             categoriesData.forEach(category => {
-                console.log(`🏷️ Processing category: ${category.key}`);
                 const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, icon: '' };
                 const categoryDisplayName = categoryInfo.name;
                 const categoryIcon = categoryInfo.icon;
@@ -816,8 +803,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
                     ? productsData[category.key][0].image_url
                     : 'https://placehold.co/300x200/cccccc/333333?text=No+Image';
-
-                console.log(`🖼️ Category image URL: ${categoryImageUrl}`);
 
                 const categoryCard = document.createElement('div');
                 categoryCard.className = 'category-card-item';
@@ -844,18 +829,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 if (categoriesGrid) categoriesGrid.appendChild(categoryCard);
             });
-            if (categoriesContainer) {
-                categoriesContainer.appendChild(categoriesGrid);
-                console.log('✅ Categories grid added to container');
-            } else {
-                console.error('❌ Categories container not found for appending grid');
-            }
+            if (categoriesContainer) categoriesContainer.appendChild(categoriesGrid);
             
             // Hide loading logo after categories are loaded
             if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
-            console.log('✅ Categories loading completed successfully');
         } catch (error) {
-            console.error('❌ Ошибка при загрузке категорий:', error);
+            console.error('Ошибка при загрузке категорий:', error);
             console.error('Failed to load categories. Please try again later.');
         }
     }
