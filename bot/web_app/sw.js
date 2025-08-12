@@ -84,6 +84,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
+    // Skip unsupported schemes (chrome-extension, data, etc.)
+    if (url.protocol === 'chrome-extension:' || url.protocol === 'data:' || url.protocol === 'moz-extension:') {
+        console.log(`⚠️ Skipping unsupported scheme: ${url.protocol}`);
+        return;
+    }
+    
     // Determine cache strategy based on request type
     const strategy = getCacheStrategy(url);
     

@@ -784,18 +784,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadCategories() {
         try {
+            console.log('🔄 Loading categories...');
             const response = await fetch('/bot-app/api/categories');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const categoriesData = await response.json();
+            console.log('📊 Categories data received:', categoriesData);
 
-            if (categoriesContainer) categoriesContainer.innerHTML = '';
+            if (categoriesContainer) {
+                categoriesContainer.innerHTML = '';
+                console.log('✅ Categories container cleared');
+            } else {
+                console.error('❌ Categories container not found');
+                return;
+            }
 
             const categoriesGrid = document.createElement('div');
             categoriesGrid.className = 'categories-grid';
 
             categoriesData.forEach(category => {
+                console.log(`🏷️ Processing category: ${category.key}`);
                 const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, icon: '' };
                 const categoryDisplayName = categoryInfo.name;
                 const categoryIcon = categoryInfo.icon;
@@ -803,6 +812,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
                     ? productsData[category.key][0].image_url
                     : 'https://placehold.co/300x200/cccccc/333333?text=No+Image';
+
+                console.log(`🖼️ Category image URL: ${categoryImageUrl}`);
 
                 const categoryCard = document.createElement('div');
                 categoryCard.className = 'category-card-item';
@@ -829,12 +840,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 if (categoriesGrid) categoriesGrid.appendChild(categoryCard);
             });
-            if (categoriesContainer) categoriesContainer.appendChild(categoriesGrid);
+            if (categoriesContainer) {
+                categoriesContainer.appendChild(categoriesGrid);
+                console.log('✅ Categories grid added to container');
+            } else {
+                console.error('❌ Categories container not found for appending grid');
+            }
             
             // Hide loading logo after categories are loaded
             if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
+            console.log('✅ Categories loading completed successfully');
         } catch (error) {
-            console.error('Ошибка при загрузке категорий:', error);
+            console.error('❌ Ошибка при загрузке категорий:', error);
             console.error('Failed to load categories. Please try again later.');
         }
     }
