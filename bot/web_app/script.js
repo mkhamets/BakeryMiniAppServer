@@ -633,6 +633,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Показываем кнопку "Наше меню" для пустой корзины
             const emptyCartMenuButton = document.getElementById('empty-cart-menu-button');
             if (emptyCartMenuButton) emptyCartMenuButton.classList.remove('hidden');
+            
+            // Удаляем контейнер с информацией об условиях реализации продуктов когда корзина пуста
+            renderAvailabilityInfo(cartItems);
             return;
         } else {
             // Показываем cart-summary-row когда в корзине есть товары
