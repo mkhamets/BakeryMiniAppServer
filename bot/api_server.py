@@ -128,15 +128,7 @@ async def get_categories_for_webapp(request):
 async def serve_main_app_page(request):
     """Отдает главный HTML файл Web App."""
     logger.info(f"API: Serving index.html for Web App entry point: {request.path}")
-    index_path = os.path.join(WEB_APP_DIR, 'index.html')
-    # Явно указываем заголовки, чтобы отключить кеширование HTML
-    headers = {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-    }
-    return web.FileResponse(index_path, headers=headers)
+    return web.FileResponse(os.path.join(WEB_APP_DIR, 'index.html'))
 
 async def setup_api_server():
     """Настраивает и возвращает AioHTTP Web Application Runner."""
@@ -163,9 +155,8 @@ async def setup_api_server():
     # Добавляем обработчик для статических файлов с контролем кеширования
     async def serve_static_with_cache_control(request):
         """Serves static files with proper cache control headers."""
-        # Поддерживаем вложенные пути, например images/logo.svg
-        path_within_webapp = request.match_info.get('path', '')
-        full_path = os.path.join(WEB_APP_DIR, path_within_webapp)
+        file_path = request.match_info.get('filename', '')
+        full_path = os.path.join(WEB_APP_DIR, file_path)
         
         if os.path.exists(full_path) and os.path.isfile(full_path):
             # Определяем тип содержимого на основе расширения файла
@@ -184,7 +175,7 @@ async def setup_api_server():
             with open(full_path, 'rb') as f:
                 content = f.read()
             
-            # Устанавливаем заголовки для предотвращения кеширования статических ресурсов
+            # Устанавливаем заголовки для предотвращения кеширования
             headers = {
                 'Content-Type': content_type,
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -196,8 +187,8 @@ async def setup_api_server():
         else:
             return web.Response(status=404, text="File not found")
     
-    # Маршруты для конкретных статических файлов (включая вложенные пути)
-    app.router.add_get('/bot-app/{path:.*\.(css|js|png|jpg|jpeg|svg|ico)}', serve_static_with_cache_control)
+    # Маршруты для конкретных статических файлов
+    app.router.add_get('/bot-app/{filename:.+\.(css|js|png|jpg|jpeg|svg|ico)}', serve_static_with_cache_control)
     
     # Обычный статический маршрут для остальных файлов
     app.router.add_static('/bot-app/', path=WEB_APP_DIR, name='web_app_static')
