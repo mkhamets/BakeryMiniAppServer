@@ -207,23 +207,32 @@ async def setup_api_server():
             with open(full_path, 'rb') as f:
                 content = f.read()
             
-            # Устанавливаем заголовки для предотвращения кеширования
-            headers = {
-                'Content-Type': content_type,
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            }
+            # Check if file has version query parameter (e.g., ?v=1.2.0)
+            query_string = request.query_string
+            has_version = 'v=' in query_string
+            
+            if has_version:
+                # Versioned files should be cached for a long time
+                headers = {
+                    'Content-Type': content_type,
+                    'Cache-Control': 'public, max-age=31536000',  # 1 year
+                    'ETag': f'"v{hash(full_path)}"'
+                }
+            else:
+                # Non-versioned files should not be cached
+                headers = {
+                    'Content-Type': content_type,
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
             
             return web.Response(body=content, headers=headers)
         else:
             return web.Response(status=404, text="File not found")
     
-    # Маршруты для конкретных статических файлов
+    # Маршрут для статических файлов с умным контролем кеширования
     app.router.add_get('/bot-app/{filename:.+\.(css|js|png|jpg|jpeg|svg|ico)}', serve_static_with_cache_control)
-    
-    # Обычный статический маршрут для остальных файлов
-    app.router.add_static('/bot-app/', path=WEB_APP_DIR, name='web_app_static')
 
     # 5. Маршрут-заглушка для любых других путей внутри /bot-app/, которые не являются статическими файлами
     app.router.add_get('/bot-app/{tail:.*}', serve_main_app_page)
