@@ -847,6 +847,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orderDetails[key] = value;
                 }
 
+                // Fix pickup address: convert numeric value to actual address label
+                if (orderDetails.pickupAddress) {
+                    const pickupAddressMapping = {
+                        '1': 'ТЦ Green City',
+                        '2': 'ТЦ Замок',
+                        '3': 'Новая Боровая',
+                        '5': 'ул. Л. Беды 26',
+                        '6': 'Маяк Минска – ул. Мстиславца 8',
+                        '7': 'г. Заславль',
+                        '8': 'Минск Мир, ул. Лученка 1',
+                        '9': 'ЖК Пирс, а/г Ратомка Морской риф 1/4',
+                        '10': 'ул. Нововиленская, 45'
+                    };
+                    orderDetails.pickupAddress = pickupAddressMapping[orderDetails.pickupAddress] || orderDetails.pickupAddress;
+                }
+
                 let isValid = true;
                 const errorMessages = [];
 
