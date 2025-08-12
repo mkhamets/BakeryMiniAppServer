@@ -999,24 +999,13 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border-color: red;
 }
 
-/* Стили для экрана продукта (заменяет поп-ап) */
+/* Стили для экрана продукта (теперь внутри основного контейнера) */
 .product-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
     background-color: #fff;
-    z-index: 10000;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    width: 100%;
     padding: 15px; /* Reduced from 20px */
-    max-width: 600px;
-    margin: 0 auto;
-    min-height: 100vh;
     box-sizing: border-box;
-    width: 100%; /* Добавляем полную ширину для консистентности */
+    /* Removed fixed positioning since it's now inside main container */
 }
 
 #product-screen-body {
