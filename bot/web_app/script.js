@@ -1218,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/images/Hleb.jpg?v=1.0.18';
+    img.src = '/bot-app/images/Hleb.jpg?v=1.0.19';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
