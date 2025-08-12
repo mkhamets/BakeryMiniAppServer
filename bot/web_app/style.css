@@ -1108,7 +1108,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .product-screen-info-item-availability {
     background-color: #fff;
-    border: 2px solid #b76c4b;
+    /* Removed border to fix unwanted bottom border */
 }
 
 .product-screen-info-item:last-child {
