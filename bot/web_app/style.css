@@ -1034,8 +1034,9 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-screen-name {
-    font-size: 1.8em;
-    font-weight: bold;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.9em;
     color: #333;
     text-align: center;
     margin-bottom: 10px; /* Reduced from 15px */
@@ -1043,9 +1044,10 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-screen-price {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
     font-size: 1.6em;
-    font-weight: bold;
-    color: #b76c4b;
+    color: #000000;
     text-align: center;
     margin-bottom: 0px;
 }
@@ -1108,7 +1110,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .product-screen-info-item-availability {
     background-color: #fff;
-    /* Removed border to fix unwanted bottom border */
+    border: 2px solid #b76c4b;
+    border-bottom: 2px solid #b76c4b !important; /* Ensure bottom border is always visible */
 }
 
 .product-screen-info-item:last-child {
