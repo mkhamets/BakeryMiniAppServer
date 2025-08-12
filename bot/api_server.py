@@ -83,35 +83,63 @@ async def get_products_for_webapp(request):
     """Отдает данные о продуктах для Web App, с возможностью фильтрации по категории."""
     # Check rate limiting
     if not await check_api_rate_limit(request, "get_products"):
-        return web.json_response({"error": "Rate limit exceeded"}, status=429)
+        return web.json_response({"error": "Rate limit exceeded"}, status=429, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
     
     category_key = request.query.get('category')
     logger.info(f"API: Запрос продуктов для категории: {category_key}")
 
     if not products_data:
         logger.warning("API: Данные о продуктах не загружены.")
-        return web.json_response({"error": "Product data not loaded"}, status=500)
+        return web.json_response({"error": "Product data not loaded"}, status=500, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
 
     if category_key:
         products_in_category = products_data.get(category_key, [])
         if not products_in_category:
             logger.warning(f"API: Категория '{category_key}' не найдена или пуста.")
-            return web.json_response({"error": "Category not found or empty"}, status=404)
-        return web.json_response(products_in_category)
+            return web.json_response({"error": "Category not found or empty"}, status=404, headers={
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            })
+        return web.json_response(products_in_category, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
     else:
         # Если категория не указана, отдаем все продукты, сгруппированные по категориям
-        return web.json_response(products_data)
+        return web.json_response(products_data, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
 
 async def get_categories_for_webapp(request):
     """Отдает список категорий для Web App."""
     # Check rate limiting
     if not await check_api_rate_limit(request, "get_categories"):
-        return web.json_response({"error": "Rate limit exceeded"}, status=429)
+        return web.json_response({"error": "Rate limit exceeded"}, status=429, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
     
     logger.info("API: Запрос списка категорий.")
     if not products_data:
         logger.warning("API: Данные о продуктах не загружены для категорий.")
-        return web.json_response({"error": "Product data not loaded"}, status=500)
+        return web.json_response({"error": "Product data not loaded"}, status=500, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
 
     categories_list = []
     for key, products in products_data.items():
@@ -123,7 +151,11 @@ async def get_categories_for_webapp(request):
                 "name": products[0].get('category_name', key), # Используем название категории из первого продукта
                 "image": category_image
             })
-    return web.json_response(categories_list)
+    return web.json_response(categories_list, headers={
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    })
 
 async def serve_main_app_page(request):
     """Отдает главный HTML файл Web App."""
