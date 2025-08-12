@@ -1252,29 +1252,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (startShoppingButton) {
         startShoppingButton.addEventListener('click', () => {
-            // 🔗 ЗАКРЫТИЕ WEBAPP И ПЕРЕНАПРАВЛЕНИЕ В БОТ ЧАТ: Кнопка "Заказать с доставкой" 
-            // закрывает WebApp и перенаправляет пользователя в основной чат бота
-            console.log('🔗 Закрытие WebApp и перенаправление в бот чат');
+            // 🔗 ПЕРЕНАПРАВЛЕНИЕ В БОТ ЧАТ С ЗАДЕРЖКОЙ ЗАКРЫТИЯ: Кнопка "Заказать с доставкой" 
+            // перенаправляет пользователя в основной чат бота, а затем закрывает WebApp через полсекунды
+            console.log('🔗 Перенаправление в бот чат с задержкой закрытия WebApp');
             
-            // Close the WebApp first
+            // Redirect to bot chat immediately
             try {
-                if (Telegram.WebApp.close) {
-                    Telegram.WebApp.close();
-                }
-            } catch (closeError) {
-                console.warn('Could not close WebApp automatically:', closeError);
+                Telegram.WebApp.openTelegramLink('https://t.me/drazhin_bakery_bot');
+            } catch (redirectError) {
+                console.warn('Could not redirect to bot chat:', redirectError);
+                // Fallback: try to open in new window/tab
+                window.open('https://t.me/drazhin_bakery_bot', '_blank');
             }
             
-            // Redirect to bot chat (this will happen after WebApp closes)
+            // Close the WebApp after half a second delay
             setTimeout(() => {
                 try {
-                    Telegram.WebApp.openTelegramLink('https://t.me/drazhin_bakery_bot');
-                } catch (redirectError) {
-                    console.warn('Could not redirect to bot chat:', redirectError);
-                    // Fallback: try to open in new window/tab
-                    window.open('https://t.me/drazhin_bakery_bot', '_blank');
+                    if (Telegram.WebApp.close) {
+                        Telegram.WebApp.close();
+                    }
+                } catch (closeError) {
+                    console.warn('Could not close WebApp automatically:', closeError);
                 }
-            }, 100);
+            }, 500); // 500ms = half a second
         });
     } else {
         console.error('Элемент с ID "start-shopping-button" не найден в DOM. Невозможно прикрепить слушатель кликов.');
