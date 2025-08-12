@@ -792,6 +792,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (cartActionsBottom) {
                 cartActionsBottom.parentNode.insertBefore(container, cartActionsBottom);
             }
+        } else {
+            // Явно удаляем контейнер если нет продуктов с особыми условиями
+            const existingContainer = document.getElementById('availability-info-container');
+            if (existingContainer) {
+                existingContainer.remove();
+            }
         }
     }
 
