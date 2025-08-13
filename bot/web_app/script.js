@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.0';
+const CACHE_VERSION = '1.2.2';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Cache management functions
@@ -472,6 +472,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayView(viewName, categoryKey = null) {
+        // Prevent multiple simultaneous view changes
+        if (window.isChangingView) {
+            console.log('View change already in progress, skipping...');
+            return;
+        }
+        window.isChangingView = true;
+
+        // Hide all views first
         if (welcomeContainer) welcomeContainer.classList.add('hidden');
         if (categoriesContainer) categoriesContainer.classList.add('hidden');
         if (productsContainer) productsContainer.classList.add('hidden');
@@ -493,88 +501,101 @@ document.addEventListener('DOMContentLoaded', async () => {
             Telegram.WebApp.BackButton.show();
         }
 
-        switch (viewName) {
-            case 'loading':
-                const loadingOverlay = document.getElementById('loading-overlay');
-                if (loadingOverlay) loadingOverlay.classList.remove('hidden');
-                if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
-                // Hide all Telegram Web App buttons during loading
-                if (Telegram.WebApp.MainButton) {
+        // Mobile-optimized view switching
+        const showView = () => {
+            switch (viewName) {
+                case 'loading':
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+                    if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
+                    // Hide all Telegram Web App buttons during loading
+                    if (Telegram.WebApp.MainButton) {
+                        Telegram.WebApp.MainButton.hide();
+                    }
+                    if (Telegram.WebApp.BackButton) {
+                        Telegram.WebApp.BackButton.hide();
+                    }
+                    break;
+                case 'welcome':
+                    if (welcomeContainer) welcomeContainer.classList.remove('hidden');
+                    if (mainPageContainer) mainPageContainer.classList.add('hidden');
                     Telegram.WebApp.MainButton.hide();
-                }
-                if (Telegram.WebApp.BackButton) {
-                    Telegram.WebApp.BackButton.hide();
-                }
-                break;
-            case 'welcome':
-                if (welcomeContainer) welcomeContainer.classList.remove('hidden');
-                if (mainPageContainer) mainPageContainer.classList.add('hidden');
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when welcome view is displayed
-                scrollToTop();
-                break;
-            case 'categories':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (categoriesContainer) categoriesContainer.classList.remove('hidden');
-                if (mainCategoryTitle) {
-                    mainCategoryTitle.textContent = 'Наше меню';
-                    mainCategoryTitle.classList.remove('hidden');
-                }
-                loadCategories();
-                // Show basket button for categories view
-                if (Telegram.WebApp.MainButton) {
-                    updateMainButtonCartInfo();
-                }
-                // Scroll to top of the page when categories view is displayed
-                scrollToTop();
-                break;
-            case 'products':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (productsContainer) productsContainer.classList.remove('hidden');
-                if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
-                loadProducts(categoryKey);
-                // Show basket button for products view
-                if (Telegram.WebApp.MainButton) {
-                    updateMainButtonCartInfo();
-                }
-                // Scroll to top of the page when products view is displayed
-                scrollToTop();
-                break;
-            case 'product':
-                if (productScreen) productScreen.classList.remove('hidden');
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when product view is displayed
-                scrollToTop();
-                break;
-            case 'cart':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (cartContainer) cartContainer.classList.remove('hidden');
-                if (mainCategoryTitle) {
-                    mainCategoryTitle.textContent = 'Ваша корзина';
-                    mainCategoryTitle.classList.remove('hidden');
-                }
-                renderCart();
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when cart view is displayed
-                scrollToTop();
-                break;
-            case 'checkout':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (checkoutContainer) checkoutContainer.classList.remove('hidden');
-                if (mainCategoryTitle) {
-                    mainCategoryTitle.textContent = 'Оформление заказа';
-                    mainCategoryTitle.classList.remove('hidden');
-                }
-                renderCheckoutSummary();
-                setupDateInput();
-                updateSubmitButtonState();
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when checkout view is displayed
-                scrollToTop();
-                break;
-            default:
-                console.warn('Неизвестное представление:', viewName);
-                break;
+                    // Scroll to top of the page when welcome view is displayed
+                    scrollToTop();
+                    break;
+                case 'categories':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (categoriesContainer) categoriesContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) {
+                        mainCategoryTitle.textContent = 'Наше меню';
+                        mainCategoryTitle.classList.remove('hidden');
+                    }
+                    // Load categories immediately for mobile to prevent twitching
+                    loadCategories();
+                    // Show basket button for categories view
+                    if (Telegram.WebApp.MainButton) {
+                        updateMainButtonCartInfo();
+                    }
+                    // Scroll to top of the page when categories view is displayed
+                    scrollToTop();
+                    break;
+                case 'products':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (productsContainer) productsContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
+                    loadProducts(categoryKey);
+                    // Show basket button for products view
+                    if (Telegram.WebApp.MainButton) {
+                        updateMainButtonCartInfo();
+                    }
+                    // Scroll to top of the page when products view is displayed
+                    scrollToTop();
+                    break;
+                case 'product':
+                    if (productScreen) productScreen.classList.remove('hidden');
+                    Telegram.WebApp.MainButton.hide();
+                    // Scroll to top of the page when product view is displayed
+                    scrollToTop();
+                    break;
+                case 'cart':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (cartContainer) cartContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) {
+                        mainCategoryTitle.textContent = 'Ваша корзина';
+                        mainCategoryTitle.classList.remove('hidden');
+                    }
+                    renderCart();
+                    Telegram.WebApp.MainButton.hide();
+                    // Scroll to top of the page when cart view is displayed
+                    scrollToTop();
+                    break;
+                case 'checkout':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (checkoutContainer) checkoutContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) {
+                        mainCategoryTitle.textContent = 'Оформление заказа';
+                        mainCategoryTitle.classList.remove('hidden');
+                    }
+                    renderCheckoutSummary();
+                    setupDateInput();
+                    updateSubmitButtonState();
+                    Telegram.WebApp.MainButton.hide();
+                    // Scroll to top of the page when checkout view is displayed
+                    scrollToTop();
+                    break;
+            }
+            
+            // Reset the flag after a short delay
+            setTimeout(() => {
+                window.isChangingView = false;
+            }, isMobile ? 100 : 50);
+        };
+
+        // Use requestAnimationFrame for smoother transitions on mobile
+        if (isMobile) {
+            requestAnimationFrame(showView);
+        } else {
+            showView();
         }
     }
 
@@ -1753,5 +1774,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.CART_EXPIRATION_DAYS = CART_EXPIRATION_DAYS;
     
     // Service Worker functions removed to fix iOS twitching issues
+
+    // Mobile detection for animation optimization
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    
+    // iOS detection
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 });

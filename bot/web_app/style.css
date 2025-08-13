@@ -2048,3 +2048,90 @@ body * {
     color: #333;
     font-weight: 600;
 }
+
+/* Mobile-specific animation disabling to prevent iOS twitching */
+@media (max-width: 768px) {
+    /* Disable all transitions and transforms on mobile devices */
+    .product-card,
+    .category-card-item,
+    .category-image,
+    .category-text-wrapper,
+    .category-title-text,
+    .category-link-text,
+    .category-arrow-svg,
+    .clickable-image,
+    .details-text,
+    .checkout-button,
+    .menu-button,
+    .start-shopping-button,
+    .clear-cart-button,
+    .submit-order-button {
+        transition: none !important;
+        -webkit-transition: none !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+    }
+    
+    /* Disable hover effects on mobile */
+    .product-card:hover,
+    .category-card-item:hover,
+    .clickable-image:hover,
+    .checkout-button:hover,
+    .menu-button:hover,
+    .start-shopping-button:hover,
+    .clear-cart-button:hover,
+    .submit-order-button:hover {
+        transform: none !important;
+        -webkit-transform: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Disable hover effects on child elements */
+    .category-card-item:hover .category-image,
+    .category-card-item:hover .category-arrow-svg {
+        transform: none !important;
+        -webkit-transform: none !important;
+    }
+    
+    /* Force hardware acceleration on mobile without animations */
+    .category-card-item,
+    .product-card {
+        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+        will-change: auto !important;
+    }
+}
+
+/* Keep animations on desktop devices */
+@media (min-width: 769px) {
+    .product-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .clickable-image {
+        transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    
+    .checkout-button,
+    .menu-button,
+    .start-shopping-button,
+    .clear-cart-button,
+    .submit-order-button {
+        transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    .checkout-button:hover,
+    .menu-button:hover,
+    .start-shopping-button:hover,
+    .clear-cart-button:hover,
+    .submit-order-button:hover {
+        transform: translateY(-2px);
+    }
+}
