@@ -785,9 +785,8 @@ def _format_customer_telegram_message(order_number: str, order_details: dict,
         pickup_address_id = order_details.get('pickupAddress')
         pickup_details = _get_pickup_details(pickup_address_id) if pickup_address_id else {"name": "N/A", "address": "N/A", "hours": "N/A"}
         
-        delivery_info = f"""📍 *Адрес самовывоза:*
-{pickup_details['name']}
-{pickup_details['address']}
+        delivery_info = f"""🏪 *Пункт самовывоза:* {pickup_details['name']}
+📍 *Адрес самовывоза:* {pickup_details['address']}
 🕐 *Время работы:* {pickup_details['hours']}
 📅 *Дата самовывоза:* {order_details.get('deliveryDate', 'N/A')}"""
         if order_details.get('commentPickup'):
@@ -843,8 +842,13 @@ def _format_telegram_order_summary(order_number: str, order_details: dict,
         if order_details.get('comment'):
             summary += f"Комментарий к доставке: `{order_details.get('comment', 'N/A')}`\n"
     elif order_details.get('deliveryMethod') == 'pickup':
+        pickup_address_id = order_details.get('pickupAddress')
+        pickup_details = _get_pickup_details(pickup_address_id) if pickup_address_id else {"name": "N/A", "address": "N/A", "hours": "N/A"}
+        
         summary += (f"Способ получения: {delivery_text}\n"
-                   f"Адрес самовывоза: `{order_details.get('pickupAddress', 'N/A')}`\n")
+                   f"Пункт самовывоза: `{pickup_details['name']}`\n"
+                   f"Адрес самовывоза: `{pickup_details['address']}`\n"
+                   f"Время работы: `{pickup_details['hours']}`\n")
         if order_details.get('commentPickup'):
             summary += f"Комментарий к самовывозу: `{order_details.get('commentPickup', 'N/A')}`\n"
 
