@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.14';
+    const CACHE_VERSION = '1.3.15';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -757,15 +757,6 @@ function clearFieldError(fieldName) {
         fieldElement.classList.remove('form-field-error');
     }
     
-    // Special handling for payment method fields
-    if (fieldName === 'paymentMethod') {
-        const paymentMethodItems = document.querySelectorAll('#payment-method-section .payment-method-item');
-        paymentMethodItems.forEach(item => item.classList.remove('form-field-error'));
-    } else if (fieldName === 'paymentMethodPickup') {
-        const paymentMethodItems = document.querySelectorAll('#payment-method-section-pickup .payment-method-item');
-        paymentMethodItems.forEach(item => item.classList.remove('form-field-error'));
-    }
-    
     // Hide corresponding error message - handle both naming conventions
     let errorMessageElement = document.getElementById(fieldName + '-error');
     if (!errorMessageElement) {
@@ -785,14 +776,20 @@ function showValidationErrors(errorFields, errorMessages) {
     // Show error messages and highlight error fields
     errorFields.forEach((errorField, index) => {
         if (errorField.element) {
-            // Add error styling to the field
-            errorField.element.classList.add('form-field-error');
+            // Add error styling to the field (but not for payment methods and pickup addresses)
+            if (!['paymentMethod', 'paymentMethodPickup', 'pickupAddress'].includes(errorField.field)) {
+                errorField.element.classList.add('form-field-error');
+            }
             
             // Show corresponding error message
             const errorMessageId = errorField.field + '-error';
             const errorMessageElement = document.getElementById(errorMessageId);
+            console.log(`Looking for error message with ID: ${errorMessageId}`, errorMessageElement);
             if (errorMessageElement) {
                 errorMessageElement.classList.add('show');
+                console.log(`Error message shown for: ${errorField.field}`);
+            } else {
+                console.error(`Error message element not found for: ${errorField.field}`);
             }
             
             // Focus on the first error field
@@ -849,10 +846,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.14", image: "images/bakery.svg?v=1.3.14" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.14", image: "images/crouasan.svg?v=1.3.14" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.14", image: "images/bread1.svg?v=1.3.14" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.14", image: "images/cookie.svg?v=1.3.14" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.15", image: "images/bakery.svg?v=1.3.15" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.15", image: "images/crouasan.svg?v=1.3.15" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.15", image: "images/bread1.svg?v=1.3.15" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.15", image: "images/cookie.svg?v=1.3.15" }
     };
 
     await fetchProductsData();
@@ -2246,7 +2243,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.14';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.15';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
