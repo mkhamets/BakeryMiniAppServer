@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.15';
+    const CACHE_VERSION = '1.3.16';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -773,6 +773,19 @@ function showValidationErrors(errorFields, errorMessages) {
     // Clear previous errors first
     clearAllErrors();
     
+    // Debug: Check if error message elements exist
+    console.log('=== ERROR VALIDATION DEBUG ===');
+    console.log('Error fields:', errorFields);
+    console.log('Error messages:', errorMessages);
+    
+    // Test if error message elements exist
+    const testErrorElements = ['lastName-error', 'firstName-error', 'paymentMethod-error', 'pickupAddress-error'];
+    testErrorElements.forEach(id => {
+        const element = document.getElementById(id);
+        console.log(`Error element ${id}:`, element);
+    });
+    console.log('=== END DEBUG ===');
+    
     // Show error messages and highlight error fields
     errorFields.forEach((errorField, index) => {
         if (errorField.element) {
@@ -788,8 +801,19 @@ function showValidationErrors(errorFields, errorMessages) {
             if (errorMessageElement) {
                 errorMessageElement.classList.add('show');
                 console.log(`Error message shown for: ${errorField.field}`);
+                // Force display in case CSS is not working
+                errorMessageElement.style.display = 'block';
+                errorMessageElement.style.color = '#ff4444';
             } else {
                 console.error(`Error message element not found for: ${errorField.field}`);
+                // Try alternative selectors
+                const alternativeElement = document.querySelector(`[id*="${errorField.field}"][id*="error"]`);
+                if (alternativeElement) {
+                    console.log(`Found alternative error element:`, alternativeElement);
+                    alternativeElement.classList.add('show');
+                    alternativeElement.style.display = 'block';
+                    alternativeElement.style.color = '#ff4444';
+                }
             }
             
             // Focus on the first error field
@@ -846,10 +870,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.15", image: "images/bakery.svg?v=1.3.15" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.15", image: "images/crouasan.svg?v=1.3.15" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.15", image: "images/bread1.svg?v=1.3.15" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.15", image: "images/cookie.svg?v=1.3.15" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.16", image: "images/bakery.svg?v=1.3.16" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.16", image: "images/crouasan.svg?v=1.3.16" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.16", image: "images/bread1.svg?v=1.3.16" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.16", image: "images/cookie.svg?v=1.3.16" }
     };
 
     await fetchProductsData();
@@ -1644,6 +1668,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (backFromCheckoutToCartButton) {
             backFromCheckoutToCartButton.addEventListener('click', (event) => {
                 event.preventDefault();
+                // Clear all errors before navigating back
+                clearAllErrors();
                 displayView('cart');
             });
         } else {
@@ -1659,6 +1685,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 for (let [key, value] of formData.entries()) {
                     orderDetails[key] = value;
                 }
+                
+                // Debug form data
+                console.log('=== FORM DATA DEBUG ===');
+                console.log('Form data entries:', Array.from(formData.entries()));
+                console.log('Order details:', orderDetails);
+                console.log('=== END FORM DATA DEBUG ===');
 
                 // Keep pickup address ID as-is for backend processing
                 // The backend _get_pickup_details function expects the numeric ID
@@ -2243,7 +2275,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.15';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.16';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
