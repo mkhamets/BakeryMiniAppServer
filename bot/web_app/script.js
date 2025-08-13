@@ -33,8 +33,8 @@ async function clearBrowserCache() {
         // Clear sessionStorage completely
         sessionStorage.clear();
         
-        // Selectively clear localStorage (preserve cart)
-        const keysToPreserve = ['cart', 'cart_version', 'app_version'];
+        // Selectively clear localStorage (preserve cart and customer data)
+        const keysToPreserve = ['cart', 'cart_version', 'app_version', CUSTOMER_DATA_KEY];
         const keysToClear = [];
         
         for (let i = 0; i < localStorage.length; i++) {
@@ -57,6 +57,12 @@ async function clearBrowserCache() {
         }
         if (appVersion && !localStorage.getItem('app_version')) {
             localStorage.setItem('app_version', appVersion);
+        }
+        
+        // Preserve customer data during cache clear
+        const customerData = localStorage.getItem(CUSTOMER_DATA_KEY);
+        if (customerData) {
+            console.log('👤 Customer data preserved during cache clear');
         }
         
         console.log('🧹 Smart cache clear completed - cart preserved');
@@ -397,6 +403,203 @@ function getCartAge() {
 // ===== PHASE 6: SERVICE WORKER INTEGRATION =====
 // Service Worker removed to fix iOS twitching issues
 // ===== END PHASE 6 =====
+
+// ===== PHASE 7: CUSTOMER DATA PERSISTENCE =====
+// Customer data structure and versioning for prepopulated form fields
+const CUSTOMER_DATA_KEY = 'customer_data';
+const CUSTOMER_DATA_VERSION = '1.0.0';
+const CUSTOMER_DATA_EXPIRATION_DAYS = 365; // Keep customer data for 1 year
+const CUSTOMER_DATA_EXPIRATION_MS = CUSTOMER_DATA_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
+
+// Enhanced customer data structure with metadata
+function createCustomerDataWithMetadata(customerData) {
+    return {
+        version: CUSTOMER_DATA_VERSION,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + CUSTOMER_DATA_EXPIRATION_MS,
+        data: customerData || {}
+    };
+}
+
+// Load customer data with expiration check and migration
+function loadCustomerDataWithExpiration() {
+    try {
+        const customerDataItem = localStorage.getItem(CUSTOMER_DATA_KEY);
+        if (!customerDataItem) {
+            console.log('👤 No customer data found in localStorage');
+            return {};
+        }
+
+        let customerData;
+        try {
+            customerData = JSON.parse(customerDataItem);
+        } catch (parseError) {
+            console.error('❌ Error parsing customer data:', parseError);
+            localStorage.removeItem(CUSTOMER_DATA_KEY);
+            return {};
+        }
+
+        // Check if this is the new format with metadata
+        if (customerData && typeof customerData === 'object' && customerData.version && customerData.timestamp) {
+            console.log('👤 Customer data version:', customerData.version);
+            
+            // Check expiration
+            if (Date.now() > customerData.expiresAt) {
+                console.log('⏰ Customer data expired, clearing...');
+                localStorage.removeItem(CUSTOMER_DATA_KEY);
+                return {};
+            }
+            
+            // Check if version needs migration
+            if (customerData.version !== CUSTOMER_DATA_VERSION) {
+                console.log(`🔄 Customer data version ${customerData.version} needs migration to ${CUSTOMER_DATA_VERSION}`);
+                // For now, just clear and start fresh (can be enhanced later)
+                localStorage.removeItem(CUSTOMER_DATA_KEY);
+                return {};
+            }
+            
+            console.log('✅ Customer data loaded successfully with metadata');
+            return customerData.data;
+        } else {
+            // Legacy customer data format - migrate to new format
+            console.log('🔄 Migrating legacy customer data to new format');
+            const migratedCustomerData = createCustomerDataWithMetadata(customerData);
+            localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(migratedCustomerData));
+            console.log('✅ Customer data migrated successfully');
+            return customerData;
+        }
+    } catch (error) {
+        console.error('❌ Error loading customer data:', error);
+        return {};
+    }
+}
+
+// Save customer data with metadata
+function saveCustomerDataWithMetadata(customerData) {
+    try {
+        const customerDataWithMetadata = createCustomerDataWithMetadata(customerData);
+        localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(customerDataWithMetadata));
+        console.log('💾 Customer data saved with metadata');
+        return true;
+    } catch (error) {
+        console.error('❌ Error saving customer data:', error);
+        return false;
+    }
+}
+
+// Extract customer data from form
+function extractCustomerDataFromForm() {
+    try {
+        const form = document.getElementById('checkout-form');
+        if (!form) return {};
+
+        const formData = new FormData(form);
+        const customerData = {};
+
+        // Extract only the fields we want to persist
+        const fieldsToPersist = ['firstName', 'lastName', 'middleName', 'phoneNumber', 'email', 'city', 'addressLine'];
+        
+        for (let [key, value] of formData.entries()) {
+            if (fieldsToPersist.includes(key) && value.trim()) {
+                customerData[key] = value.trim();
+            }
+        }
+
+        return customerData;
+    } catch (error) {
+        console.error('❌ Error extracting customer data from form:', error);
+        return {};
+    }
+}
+
+// Populate form with customer data
+function populateFormWithCustomerData(customerData) {
+    try {
+        if (!customerData || Object.keys(customerData).length === 0) {
+            console.log('👤 No customer data to populate');
+            return;
+        }
+
+        console.log('👤 Populating form with customer data:', customerData);
+
+        // Populate each field if data exists
+        const fieldMappings = {
+            'firstName': 'first-name',
+            'lastName': 'last-name', 
+            'middleName': 'middle-name',
+            'phoneNumber': 'phone-number',
+            'email': 'email',
+            'city': 'city',
+            'addressLine': 'address-line'
+        };
+
+        for (const [dataKey, elementId] of Object.entries(fieldMappings)) {
+            if (customerData[dataKey]) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.value = customerData[dataKey];
+                    console.log(`👤 Populated ${elementId} with: ${customerData[dataKey]}`);
+                }
+            }
+        }
+
+        console.log('✅ Form populated with customer data');
+    } catch (error) {
+        console.error('❌ Error populating form with customer data:', error);
+    }
+}
+
+// Clear customer data
+function clearCustomerData() {
+    try {
+        localStorage.removeItem(CUSTOMER_DATA_KEY);
+        console.log('🗑️ Customer data cleared successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Error clearing customer data:', error);
+        return false;
+    }
+}
+
+// Check customer data expiration and clean up if needed
+function checkCustomerDataExpiration() {
+    try {
+        const customerDataItem = localStorage.getItem(CUSTOMER_DATA_KEY);
+        if (!customerDataItem) return false;
+        
+        const customerData = JSON.parse(customerDataItem);
+        if (customerData && customerData.expiresAt && Date.now() > customerData.expiresAt) {
+            console.log('⏰ Customer data expired, cleaning up...');
+            localStorage.removeItem(CUSTOMER_DATA_KEY);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('❌ Error checking customer data expiration:', error);
+        return false;
+    }
+}
+
+// Get customer data age in days
+function getCustomerDataAge() {
+    try {
+        const customerDataItem = localStorage.getItem(CUSTOMER_DATA_KEY);
+        if (!customerDataItem) return null;
+        
+        const customerData = JSON.parse(customerDataItem);
+        if (customerData && customerData.timestamp) {
+            const ageMs = Date.now() - customerData.timestamp;
+            const ageDays = ageMs / (24 * 60 * 60 * 1000);
+            return Math.round(ageDays * 100) / 100; // Round to 2 decimal places
+        }
+        return null;
+    } catch (error) {
+        console.error('❌ Error getting customer data age:', error);
+        return null;
+    }
+}
+
+// ===== END PHASE 7 =====
 
 // Helper function to create SVG icons
 function createIcon(iconName, className = '') {
@@ -764,6 +967,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     renderCheckoutSummary();
                     setupDateInput();
                     updateSubmitButtonState();
+                    
+                    // Load and populate customer data if available
+                    const customerData = loadCustomerDataWithExpiration();
+                    if (Object.keys(customerData).length > 0) {
+                        populateFormWithCustomerData(customerData);
+                    }
+                    
                     Telegram.WebApp.MainButton.hide();
                     // Scroll to top of the page when checkout view is displayed
                     scrollToTop();
@@ -1433,6 +1643,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.log('Отправка заказа:', orderPayload);
                     Telegram.WebApp.sendData(JSON.stringify(orderPayload));
                     
+                    // Save customer data for future prepopulation
+                    const customerData = extractCustomerDataFromForm();
+                    if (Object.keys(customerData).length > 0) {
+                        saveCustomerDataWithMetadata(customerData);
+                        console.log('💾 Customer data saved for future prepopulation');
+                    }
+                    
                     clearCart();
                     
                     // Order sent successfully - close WebApp after delay to ensure data is sent
@@ -1977,6 +2194,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.checkCartExpiration = checkCartExpiration;
     window.CART_DATA_VERSION = CART_DATA_VERSION;
     window.CART_EXPIRATION_DAYS = CART_EXPIRATION_DAYS;
+    
+    // Customer data management functions for debugging
+    window.loadCustomerDataWithExpiration = loadCustomerDataWithExpiration;
+    window.saveCustomerDataWithMetadata = saveCustomerDataWithMetadata;
+    window.extractCustomerDataFromForm = extractCustomerDataFromForm;
+    window.populateFormWithCustomerData = populateFormWithCustomerData;
+    window.clearCustomerData = clearCustomerData;
+    window.checkCustomerDataExpiration = checkCustomerDataExpiration;
+    window.getCustomerDataAge = getCustomerDataAge;
+    window.CUSTOMER_DATA_KEY = CUSTOMER_DATA_KEY;
+    window.CUSTOMER_DATA_VERSION = CUSTOMER_DATA_VERSION;
+    window.CUSTOMER_DATA_EXPIRATION_DAYS = CUSTOMER_DATA_EXPIRATION_DAYS;
     
     // Service Worker functions removed to fix iOS twitching issues
 
