@@ -4,10 +4,15 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.4';
+const CACHE_VERSION = '1.2.5';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
-// Cache management functions
+// Mobile detection for cache strategy
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isTelegramWebView = window.Telegram && window.Telegram.WebApp;
+
+// Smart cache management functions that preserve cart data
 async function clearBrowserCache() {
     try {
         if ('caches' in window) {
@@ -19,11 +24,41 @@ async function clearBrowserCache() {
             console.log('🧹 Browser cache cleared successfully');
         }
         
-        // Clear localStorage and sessionStorage
-        localStorage.clear();
-        sessionStorage.clear();
-        console.log('🧹 Local storage cleared successfully');
+        // SMART CLEAR: Preserve cart data and essential app data
+        const cartData = localStorage.getItem('cart');
+        const cartVersion = localStorage.getItem('cart_version');
+        const appVersion = localStorage.getItem('app_version');
         
+        // Clear sessionStorage completely
+        sessionStorage.clear();
+        
+        // Selectively clear localStorage (preserve cart)
+        const keysToPreserve = ['cart', 'cart_version', 'app_version'];
+        const keysToClear = [];
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && !keysToPreserve.includes(key)) {
+                keysToClear.push(key);
+            }
+        }
+        
+        // Clear only non-essential keys
+        keysToClear.forEach(key => localStorage.removeItem(key));
+        
+        // Restore essential data if accidentally cleared
+        if (cartData && !localStorage.getItem('cart')) {
+            localStorage.setItem('cart', cartData);
+            console.log('🛒 Cart data preserved during cache clear');
+        }
+        if (cartVersion && !localStorage.getItem('cart_version')) {
+            localStorage.setItem('cart_version', cartVersion);
+        }
+        if (appVersion && !localStorage.getItem('app_version')) {
+            localStorage.setItem('app_version', appVersion);
+        }
+        
+        console.log('🧹 Smart cache clear completed - cart preserved');
         return true;
     } catch (error) {
         console.error('❌ Error clearing browser cache:', error);
@@ -35,18 +70,46 @@ async function invalidateCacheOnUpdate() {
     try {
         const storedVersion = localStorage.getItem('app_version');
         
-        if (storedVersion !== CACHE_VERSION) {
-            console.log(`🔄 App version changed from ${storedVersion} to ${CACHE_VERSION}, invalidating cache`);
+        // For mobile devices, use more aggressive cache invalidation
+        if (isMobileDevice && isTelegramWebView) {
+            console.log('📱 Mobile Telegram WebApp detected - using aggressive cache strategy');
             
-            // Clear all caches
-            await clearBrowserCache();
-            
-            // Store new version
-            localStorage.setItem('app_version', CACHE_VERSION);
-            
-            // Force reload to ensure fresh content
-            window.location.reload();
-            return true;
+            if (storedVersion !== CACHE_VERSION) {
+                console.log(`🔄 Mobile: App version changed from ${storedVersion} to ${CACHE_VERSION}`);
+                
+                // Smart clear that preserves cart
+                await clearBrowserCache();
+                
+                // Force reload CSS/JS with timestamps
+                await forceMobileResourceReload();
+                
+                // Store new version
+                localStorage.setItem('app_version', CACHE_VERSION);
+                
+                // Force reload with cache bypass
+                setTimeout(() => {
+                    const url = window.location.href;
+                    const separator = url.includes('?') ? '&' : '?';
+                    window.location.href = url + separator + '_cache_bust=' + Date.now();
+                }, 500);
+                
+                return true;
+            }
+        } else {
+            // Desktop logic - less aggressive
+            if (storedVersion !== CACHE_VERSION) {
+                console.log(`🔄 Desktop: App version changed from ${storedVersion} to ${CACHE_VERSION}`);
+                
+                // Smart clear that preserves cart
+                await clearBrowserCache();
+                
+                // Store new version
+                localStorage.setItem('app_version', CACHE_VERSION);
+                
+                // Simple reload for desktop
+                window.location.reload();
+                return true;
+            }
         }
         
         return false;
@@ -56,50 +119,123 @@ async function invalidateCacheOnUpdate() {
     }
 }
 
-// iOS-specific cache clearing function
-function forceIOSCacheClear() {
+// Mobile-specific resource reloading function
+async function forceMobileResourceReload() {
     try {
-        // Force reload CSS files for iOS
+        const timestamp = Date.now();
+        console.log('📱 Forcing mobile resource reload with timestamp:', timestamp);
+        
+        // Force reload CSS files
         const links = document.querySelectorAll('link[rel="stylesheet"]');
         links.forEach(link => {
             const href = link.getAttribute('href');
-            if (href) {
-                // Add timestamp to force reload
+            if (href && !href.includes('telegram.org')) {
                 const separator = href.includes('?') ? '&' : '?';
-                link.setAttribute('href', href + separator + '_t=' + Date.now());
+                const newHref = href + separator + '_mobile_t=' + timestamp;
+                link.setAttribute('href', newHref);
+                console.log('🔄 CSS reloaded:', newHref);
             }
         });
         
-        // Clear iOS Safari cache
-        if (window.navigator.userAgent.includes('iPhone') || window.navigator.userAgent.includes('iPad')) {
-            console.log('🍎 iOS device detected, forcing cache clear');
-            // Force reload after a short delay
-            setTimeout(() => {
-                window.location.reload(true);
-            }, 100);
-        }
+        // Force reload script files (except Telegram SDK)
+        const scripts = document.querySelectorAll('script[src]');
+        scripts.forEach(script => {
+            const src = script.getAttribute('src');
+            if (src && !src.includes('telegram.org')) {
+                const separator = src.includes('?') ? '&' : '?';
+                const newSrc = src + separator + '_mobile_t=' + timestamp;
+                script.setAttribute('src', newSrc);
+                console.log('🔄 JS reloaded:', newSrc);
+            }
+        });
+        
+        // Force reload images
+        const images = document.querySelectorAll('img[src]');
+        images.forEach(img => {
+            const src = img.getAttribute('src');
+            if (src) {
+                const separator = src.includes('?') ? '&' : '?';
+                const newSrc = src + separator + '_mobile_t=' + timestamp;
+                img.setAttribute('src', newSrc);
+            }
+        });
+        
+        return true;
     } catch (error) {
-        console.error('❌ Error in iOS cache clear:', error);
+        console.error('❌ Error in mobile resource reload:', error);
+        return false;
+    }
+}
+
+// Telegram WebView specific cache clearing
+function forceTelegramCacheClear() {
+    try {
+        if (isTelegramWebView && isMobileDevice) {
+            console.log('📱 Telegram WebView detected - implementing aggressive cache clear');
+            
+            // Preserve cart data before any operations
+            const cartData = localStorage.getItem('cart');
+            const cartVersion = localStorage.getItem('cart_version');
+            
+            // Clear browser caches
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                });
+            }
+            
+            // Clear session storage
+            sessionStorage.clear();
+            
+            // Restore cart data immediately
+            if (cartData) {
+                localStorage.setItem('cart', cartData);
+                console.log('🛒 Cart data preserved in Telegram WebView');
+            }
+            if (cartVersion) {
+                localStorage.setItem('cart_version', cartVersion);
+            }
+            
+            // Force resource reload
+            forceMobileResourceReload();
+            
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('❌ Error in Telegram cache clear:', error);
+        return false;
     }
 }
 
 // Initialize cache management on app start
 async function initializeCacheManagement() {
     try {
-        // Force iOS cache clear on app start
-        forceIOSCacheClear();
+        console.log('🚀 Initializing smart cache management...');
+        console.log('📱 Mobile device:', isMobileDevice);
+        console.log('🍎 iOS device:', isIOSDevice);
+        console.log('💬 Telegram WebView:', isTelegramWebView);
+        
+        // Mobile-specific initialization
+        if (isMobileDevice && isTelegramWebView) {
+            console.log('📱 Mobile Telegram WebView - using aggressive cache strategy');
+            forceTelegramCacheClear();
+        }
         
         // Check if cache invalidation is needed
         await invalidateCacheOnUpdate();
         
-        // Set up periodic cache health check
+        // Set up periodic cache health check (less frequent for mobile to save battery)
+        const checkInterval = isMobileDevice ? 600000 : 300000; // 10min mobile, 5min desktop
         setInterval(async () => {
             const cacheHealth = await checkCacheHealth();
             if (!cacheHealth) {
-                console.warn('⚠️ Cache health check failed, clearing cache');
+                console.warn('⚠️ Cache health check failed, clearing cache (preserving cart)');
                 await clearBrowserCache();
             }
-        }, 300000); // Check every 5 minutes
+        }, checkInterval);
         
         // Set up periodic cart expiration check
         setInterval(() => {
