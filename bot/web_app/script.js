@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.3.8';
+const CACHE_VERSION = '1.3.9';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -734,6 +734,72 @@ function addLocationIcons() {
     }
 }
 
+// Form validation helper functions
+function clearAllErrors() {
+    // Remove error styling from all form fields
+    document.querySelectorAll('.form-field-error').forEach(field => {
+        field.classList.remove('form-field-error');
+    });
+    
+    // Hide all error messages
+    document.querySelectorAll('.error-message').forEach(message => {
+        message.classList.remove('show');
+    });
+}
+
+function clearFieldError(fieldName) {
+    // Clear error styling from specific field
+    const fieldElement = document.getElementById(fieldName) || 
+                        document.querySelector(`[name="${fieldName}"]`) ||
+                        document.querySelector(`#${fieldName}`);
+    
+    if (fieldElement) {
+        fieldElement.classList.remove('form-field-error');
+    }
+    
+    // Hide corresponding error message
+    const errorMessageElement = document.getElementById(fieldName + '-error');
+    if (errorMessageElement) {
+        errorMessageElement.classList.remove('show');
+    }
+}
+
+function showValidationErrors(errorFields, errorMessages) {
+    // Clear previous errors first
+    clearAllErrors();
+    
+    // Show error messages and highlight error fields
+    errorFields.forEach((errorField, index) => {
+        if (errorField.element) {
+            // Add error styling to the field
+            errorField.element.classList.add('form-field-error');
+            
+            // Show corresponding error message
+            const errorMessageId = errorField.field + '-error';
+            const errorMessageElement = document.getElementById(errorMessageId);
+            if (errorMessageElement) {
+                errorMessageElement.classList.add('show');
+            }
+            
+            // Focus on the first error field
+            if (index === 0) {
+                errorField.element.focus();
+                
+                // Scroll to the error field if it's not visible
+                if (errorField.element.scrollIntoView) {
+                    errorField.element.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            }
+        }
+    });
+    
+    // Log all error messages
+    console.error('Validation errors:', errorMessages.join('\n'));
+}
+
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -769,10 +835,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.8", image: "images/bakery.svg?v=1.3.8" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.8", image: "images/crouasan.svg?v=1.3.8" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.8", image: "images/bread1.svg?v=1.3.8" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.8", image: "images/cookie.svg?v=1.3.8" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.9", image: "images/bakery.svg?v=1.3.9" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.9", image: "images/crouasan.svg?v=1.3.9" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.9", image: "images/bread1.svg?v=1.3.9" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.9", image: "images/cookie.svg?v=1.3.9" }
     };
 
     await fetchProductsData();
@@ -1587,38 +1653,87 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let isValid = true;
                 const errorMessages = [];
 
-                if (!orderDetails.lastName) { isValid = false; errorMessages.push('Пожалуйста, введите вашу фамилию.'); }
-                if (!orderDetails.firstName) { isValid = false; errorMessages.push('Пожалуйста, введите ваше имя.'); }
-                if (!orderDetails.middleName) { isValid = false; errorMessages.push('Пожалуйста, введите ваше отчество.'); }
+                if (!orderDetails.lastName) { 
+                    isValid = false; 
+                    errorMessages.push('Пожалуйста, введите вашу фамилию.');
+                    errorFields.push({ field: 'lastName', element: document.getElementById('last-name') });
+                }
+                if (!orderDetails.firstName) { 
+                    isValid = false; 
+                    errorMessages.push('Пожалуйста, введите ваше имя.');
+                    errorFields.push({ field: 'firstName', element: document.getElementById('first-name') });
+                }
+                if (!orderDetails.middleName) { 
+                    isValid = false; 
+                    errorMessages.push('Пожалуйста, введите ваше отчество.');
+                    errorFields.push({ field: 'middleName', element: document.getElementById('middle-name') });
+                }
 
                 const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
                 if (!orderDetails.phoneNumber || !phoneRegex.test(orderDetails.phoneNumber)) {
                     isValid = false;
                     errorMessages.push('Пожалуйста, введите корректный номер телефона.');
+                    errorFields.push({ field: 'phoneNumber', element: document.getElementById('phone-number') });
                 }
 
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!orderDetails.email || !emailRegex.test(orderDetails.email)) {
                     isValid = false;
                     errorMessages.push('Пожалуйста, введите корректный Email.');
+                    errorFields.push({ field: 'email', element: document.getElementById('email') });
                 }
 
-                if (!validateDeliveryDate()) { isValid = false; errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.'); }
+                if (!validateDeliveryDate()) { 
+                    isValid = false; 
+                    errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.');
+                    errorFields.push({ field: 'deliveryDate', element: document.getElementById('delivery-date') });
+                }
 
                 if (!orderDetails.deliveryMethod) {
                     isValid = false;
                     errorMessages.push('Пожалуйста, выберите способ получения.');
+                    errorFields.push({ field: 'deliveryMethod', element: document.getElementById('delivery-courier-radio') });
                 } else {
                     if (orderDetails.deliveryMethod === 'courier') {
-                        if (!orderDetails.city) { isValid = false; errorMessages.push('Пожалуйста, выберите город для доставки.'); }
-                        if (!orderDetails.addressLine) { isValid = false; errorMessages.push('Пожалуйста, введите адрес доставки.'); }
+                        if (!orderDetails.city) { 
+                            isValid = false; 
+                            errorMessages.push('Пожалуйста, выберите город для доставки.');
+                            errorFields.push({ field: 'city', element: document.getElementById('city') });
+                        }
+                        if (!orderDetails.addressLine) { 
+                            isValid = false; 
+                            errorMessages.push('Пожалуйста, введите адрес доставки.');
+                            errorFields.push({ field: 'addressLine', element: document.getElementById('address-line') });
+                        }
                     } else if (orderDetails.deliveryMethod === 'pickup') {
-                        if (!orderDetails.pickupAddress) { isValid = false; errorMessages.push('Пожалуйста, выберите адрес самовывоза.'); }
+                        if (!orderDetails.pickupAddress) { 
+                            isValid = false; 
+                            errorMessages.push('Пожалуйста, выберите адрес самовывоза.');
+                            errorFields.push({ field: 'pickupAddress', element: document.getElementById('pickup-radio-group') });
+                        }
+                    }
+                }
+
+                // Validate payment method
+                if (orderDetails.deliveryMethod === 'courier') {
+                    const courierPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
+                    if (!courierPaymentRadio) {
+                        isValid = false;
+                        errorMessages.push('Пожалуйста, выберите способ оплаты.');
+                        errorFields.push({ field: 'paymentMethod', element: document.getElementById('payment-method-section') });
+                    }
+                } else if (orderDetails.deliveryMethod === 'pickup') {
+                    const pickupPaymentRadio = document.querySelector('input[name="paymentMethodPickup"]:checked');
+                    if (!pickupPaymentRadio) {
+                        isValid = false;
+                        errorMessages.push('Пожалуйста, выберите способ оплаты.');
+                        errorFields.push({ field: 'paymentMethodPickup', element: document.getElementById('payment-method-section-pickup') });
                     }
                 }
 
                 if (!isValid) {
-                    console.error('Validation errors:', errorMessages.join('\n'));
+                    // Show errors and focus on first error field
+                    showValidationErrors(errorFields, errorMessages);
                     return;
                 }
 
@@ -1886,6 +2001,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (currentItem) {
                     currentItem.classList.add('selected');
                 }
+                
+                // Clear payment method error when user makes a selection
+                clearFieldError('paymentMethod');
             });
         });
         
@@ -1905,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
     
-    // Add click handlers for payment method headers specifically
+        // Add click handlers for payment method headers specifically
     const paymentMethodHeaders = document.querySelectorAll('.payment-method-header');
     paymentMethodHeaders.forEach(header => {
         header.addEventListener('click', (event) => {
@@ -1916,7 +2034,57 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     });
+    
+    // Add error clearing event listeners to all form fields
+    addErrorClearingListeners();
+}
+
+// Function to add error clearing event listeners to form fields
+function addErrorClearingListeners() {
+    // Text input fields
+    const textInputs = ['last-name', 'first-name', 'middle-name', 'phone-number', 'email', 'address-line'];
+    textInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', () => clearFieldError(inputId));
+            input.addEventListener('focus', () => clearFieldError(inputId));
+        }
+    });
+    
+    // Select fields
+    const selectInputs = ['city'];
+    selectInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('change', () => clearFieldError(inputId));
+            input.addEventListener('focus', () => clearFieldError(inputId));
+        }
+    });
+    
+    // Date field
+    const dateInput = document.getElementById('delivery-date');
+    if (dateInput) {
+        dateInput.addEventListener('focus', () => clearFieldError('deliveryDate'));
     }
+    
+    // Delivery method radios
+    const deliveryRadios = document.querySelectorAll('input[name="deliveryMethod"]');
+    deliveryRadios.forEach(radio => {
+        radio.addEventListener('change', () => clearFieldError('deliveryMethod'));
+    });
+    
+    // Pickup address radios
+    const pickupRadios = document.querySelectorAll('input[name="pickupAddress"]');
+    pickupRadios.forEach(radio => {
+        radio.addEventListener('change', () => clearFieldError('pickupAddress'));
+    });
+    
+    // Payment method radios for pickup
+    const pickupPaymentRadios = document.querySelectorAll('input[name="paymentMethodPickup"]');
+    pickupPaymentRadios.forEach(radio => {
+        radio.addEventListener('change', () => clearFieldError('paymentMethodPickup'));
+    });
+}
 
 
 
@@ -2047,7 +2215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.8';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.9';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
