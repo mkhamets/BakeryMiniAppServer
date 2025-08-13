@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Unit tests for version consistency across all files.
-Ensures all resources have the same version v=1.3.5
+Ensures all resources have the same version v=1.3.6
 """
 
 import os
@@ -17,7 +17,7 @@ class TestVersionConsistency(unittest.TestCase):
         """Set up test environment."""
         self.project_root = Path(__file__).parent.parent.parent
         self.web_app_dir = self.project_root / "bot" / "web_app"
-        self.expected_version = "1.3.5"
+        self.expected_version = "1.3.6"
         
     def test_html_version_consistency(self):
         """Test that all version references in HTML files are consistent."""
