@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.9';
+const CACHE_VERSION = '1.3.0';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Mobile detection for cache strategy
@@ -1328,21 +1328,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orderDetails[key] = value;
                 }
 
-                // Fix pickup address: convert numeric value to actual address label
-                if (orderDetails.pickupAddress) {
-                    const pickupAddressMapping = {
-                        '1': 'ТЦ Green City',
-                        '2': 'ТЦ Замок',
-                        '3': 'Новая Боровая',
-                        '5': 'ул. Л. Беды 26',
-                        '6': 'Маяк Минска – ул. Мстиславца 8',
-                        '7': 'г. Заславль',
-                        '8': 'Минск Мир, ул. Лученка 1',
-                        '9': 'ЖК Пирс, а/г Ратомка Морской риф 1/4',
-                        '10': 'ул. Нововиленская, 45'
-                    };
-                    orderDetails.pickupAddress = pickupAddressMapping[orderDetails.pickupAddress] || orderDetails.pickupAddress;
-                }
+                // Keep pickup address ID as-is for backend processing
+                // The backend _get_pickup_details function expects the numeric ID
+                // No conversion needed here - backend will handle the mapping
 
                 // Validate delivery date function (using enhanced version from custom calendar)
                 function validateDeliveryDate() {
