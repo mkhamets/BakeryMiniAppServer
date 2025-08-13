@@ -414,7 +414,7 @@ async def show_addresses(message: Message):
         "<a href='https://yandex.com/maps/-/CHTIIYme'>Yandex</a>\n\n"
 
         "🏠 <b>ул. Лученка, 1</b>\n"
-        "в ЖК «Minsk World»\n"
+        "в ЖК «Минск Мир»\n"
         "🔗 <a href='https://maps.app.goo.gl/KD1vp9ijDyiPmYH7A'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIII6lt'>Yandex</a>\n\n"
 
@@ -424,7 +424,7 @@ async def show_addresses(message: Message):
         "<a href='https://yandex.com/maps/-/CHTIIDl~'>Yandex</a>\n\n"
 
         "🏠 <b>ул. Нововиленская, 45</b>\n"
-        "Minsk\n"
+        "г. Минск\n"
         "🔗 <a href='https://maps.app.goo.gl/XZpmmiSFnWdpiNsWA'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIIDl~'>Yandex</a>\n\n"
 

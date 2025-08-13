@@ -773,7 +773,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .form-group label {
     display: block;
     margin-bottom: 5px;
-    font-size: 16px;
+    font-size: 1.2rem;
     font-weight: normal;
     color: #5a3e2b;
     text-align: left;
@@ -980,7 +980,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border: 1px solid #ffeeba; /* Желтая рамка */
     border-radius: 8px;
     padding: 15px;
-    margin-top: 15px;
+    margin-top: 0px;
     font-size: 1.1em;
     line-height: 1.5;
     color: #856404; /* Темно-желтый текст */
@@ -1012,7 +1012,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
     color: white;
     min-width: 200px;
-    margin-top: 20px;
+    margin-top: 5px;
 }
 
 .submit-order-button:hover {
@@ -1833,7 +1833,7 @@ body * {
 
 .pickup-details p {
     margin: 8px 0;
-    font-size: 14px;
+    font-size: 1rem;
     line-height: 1.4;
     color: #333;
 }
@@ -2304,7 +2304,7 @@ body * {
     font-size: 1.1em;
     font-weight: 600;
     flex: 1;
-    text-align: left;
+    text-align: center;
 }
 
 .calendar-close {
@@ -2347,9 +2347,23 @@ body * {
     text-align: center;
     font-size: 14px;
     font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+/* Working days (Monday-Friday) */
+.calendar-weekday.workday {
     color: #b76c4b;
     background-color: #faf5f3;
-    border-radius: 6px;
+    border: 1px solid rgba(183, 108, 75, 0.2);
+}
+
+/* Weekend days (Saturday-Sunday) */
+.calendar-weekday.weekend {
+    color: #d32f2f;
+    background-color: #ffebee;
+    border: 1px solid rgba(211, 47, 47, 0.2);
+    font-weight: 700;
 }
 
 /* Calendar dates grid */
