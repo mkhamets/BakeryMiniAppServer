@@ -792,6 +792,18 @@ def _format_customer_telegram_message(order_number: str, order_details: dict,
         if order_details.get('commentPickup'):
             delivery_info += f"\n💬 *Комментарий:* {order_details.get('commentPickup')}"
     
+    # Формируем информацию о способе оплаты
+    payment_method = order_details.get('paymentMethod', 'N/A')
+    payment_text = ""
+    if payment_method == 'cash':
+        payment_text = "💵 Оплата наличными при получении товара"
+    elif payment_method == 'card':
+        payment_text = "💳 Оплата картой при получении товара"
+    elif payment_method == 'erip':
+        payment_text = "🏦 Онлайн оплата ЕРИП"
+    else:
+        payment_text = f"❓ Способ оплаты: {payment_method}"
+    
     message = f"""✅ *ЗАКАЗ ПОДТВЕРЖДЕН!*
 
 🧾 *Номер заказа:* `{order_number}`
@@ -807,6 +819,8 @@ def _format_customer_telegram_message(order_number: str, order_details: dict,
 
 🚚 *Способ получения:* {delivery_text}
 {delivery_info}
+
+💳 *Способ оплаты:* {payment_text}
 
 📞 *Мы свяжемся с вами в ближайшее время для подтверждения заказа.*
 
@@ -864,8 +878,33 @@ def _format_telegram_order_summary(order_number: str, order_details: dict,
             logger.error(f"Ошибка при форматировании товара {item.get('name', 'Unknown')}: {e}")
             summary += f"- `{item.get('name', 'N/A')}` x `{item.get('quantity', 0)}` шт. (ошибка форматирования)\n"
 
+    # Добавляем информацию о способе оплаты
+    payment_method = order_details.get('paymentMethod', 'N/A')
+    payment_text = ""
+    if payment_method == 'cash':
+        payment_text = "💵 Оплата наличными при получении товара"
+    elif payment_method == 'card':
+        payment_text = "💳 Оплата картой при получении товара"
+    elif payment_method == 'erip':
+        payment_text = "🏦 Онлайн оплата ЕРИП"
+    else:
+        payment_text = f"❓ Способ оплаты: {payment_method}"
+    
+    summary += f"\n💳 *Способ оплаты:* {payment_text}\n"
     summary += f"\n*Общая сумма заказа:* `{total_amount:.2f}` р."
     return summary
+
+
+def _format_payment_method_html(payment_method: str) -> str:
+    """Форматирует способ оплаты для HTML."""
+    if payment_method == 'cash':
+        return "💵 Оплата наличными при получении товара"
+    elif payment_method == 'card':
+        return "💳 Оплата картой при получении товара"
+    elif payment_method == 'erip':
+        return "🏦 Онлайн оплата ЕРИП"
+    else:
+        return f"❓ Способ оплаты: {payment_method}"
 
 
 def _get_pickup_details(pickup_address_id: str) -> dict:
@@ -996,6 +1035,9 @@ def _format_email_body(order_number: str, order_details: dict, cart_items: list,
                         {courier_comment}
                         {pickup_info}
                         {pickup_comment}
+
+                        <h3>💳 Способ оплаты:</h3>
+                        {_format_payment_method_html(order_details.get('paymentMethod', 'N/A'))}
 
                         <h3>🛍️ Состав заказа:</h3>
                         <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse;">
@@ -1151,6 +1193,10 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
                                                     </p>
 
                                                     {delivery_info}
+
+                                                    <h4 style="font-family:Arial;color:#111111;margin:20px">
+                                                        💳 <strong>Способ оплаты:</strong> {_format_payment_method_html(order_details.get('paymentMethod', 'N/A'))}
+                                                    </h4>
 
                                                     <table style="width:90%;margin:auto">
                                                         <thead>

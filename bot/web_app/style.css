@@ -25,7 +25,7 @@ body {
 
 /* Add background only after loading */
 body.loaded {
-    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.6');
+    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.7');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2068,7 +2068,7 @@ body * {
 }
 
 .payment-method-item:hover {
-    background-color: #f8f8f8;
+    background-color: #ffffff;
 }
 
 .payment-method-item input[type="radio"] {
