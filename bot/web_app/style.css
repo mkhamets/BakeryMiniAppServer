@@ -2209,3 +2209,176 @@ body * {
         transform: translateY(-2px);
     }
 }
+
+/* ===== CUSTOM CALENDAR STYLES ===== */
+.custom-calendar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.custom-calendar-overlay.active {
+    display: flex;
+}
+
+.custom-calendar-popup {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 320px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: calendarSlideIn 0.3s ease-out;
+}
+
+@keyframes calendarSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.calendar-header {
+    background: #b76c4b;
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.calendar-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.calendar-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.calendar-body {
+    padding: 20px;
+}
+
+.calendar-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.calendar-date-option {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.calendar-date-option:hover {
+    border-color: #b76c4b;
+    background-color: #faf5f3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(183, 108, 75, 0.15);
+}
+
+.calendar-date-option:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(183, 108, 75, 0.2);
+}
+
+.calendar-date-option.selected {
+    border-color: #b76c4b;
+    background-color: #b76c4b;
+    color: white;
+}
+
+.calendar-date-label {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.calendar-date-day {
+    display: block;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .custom-calendar-popup {
+        margin: 10px;
+        max-width: none;
+        width: calc(100% - 20px);
+    }
+    
+    .calendar-header {
+        padding: 14px 16px;
+    }
+    
+    .calendar-header h3 {
+        font-size: 1.05em;
+    }
+    
+    .calendar-body {
+        padding: 16px;
+    }
+    
+    .calendar-date-option {
+        padding: 18px 16px;
+        font-size: 17px;
+    }
+    
+    .calendar-date-label {
+        font-size: 19px;
+    }
+}
+
+/* iOS specific fixes */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+    .custom-calendar-overlay {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .calendar-date-option {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+}
+
+/* ===== END CUSTOM CALENDAR STYLES ===== */

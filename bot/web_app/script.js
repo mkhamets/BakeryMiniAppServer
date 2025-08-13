@@ -1344,47 +1344,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orderDetails.pickupAddress = pickupAddressMapping[orderDetails.pickupAddress] || orderDetails.pickupAddress;
                 }
 
-                // Validate delivery date function
+                // Validate delivery date function (using enhanced version from custom calendar)
                 function validateDeliveryDate() {
-                    const dateInput = document.getElementById('delivery-date');
-                    const errorElement = document.getElementById('deliveryDate-error');
-                    
-                    if (!dateInput || !errorElement) return true;
-                    
-                    const selectedDate = dateInput.value;
-                    if (!selectedDate) {
-                        errorElement.style.display = 'block';
-                        return false;
-                    }
-                    
-                    // Parse the date (DD.MM.YYYY format)
-                    const parts = selectedDate.split('.');
-                    if (parts.length !== 3) {
-                        errorElement.style.display = 'block';
-                        return false;
-                    }
-                    
-                    const day = parseInt(parts[0]);
-                    const month = parseInt(parts[1]) - 1; // Month is 0-indexed
-                    const year = parseInt(parts[2]);
-                    
-                    const selectedDateObj = new Date(year, month, day);
-                    const today = new Date();
-                    const tomorrow = new Date(today);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    
-                    // Reset time to compare only dates
-                    today.setHours(0, 0, 0, 0);
-                    tomorrow.setHours(0, 0, 0, 0);
-                    selectedDateObj.setHours(0, 0, 0, 0);
-                    
-                    if (selectedDateObj < today || selectedDateObj > tomorrow) {
-                        errorElement.style.display = 'block';
-                        return false;
-                    }
-                    
-                    errorElement.style.display = 'none';
-                    return true;
+                    return window.validateDeliveryDate ? window.validateDeliveryDate() : true;
                 }
 
                 let isValid = true;
@@ -1997,6 +1959,215 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.CART_EXPIRATION_DAYS = CART_EXPIRATION_DAYS;
     
     // Service Worker functions removed to fix iOS twitching issues
+
+    // ===== CUSTOM CALENDAR IMPLEMENTATION =====
+    class BakeryDatePicker {
+        constructor() {
+            this.dateInput = document.getElementById('delivery-date');
+            this.calendarOverlay = document.getElementById('calendar-overlay');
+            this.calendarClose = document.getElementById('calendar-close');
+            this.calendarDates = document.getElementById('calendar-dates');
+            this.selectedDate = null;
+            
+            this.init();
+        }
+        
+        init() {
+            if (!this.dateInput || !this.calendarOverlay) return;
+            
+            // Ensure field starts empty
+            this.dateInput.value = '';
+            
+            // Create date options (today + tomorrow only)
+            this.createDateOptions();
+            
+            // Add event listeners
+            this.dateInput.addEventListener('click', () => this.openCalendar());
+            this.dateInput.addEventListener('focus', () => this.openCalendar());
+            this.calendarClose.addEventListener('click', () => this.closeCalendar());
+            this.calendarOverlay.addEventListener('click', (e) => {
+                if (e.target === this.calendarOverlay) {
+                    this.closeCalendar();
+                }
+            });
+            
+            console.log('✅ Custom Bakery Date Picker initialized');
+        }
+        
+        createDateOptions() {
+            if (!this.calendarDates) return;
+            
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            const dates = [today, tomorrow];
+            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            
+            this.calendarDates.innerHTML = '';
+            
+            dates.forEach((date, index) => {
+                const dateOption = document.createElement('div');
+                dateOption.className = 'calendar-date-option';
+                dateOption.dataset.date = this.formatDate(date);
+                
+                const dayName = dayNames[date.getDay()];
+                const isToday = index === 0;
+                const label = isToday ? 'Сегодня' : 'Завтра';
+                
+                dateOption.innerHTML = `
+                    <span class="calendar-date-label">${label}</span>
+                    <span class="calendar-date-day">${dayName}, ${this.formatDate(date)}</span>
+                `;
+                
+                dateOption.addEventListener('click', () => this.selectDate(date, dateOption));
+                this.calendarDates.appendChild(dateOption);
+            });
+        }
+        
+        formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+        
+        selectDate(date, optionElement) {
+            // Remove previous selection
+            const previousSelected = this.calendarDates.querySelector('.calendar-date-option.selected');
+            if (previousSelected) {
+                previousSelected.classList.remove('selected');
+            }
+            
+            // Add selection to current option
+            optionElement.classList.add('selected');
+            
+            // Update input field
+            const formattedDate = this.formatDate(date);
+            this.dateInput.value = formattedDate;
+            this.selectedDate = date;
+            
+            // Clear any error
+            const errorElement = document.getElementById('deliveryDate-error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+            
+            // Close calendar after short delay for better UX
+            setTimeout(() => {
+                this.closeCalendar();
+            }, 300);
+            
+            console.log('📅 Date selected:', formattedDate);
+            
+            // Trigger form validation if needed
+            if (typeof validateDeliveryDate === 'function') {
+                validateDeliveryDate();
+            }
+        }
+        
+        openCalendar() {
+            this.calendarOverlay.classList.add('active');
+            console.log('📅 Calendar opened');
+            
+            // Prevent body scroll on mobile
+            if (isMobileDevice) {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        closeCalendar() {
+            this.calendarOverlay.classList.remove('active');
+            console.log('📅 Calendar closed');
+            
+            // Restore body scroll
+            if (isMobileDevice) {
+                document.body.style.overflow = '';
+            }
+        }
+        
+        getSelectedDate() {
+            return this.selectedDate;
+        }
+        
+        getFormattedDate() {
+            return this.dateInput.value;
+        }
+        
+        reset() {
+            this.dateInput.value = '';
+            this.selectedDate = null;
+            const selected = this.calendarDates.querySelector('.calendar-date-option.selected');
+            if (selected) {
+                selected.classList.remove('selected');
+            }
+        }
+    }
+    
+    // Enhanced delivery date validation
+    function validateDeliveryDate() {
+        const dateInput = document.getElementById('delivery-date');
+        const errorElement = document.getElementById('deliveryDate-error');
+        
+        if (!dateInput || !errorElement) return true;
+        
+        const selectedDate = dateInput.value;
+        if (!selectedDate) {
+            errorElement.style.display = 'block';
+            errorElement.textContent = 'Пожалуйста, выберите дату доставки.';
+            return false;
+        }
+        
+        // Validate DD.MM.YYYY format
+        const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+        const match = selectedDate.match(dateRegex);
+        if (!match) {
+            errorElement.style.display = 'block';
+            errorElement.textContent = 'Неверный формат даты.';
+            return false;
+        }
+        
+        const day = parseInt(match[1]);
+        const month = parseInt(match[2]) - 1;
+        const year = parseInt(match[3]);
+        
+        const selectedDateObj = new Date(year, month, day);
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Reset time for comparison
+        today.setHours(0, 0, 0, 0);
+        tomorrow.setHours(0, 0, 0, 0);
+        selectedDateObj.setHours(0, 0, 0, 0);
+        
+        if (selectedDateObj < today || selectedDateObj > tomorrow) {
+            errorElement.style.display = 'block';
+            errorElement.textContent = 'Доступны только сегодня и завтра.';
+            return false;
+        }
+        
+        errorElement.style.display = 'none';
+        return true;
+    }
+    
+    // Initialize custom calendar
+    let bakeryDatePicker;
+    
+    // Initialize calendar when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            bakeryDatePicker = new BakeryDatePicker();
+        });
+    } else {
+        bakeryDatePicker = new BakeryDatePicker();
+    }
+    
+    // Make calendar globally accessible for debugging
+    window.bakeryDatePicker = bakeryDatePicker;
+    window.validateDeliveryDate = validateDeliveryDate;
+    
+    // ===== END CUSTOM CALENDAR IMPLEMENTATION =====
 
     // Mobile detection for animation optimization
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;

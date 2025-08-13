@@ -129,6 +129,20 @@
                             <label for="delivery-date">Дата доставки/самовывоза: <span class="required-star">*</span></label>
                             <input type="text" id="delivery-date" name="deliveryDate" placeholder="Выберите дату" readonly required>
                             <div class="error-message" id="deliveryDate-error">Пожалуйста, выберите дату.</div>
+                            <!-- Custom Calendar Popup -->
+                            <div class="custom-calendar-overlay" id="calendar-overlay">
+                                <div class="custom-calendar-popup">
+                                    <div class="calendar-header">
+                                        <h3>Выберите дату доставки</h3>
+                                        <button type="button" class="calendar-close" id="calendar-close">&times;</button>
+                                    </div>
+                                    <div class="calendar-body">
+                                        <div class="calendar-dates" id="calendar-dates">
+                                            <!-- Date options will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Способ получения: <span class="required-star">*</span></label>
