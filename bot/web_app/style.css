@@ -866,6 +866,26 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
 }
 
+/* City form group - label and select on same line */
+.city-form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.city-form-group label {
+    display: inline-block;
+    margin-bottom: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.city-form-group select {
+    flex: 1;
+    min-width: 200px;
+}
+
 .radio-group {
     display: flex;
     flex-wrap: wrap; /* Для переноса на новую строку на маленьких экранах */
