@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.8';
+const CACHE_VERSION = '1.2.9';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Mobile detection for cache strategy

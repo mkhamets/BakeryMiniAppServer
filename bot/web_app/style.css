@@ -884,6 +884,51 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .city-form-group select {
     flex: 1;
     min-width: 200px;
+    /* Match standard form input styling */
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1em;
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+    background-color: white;
+    color: #333;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    /* Maintain current height */
+    height: auto;
+    line-height: 1.4;
+}
+
+.city-form-group select:focus {
+    border-color: #b76c4b;
+    outline: none;
+    box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
+}
+
+.city-form-group select:hover {
+    border-color: #b76c4b;
+}
+
+/* Style select options */
+.city-form-group select option {
+    padding: 8px 12px;
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+    color: #333;
+    background-color: white;
+}
+
+.city-form-group select option:hover {
+    background-color: #faf5f3;
+    color: #b76c4b;
+}
+
+.city-form-group select option[value=""] {
+    color: #999;
+    font-style: italic;
 }
 
 /* Flatpickr Date Picker Styles */
