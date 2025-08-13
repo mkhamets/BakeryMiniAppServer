@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.0';
+const CACHE_VERSION = '1.2.1';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Cache management functions
@@ -529,11 +529,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                         mainCategoryTitle.textContent = 'Наше меню';
                         mainCategoryTitle.classList.remove('hidden');
                     }
-                    // Only load categories if not already loaded or if forced
-                    if (!categoriesContainer.querySelector('.categories-grid') || window.forceReloadCategories) {
-                        loadCategories();
-                        window.forceReloadCategories = false;
+                    
+                    // Force complete reload for iOS to prevent twitching
+                    if (isIOS) {
+                        // Clear any existing content first
+                        if (categoriesContainer) {
+                            categoriesContainer.innerHTML = '';
+                        }
+                        // Force a small delay before loading
+                        setTimeout(() => {
+                            loadCategories();
+                        }, 100);
+                    } else {
+                        // Only load categories if not already loaded or if forced
+                        if (!categoriesContainer.querySelector('.categories-grid') || window.forceReloadCategories) {
+                            loadCategories();
+                            window.forceReloadCategories = false;
+                        }
                     }
+                    
                     // Show basket button for categories view
                     if (Telegram.WebApp.MainButton) {
                         updateMainButtonCartInfo();
@@ -682,17 +696,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const categoriesData = await response.json();
 
-            // Only recreate if content actually changed
-            const currentContent = categoriesContainer ? categoriesContainer.innerHTML : '';
-            const newContent = JSON.stringify(categoriesData);
-            
-            if (currentContent === newContent) {
-                console.log('Categories content unchanged, skipping recreation');
-                window.isLoadingCategories = false;
-                return;
+            // Force complete recreation for iOS to prevent twitching
+            if (categoriesContainer) {
+                categoriesContainer.innerHTML = '';
             }
-
-            if (categoriesContainer) categoriesContainer.innerHTML = '';
 
             const categoriesGrid = document.createElement('div');
             categoriesGrid.className = 'categories-grid';
@@ -700,9 +707,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Add iOS-specific class for hardware acceleration
             if (isIOS) {
                 categoriesGrid.classList.add('ios-optimized');
+                // Force hardware acceleration on the grid
+                categoriesGrid.style.webkitTransform = 'translateZ(0)';
+                categoriesGrid.style.webkitBackfaceVisibility = 'hidden';
+                categoriesGrid.style.transform = 'translateZ(0)';
+                categoriesGrid.style.backfaceVisibility = 'hidden';
             }
 
-            categoriesData.forEach(category => {
+            categoriesData.forEach((category, index) => {
                 const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, icon: '' };
                 const categoryDisplayName = categoryInfo.name;
                 const categoryIcon = categoryInfo.icon;
@@ -714,39 +726,94 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const categoryCard = document.createElement('div');
                 categoryCard.className = 'category-card-item';
                 categoryCard.dataset.categoryKey = category.key;
+                categoryCard.dataset.categoryIndex = index;
 
-                // Add iOS-specific attributes
+                // Aggressive iOS optimization
                 if (isIOS) {
                     categoryCard.style.webkitTransform = 'translateZ(0)';
                     categoryCard.style.webkitBackfaceVisibility = 'hidden';
+                    categoryCard.style.transform = 'translateZ(0)';
+                    categoryCard.style.backfaceVisibility = 'hidden';
+                    categoryCard.style.willChange = 'auto';
+                    categoryCard.style.webkitPerspective = '1000px';
+                    categoryCard.style.perspective = '1000px';
                 }
 
-                categoryCard.innerHTML = `
-                    <img src="${categoryImageUrl}"
-                         alt="${categoryDisplayName}"
-                         class="category-image"
-                         onerror="this.onerror=null;this.src='https://placehold.co/300x200/cccccc/333333?text=No+Image';">
-                    <div class="category-text-wrapper">
-                        <h3 class="category-title-text">${categoryDisplayName}</h3>
-                        <div class="category-link-text">
-                            <span>перейти в каталог</span>
-                            <svg class="category-arrow-svg" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M10.707 2.293a1 1 0 010 1.414L6.414 8l4.293 4.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" transform="rotate(180 8 8)"></path>
-                            </svg>
-                        </div>
-                    </div>
-                `;
+                // Create DOM structure without innerHTML for better iOS performance
+                const img = document.createElement('img');
+                img.src = categoryImageUrl;
+                img.alt = categoryDisplayName;
+                img.className = 'category-image';
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = 'https://placehold.co/300x200/cccccc/333333?text=No+Image';
+                };
+
+                const textWrapper = document.createElement('div');
+                textWrapper.className = 'category-text-wrapper';
+
+                const title = document.createElement('h3');
+                title.className = 'category-title-text';
+                title.textContent = categoryDisplayName;
+
+                const linkText = document.createElement('div');
+                linkText.className = 'category-link-text';
+
+                const span = document.createElement('span');
+                span.textContent = 'перейти в каталог';
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('class', 'category-arrow-svg');
+                svg.setAttribute('viewBox', '0 0 16 16');
+                svg.setAttribute('fill', 'currentColor');
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M10.707 2.293a1 1 0 010 1.414L6.414 8l4.293 4.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z');
+                path.setAttribute('transform', 'rotate(180 8 8)');
+
+                svg.appendChild(path);
+                linkText.appendChild(span);
+                linkText.appendChild(svg);
+                textWrapper.appendChild(title);
+                textWrapper.appendChild(linkText);
+                categoryCard.appendChild(img);
+                categoryCard.appendChild(textWrapper);
+
+                // Add iOS-specific attributes to all child elements
+                if (isIOS) {
+                    [img, textWrapper, title, linkText, span, svg].forEach(element => {
+                        element.style.webkitTransform = 'translateZ(0)';
+                        element.style.transform = 'translateZ(0)';
+                    });
+                }
                 
                 // Use passive event listener for better iOS performance
                 categoryCard.addEventListener('click', () => {
-                    displayView('products', category.key);
-                    localStorage.setItem('lastProductCategory', category.key);
+                    // Force a small delay on iOS to prevent twitching
+                    if (isIOS) {
+                        setTimeout(() => {
+                            displayView('products', category.key);
+                            localStorage.setItem('lastProductCategory', category.key);
+                        }, 50);
+                    } else {
+                        displayView('products', category.key);
+                        localStorage.setItem('lastProductCategory', category.key);
+                    }
                 }, { passive: true });
                 
                 if (categoriesGrid) categoriesGrid.appendChild(categoryCard);
             });
             
             if (categoriesContainer) categoriesContainer.appendChild(categoriesGrid);
+            
+            // Force a repaint on iOS
+            if (isIOS) {
+                setTimeout(() => {
+                    categoriesContainer.style.display = 'none';
+                    categoriesContainer.offsetHeight; // Force reflow
+                    categoriesContainer.style.display = '';
+                }, 100);
+            }
             
             // Hide loading logo after categories are loaded
             if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
