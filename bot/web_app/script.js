@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.2';
+const CACHE_VERSION = '1.2.3';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Cache management functions
@@ -56,9 +56,39 @@ async function invalidateCacheOnUpdate() {
     }
 }
 
+// iOS-specific cache clearing function
+function forceIOSCacheClear() {
+    try {
+        // Force reload CSS files for iOS
+        const links = document.querySelectorAll('link[rel="stylesheet"]');
+        links.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href) {
+                // Add timestamp to force reload
+                const separator = href.includes('?') ? '&' : '?';
+                link.setAttribute('href', href + separator + '_t=' + Date.now());
+            }
+        });
+        
+        // Clear iOS Safari cache
+        if (window.navigator.userAgent.includes('iPhone') || window.navigator.userAgent.includes('iPad')) {
+            console.log('🍎 iOS device detected, forcing cache clear');
+            // Force reload after a short delay
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 100);
+        }
+    } catch (error) {
+        console.error('❌ Error in iOS cache clear:', error);
+    }
+}
+
 // Initialize cache management on app start
 async function initializeCacheManagement() {
     try {
+        // Force iOS cache clear on app start
+        forceIOSCacheClear();
+        
         // Check if cache invalidation is needed
         await invalidateCacheOnUpdate();
         
