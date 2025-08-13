@@ -301,7 +301,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Стили для кликабельного текста "Подробнее" */
 .details-text {
-    display: inline-block;
+    display: block;
     color: #007bff;
     text-decoration: underline;
     cursor: pointer;
@@ -309,6 +309,10 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-top: 6px;
     margin-bottom: 4px;
     transition: color 0.2s;
+    white-space: nowrap;
+    width: fit-content;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .details-text:hover {
