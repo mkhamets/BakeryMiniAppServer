@@ -4,8 +4,14 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.3.1';
+const CACHE_VERSION = '1.3.2';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
+
+// Customer data constants (moved here for scope access)
+const CUSTOMER_DATA_KEY = 'customer_data';
+const CUSTOMER_DATA_VERSION = '1.0.0';
+const CUSTOMER_DATA_EXPIRATION_DAYS = 365; // Keep customer data for 1 year
+const CUSTOMER_DATA_EXPIRATION_MS = CUSTOMER_DATA_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
 
 // Mobile detection for cache strategy
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -406,10 +412,7 @@ function getCartAge() {
 
 // ===== PHASE 7: CUSTOMER DATA PERSISTENCE =====
 // Customer data structure and versioning for prepopulated form fields
-const CUSTOMER_DATA_KEY = 'customer_data';
-const CUSTOMER_DATA_VERSION = '1.0.0';
-const CUSTOMER_DATA_EXPIRATION_DAYS = 365; // Keep customer data for 1 year
-const CUSTOMER_DATA_EXPIRATION_MS = CUSTOMER_DATA_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
+// Constants moved to Phase 4 for scope access
 
 // Enhanced customer data structure with metadata
 function createCustomerDataWithMetadata(customerData) {
@@ -766,10 +769,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.1", image: "images/bakery.svg?v=1.3.1" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.1", image: "images/crouasan.svg?v=1.3.1" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.1", image: "images/bread1.svg?v=1.3.1" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.1", image: "images/cookie.svg?v=1.3.1" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.2", image: "images/bakery.svg?v=1.3.2" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.2", image: "images/crouasan.svg?v=1.3.2" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.2", image: "images/bread1.svg?v=1.3.2" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.2", image: "images/cookie.svg?v=1.3.2" }
     };
 
     await fetchProductsData();
@@ -1955,7 +1958,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.1';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.2';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
