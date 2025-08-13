@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.3.12';
+    const CACHE_VERSION = '1.3.14';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -757,8 +757,22 @@ function clearFieldError(fieldName) {
         fieldElement.classList.remove('form-field-error');
     }
     
-    // Hide corresponding error message
-    const errorMessageElement = document.getElementById(fieldName + '-error');
+    // Special handling for payment method fields
+    if (fieldName === 'paymentMethod') {
+        const paymentMethodItems = document.querySelectorAll('#payment-method-section .payment-method-item');
+        paymentMethodItems.forEach(item => item.classList.remove('form-field-error'));
+    } else if (fieldName === 'paymentMethodPickup') {
+        const paymentMethodItems = document.querySelectorAll('#payment-method-section-pickup .payment-method-item');
+        paymentMethodItems.forEach(item => item.classList.remove('form-field-error'));
+    }
+    
+    // Hide corresponding error message - handle both naming conventions
+    let errorMessageElement = document.getElementById(fieldName + '-error');
+    if (!errorMessageElement) {
+        // Try camelCase version for error message IDs
+        const camelCaseFieldName = fieldName.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        errorMessageElement = document.getElementById(camelCaseFieldName + '-error');
+    }
     if (errorMessageElement) {
         errorMessageElement.classList.remove('show');
     }
@@ -835,10 +849,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.12", image: "images/bakery.svg?v=1.3.12" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.12", image: "images/crouasan.svg?v=1.3.12" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.12", image: "images/bread1.svg?v=1.3.12" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.12", image: "images/cookie.svg?v=1.3.12" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.14", image: "images/bakery.svg?v=1.3.14" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.14", image: "images/crouasan.svg?v=1.3.14" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.14", image: "images/bread1.svg?v=1.3.14" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.14", image: "images/cookie.svg?v=1.3.14" }
     };
 
     await fetchProductsData();
@@ -1020,6 +1034,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     renderCart();
                     Telegram.WebApp.MainButton.hide();
+                    // Clear all form errors when switching to cart
+                    clearAllErrors();
                     // Scroll to top of the page when cart view is displayed
                     scrollToTop();
                     break;
@@ -1042,6 +1058,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (Object.keys(customerData).length > 0) {
                         populateFormWithCustomerData(customerData);
                     }
+                    
+                    // Clear all form errors when switching to checkout
+                    clearAllErrors();
                     
                     Telegram.WebApp.MainButton.hide();
                     // Scroll to top of the page when checkout view is displayed
@@ -1720,13 +1739,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (!orderDetails.paymentMethod) { 
                         isValid = false; 
                         errorMessages.push('Пожалуйста, выберите способ оплаты.');
-                        errorFields.push({ field: 'paymentMethod', element: document.getElementById('payment-method-section') });
+                        errorFields.push({ field: 'paymentMethod', element: document.querySelector('#payment-method-section .payment-method-item:first-of-type') });
                     }
                 } else if (orderDetails.deliveryMethod === 'pickup') {
                     if (!orderDetails.paymentMethodPickup) { 
                         isValid = false; 
                         errorMessages.push('Пожалуйста, выберите способ оплаты.');
-                        errorFields.push({ field: 'paymentMethodPickup', element: document.getElementById('payment-method-section-pickup') });
+                        errorFields.push({ field: 'paymentMethodPickup', element: document.querySelector('#payment-method-section-pickup .payment-method-item:first-of-type') });
                     }
                 }
 
@@ -1749,17 +1768,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Get selected payment method
                 let selectedPaymentMethod = '';
                 if (orderDetails.deliveryMethod === 'courier') {
-                    const courierPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
-                    selectedPaymentMethod = courierPaymentRadio ? courierPaymentRadio.value : '';
+                    selectedPaymentMethod = orderDetails.paymentMethod || '';
                 } else if (orderDetails.deliveryMethod === 'pickup') {
-                    const pickupPaymentRadio = document.querySelector('input[name="paymentMethodPickup"]:checked');
-                    selectedPaymentMethod = pickupPaymentRadio ? pickupPaymentRadio.value : '';
+                    selectedPaymentMethod = orderDetails.paymentMethodPickup || '';
                 }
 
-                if (!selectedPaymentMethod) {
-                    console.error('Payment method not selected');
-                    return;
-                }
+
 
                 const orderPayload = {
                     action: 'checkout_order',
@@ -2050,6 +2064,16 @@ function addErrorClearingListeners() {
         }
     });
     
+    // Textarea fields
+    const textareaInputs = ['comment-delivery', 'comment-pickup'];
+    textareaInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', () => clearFieldError(inputId));
+            input.addEventListener('focus', () => clearFieldError(inputId));
+        }
+    });
+    
     // Select fields
     const selectInputs = ['city'];
     selectInputs.forEach(inputId => {
@@ -2084,6 +2108,12 @@ function addErrorClearingListeners() {
     const pickupPaymentRadios = document.querySelectorAll('input[name="paymentMethodPickup"]');
     pickupPaymentRadios.forEach(radio => {
         radio.addEventListener('change', () => clearFieldError('paymentMethodPickup'));
+    });
+    
+    // Payment method radios for courier delivery
+    const courierPaymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    courierPaymentRadios.forEach(radio => {
+        radio.addEventListener('change', () => clearFieldError('paymentMethod'));
     });
 }
 
@@ -2216,7 +2246,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.12';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.14';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
