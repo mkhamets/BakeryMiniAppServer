@@ -472,109 +472,134 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayView(viewName, categoryKey = null) {
-        if (welcomeContainer) welcomeContainer.classList.add('hidden');
-        if (categoriesContainer) categoriesContainer.classList.add('hidden');
-        if (productsContainer) productsContainer.classList.add('hidden');
-        if (cartContainer) cartContainer.classList.add('hidden');
-        if (checkoutContainer) checkoutContainer.classList.add('hidden');
-        if (productScreen) productScreen.classList.add('hidden');
-        if (mainCategoryTitle) {
-            mainCategoryTitle.classList.add('hidden');
-            // Keep loading text hidden by default
-            if (mainCategoryTitle.textContent === 'Загрузка...') {
+        // Prevent rapid view changes on iOS
+        if (window.isChangingView) {
+            console.log('View change already in progress, skipping...');
+            return;
+        }
+        window.isChangingView = true;
+        
+        // Use requestAnimationFrame for smoother transitions on iOS
+        const changeView = () => {
+            if (welcomeContainer) welcomeContainer.classList.add('hidden');
+            if (categoriesContainer) categoriesContainer.classList.add('hidden');
+            if (productsContainer) productsContainer.classList.add('hidden');
+            if (cartContainer) cartContainer.classList.add('hidden');
+            if (checkoutContainer) checkoutContainer.classList.add('hidden');
+            if (productScreen) productScreen.classList.add('hidden');
+            if (mainCategoryTitle) {
                 mainCategoryTitle.classList.add('hidden');
+                // Keep loading text hidden by default
+                if (mainCategoryTitle.textContent === 'Загрузка...') {
+                    mainCategoryTitle.classList.add('hidden');
+                }
             }
-        }
-        if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
+            if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
 
-        if (viewName === 'welcome' || viewName === 'categories') {
-            Telegram.WebApp.BackButton.hide();
-        } else {
-            Telegram.WebApp.BackButton.show();
-        }
+            if (viewName === 'welcome' || viewName === 'categories') {
+                Telegram.WebApp.BackButton.hide();
+            } else {
+                Telegram.WebApp.BackButton.show();
+            }
 
-        switch (viewName) {
-            case 'loading':
-                const loadingOverlay = document.getElementById('loading-overlay');
-                if (loadingOverlay) loadingOverlay.classList.remove('hidden');
-                if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
-                // Hide all Telegram Web App buttons during loading
-                if (Telegram.WebApp.MainButton) {
+            switch (viewName) {
+                case 'loading':
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+                    if (mainCategoryTitle) mainCategoryTitle.classList.add('hidden');
+                    // Hide all Telegram Web App buttons during loading
+                    if (Telegram.WebApp.MainButton) {
+                        Telegram.WebApp.MainButton.hide();
+                    }
+                    if (Telegram.WebApp.BackButton) {
+                        Telegram.WebApp.BackButton.hide();
+                    }
+                    break;
+                case 'welcome':
+                    if (welcomeContainer) welcomeContainer.classList.remove('hidden');
+                    if (mainPageContainer) mainPageContainer.classList.add('hidden');
                     Telegram.WebApp.MainButton.hide();
-                }
-                if (Telegram.WebApp.BackButton) {
-                    Telegram.WebApp.BackButton.hide();
-                }
-                break;
-            case 'welcome':
-                if (welcomeContainer) welcomeContainer.classList.remove('hidden');
-                if (mainPageContainer) mainPageContainer.classList.add('hidden');
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when welcome view is displayed
-                scrollToTop();
-                break;
-            case 'categories':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (categoriesContainer) categoriesContainer.classList.remove('hidden');
-                if (mainCategoryTitle) {
-                    mainCategoryTitle.textContent = 'Наше меню';
-                    mainCategoryTitle.classList.remove('hidden');
-                }
-                loadCategories();
-                // Show basket button for categories view
-                if (Telegram.WebApp.MainButton) {
-                    updateMainButtonCartInfo();
-                }
-                // Scroll to top of the page when categories view is displayed
-                scrollToTop();
-                break;
-            case 'products':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (productsContainer) productsContainer.classList.remove('hidden');
-                if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
-                loadProducts(categoryKey);
-                // Show basket button for products view
-                if (Telegram.WebApp.MainButton) {
-                    updateMainButtonCartInfo();
-                }
-                // Scroll to top of the page when products view is displayed
-                scrollToTop();
-                break;
-            case 'product':
-                if (productScreen) productScreen.classList.remove('hidden');
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when product view is displayed
-                scrollToTop();
-                break;
-            case 'cart':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (cartContainer) cartContainer.classList.remove('hidden');
-                if (mainCategoryTitle) {
-                    mainCategoryTitle.textContent = 'Ваша корзина';
-                    mainCategoryTitle.classList.remove('hidden');
-                }
-                renderCart();
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when cart view is displayed
-                scrollToTop();
-                break;
-            case 'checkout':
-                if (mainPageContainer) mainPageContainer.classList.remove('hidden');
-                if (checkoutContainer) checkoutContainer.classList.remove('hidden');
-                if (mainCategoryTitle) {
-                    mainCategoryTitle.textContent = 'Оформление заказа';
-                    mainCategoryTitle.classList.remove('hidden');
-                }
-                renderCheckoutSummary();
-                setupDateInput();
-                updateSubmitButtonState();
-                Telegram.WebApp.MainButton.hide();
-                // Scroll to top of the page when checkout view is displayed
-                scrollToTop();
-                break;
-            default:
-                console.warn('Неизвестное представление:', viewName);
-                break;
+                    // Scroll to top of the page when welcome view is displayed
+                    scrollToTop();
+                    break;
+                case 'categories':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (categoriesContainer) categoriesContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) {
+                        mainCategoryTitle.textContent = 'Наше меню';
+                        mainCategoryTitle.classList.remove('hidden');
+                    }
+                    // Only load categories if not already loaded or if forced
+                    if (!categoriesContainer.querySelector('.categories-grid') || window.forceReloadCategories) {
+                        loadCategories();
+                        window.forceReloadCategories = false;
+                    }
+                    // Show basket button for categories view
+                    if (Telegram.WebApp.MainButton) {
+                        updateMainButtonCartInfo();
+                    }
+                    // Scroll to top of the page when categories view is displayed
+                    scrollToTop();
+                    break;
+                case 'products':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (productsContainer) productsContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
+                    loadProducts(categoryKey);
+                    // Show basket button for products view
+                    if (Telegram.WebApp.MainButton) {
+                        updateMainButtonCartInfo();
+                    }
+                    // Scroll to top of the page when products view is displayed
+                    scrollToTop();
+                    break;
+                case 'product':
+                    if (productScreen) productScreen.classList.remove('hidden');
+                    Telegram.WebApp.MainButton.hide();
+                    // Scroll to top of the page when product view is displayed
+                    scrollToTop();
+                    break;
+                case 'cart':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (cartContainer) cartContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) {
+                        mainCategoryTitle.textContent = 'Ваша корзина';
+                        mainCategoryTitle.classList.remove('hidden');
+                    }
+                    renderCart();
+                    Telegram.WebApp.MainButton.hide();
+                    // Scroll to top of the page when cart view is displayed
+                    scrollToTop();
+                    break;
+                case 'checkout':
+                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (checkoutContainer) checkoutContainer.classList.remove('hidden');
+                    if (mainCategoryTitle) {
+                        mainCategoryTitle.textContent = 'Оформление заказа';
+                        mainCategoryTitle.classList.remove('hidden');
+                    }
+                    renderCheckoutSummary();
+                    setupDateInput();
+                    updateSubmitButtonState();
+                    Telegram.WebApp.MainButton.hide();
+                    // Scroll to top of the page when checkout view is displayed
+                    scrollToTop();
+                    break;
+                default:
+                    console.warn('Неизвестное представление:', viewName);
+                    break;
+            }
+            
+            // Reset the flag after a short delay
+            setTimeout(() => {
+                window.isChangingView = false;
+            }, isIOS ? 100 : 50);
+        };
+        
+        if (isIOS) {
+            requestAnimationFrame(changeView);
+        } else {
+            changeView();
         }
     }
 
@@ -638,18 +663,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // iOS detection
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     async function loadCategories() {
         try {
+            // Prevent multiple simultaneous loads
+            if (window.isLoadingCategories) {
+                console.log('Categories already loading, skipping...');
+                return;
+            }
+            window.isLoadingCategories = true;
+
             const response = await fetch('/bot-app/api/categories');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const categoriesData = await response.json();
 
+            // Only recreate if content actually changed
+            const currentContent = categoriesContainer ? categoriesContainer.innerHTML : '';
+            const newContent = JSON.stringify(categoriesData);
+            
+            if (currentContent === newContent) {
+                console.log('Categories content unchanged, skipping recreation');
+                window.isLoadingCategories = false;
+                return;
+            }
+
             if (categoriesContainer) categoriesContainer.innerHTML = '';
 
             const categoriesGrid = document.createElement('div');
             categoriesGrid.className = 'categories-grid';
+
+            // Add iOS-specific class for hardware acceleration
+            if (isIOS) {
+                categoriesGrid.classList.add('ios-optimized');
+            }
 
             categoriesData.forEach(category => {
                 const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, icon: '' };
@@ -663,6 +714,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const categoryCard = document.createElement('div');
                 categoryCard.className = 'category-card-item';
                 categoryCard.dataset.categoryKey = category.key;
+
+                // Add iOS-specific attributes
+                if (isIOS) {
+                    categoryCard.style.webkitTransform = 'translateZ(0)';
+                    categoryCard.style.webkitBackfaceVisibility = 'hidden';
+                }
 
                 categoryCard.innerHTML = `
                     <img src="${categoryImageUrl}"
@@ -679,19 +736,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                 `;
-                            categoryCard.addEventListener('click', () => {
+                
+                // Use passive event listener for better iOS performance
+                categoryCard.addEventListener('click', () => {
                     displayView('products', category.key);
                     localStorage.setItem('lastProductCategory', category.key);
-                });
+                }, { passive: true });
+                
                 if (categoriesGrid) categoriesGrid.appendChild(categoryCard);
             });
+            
             if (categoriesContainer) categoriesContainer.appendChild(categoriesGrid);
             
             // Hide loading logo after categories are loaded
             if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
+            
+            window.isLoadingCategories = false;
         } catch (error) {
             console.error('Ошибка при загрузке категорий:', error);
             console.error('Failed to load categories. Please try again later.');
+            window.isLoadingCategories = false;
         }
     }
 
