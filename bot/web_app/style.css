@@ -657,61 +657,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     padding-bottom: 20px;
 }
 
-/* iOS-specific fixes to prevent twitching/glitching */
-@supports (-webkit-touch-callout: none) {
-    .category-card-item {
-        -webkit-transform: translateZ(0);
-        -webkit-backface-visibility: hidden;
-        -webkit-perspective: 1000;
-        transform: translateZ(0);
-        backface-visibility: hidden;
-        perspective: 1000;
-        will-change: auto;
-    }
-    
-    .category-image {
-        -webkit-transform: translateZ(0);
-        -webkit-backface-visibility: hidden;
-        transform: translateZ(0);
-        backface-visibility: hidden;
-        will-change: auto;
-    }
-    
-    .category-text-wrapper {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-    }
-    
-    /* Disable hover effects on iOS to prevent glitches */
-    .category-card-item:hover {
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-    }
-    
-    .category-card-item:hover .category-image {
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-    }
-    
-    .category-card-item:hover .category-arrow-svg {
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-    }
-    
-    /* iOS optimization class */
-    .ios-optimized {
-        -webkit-transform: translateZ(0);
-        -webkit-backface-visibility: hidden;
-        transform: translateZ(0);
-        backface-visibility: hidden;
-    }
-    
-    .ios-optimized .category-card-item {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-    }
-}
-
 .categories-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Две колонки на больших экранах */
