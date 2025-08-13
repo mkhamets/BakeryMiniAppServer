@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.5';
+const CACHE_VERSION = '1.2.6';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Mobile detection for cache strategy
@@ -1960,14 +1960,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Service Worker functions removed to fix iOS twitching issues
 
-    // ===== CUSTOM CALENDAR IMPLEMENTATION =====
-    class BakeryDatePicker {
+    // ===== CLASSICAL CALENDAR IMPLEMENTATION =====
+    class ClassicalCalendar {
         constructor() {
             this.dateInput = document.getElementById('delivery-date');
+            this.calendarIcon = document.getElementById('calendar-icon');
             this.calendarOverlay = document.getElementById('calendar-overlay');
             this.calendarClose = document.getElementById('calendar-close');
+            this.calendarPrev = document.getElementById('calendar-prev');
+            this.calendarNext = document.getElementById('calendar-next');
+            this.calendarMonthYear = document.getElementById('calendar-month-year');
             this.calendarDates = document.getElementById('calendar-dates');
+            
             this.selectedDate = null;
+            this.currentDate = new Date();
+            this.viewDate = new Date();
+            
+            this.monthNames = [
+                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+            ];
             
             this.init();
         }
@@ -1978,51 +1990,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Ensure field starts empty
             this.dateInput.value = '';
             
-            // Create date options (today + tomorrow only)
-            this.createDateOptions();
-            
             // Add event listeners
             this.dateInput.addEventListener('click', () => this.openCalendar());
             this.dateInput.addEventListener('focus', () => this.openCalendar());
+            this.calendarIcon.addEventListener('click', () => this.openCalendar());
             this.calendarClose.addEventListener('click', () => this.closeCalendar());
+            this.calendarPrev.addEventListener('click', () => this.previousMonth());
+            this.calendarNext.addEventListener('click', () => this.nextMonth());
             this.calendarOverlay.addEventListener('click', (e) => {
                 if (e.target === this.calendarOverlay) {
                     this.closeCalendar();
                 }
             });
             
-            console.log('✅ Custom Bakery Date Picker initialized');
-        }
-        
-        createDateOptions() {
-            if (!this.calendarDates) return;
+            // Initialize calendar view
+            this.renderCalendar();
             
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            const dates = [today, tomorrow];
-            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-            
-            this.calendarDates.innerHTML = '';
-            
-            dates.forEach((date, index) => {
-                const dateOption = document.createElement('div');
-                dateOption.className = 'calendar-date-option';
-                dateOption.dataset.date = this.formatDate(date);
-                
-                const dayName = dayNames[date.getDay()];
-                const isToday = index === 0;
-                const label = isToday ? 'Сегодня' : 'Завтра';
-                
-                dateOption.innerHTML = `
-                    <span class="calendar-date-label">${label}</span>
-                    <span class="calendar-date-day">${dayName}, ${this.formatDate(date)}</span>
-                `;
-                
-                dateOption.addEventListener('click', () => this.selectDate(date, dateOption));
-                this.calendarDates.appendChild(dateOption);
-            });
+            console.log('✅ Classical Calendar initialized');
         }
         
         formatDate(date) {
@@ -2032,26 +2016,90 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `${day}.${month}.${year}`;
         }
         
-        selectDate(date, optionElement) {
-            // Remove previous selection
-            const previousSelected = this.calendarDates.querySelector('.calendar-date-option.selected');
-            if (previousSelected) {
-                previousSelected.classList.remove('selected');
-            }
+        isDateEnabled(date) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
             
-            // Add selection to current option
-            optionElement.classList.add('selected');
+            // Reset time for comparison
+            today.setHours(0, 0, 0, 0);
+            tomorrow.setHours(0, 0, 0, 0);
+            const checkDate = new Date(date);
+            checkDate.setHours(0, 0, 0, 0);
+            
+            return checkDate.getTime() === today.getTime() || checkDate.getTime() === tomorrow.getTime();
+        }
+        
+        renderCalendar() {
+            // Update month/year display
+            this.calendarMonthYear.textContent = `${this.monthNames[this.viewDate.getMonth()]} ${this.viewDate.getFullYear()}`;
+            
+            // Clear previous dates
+            this.calendarDates.innerHTML = '';
+            
+            // Get first day of the month
+            const firstDay = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth(), 1);
+            const lastDay = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth() + 1, 0);
+            
+            // Get first Monday of the calendar (might be from previous month)
+            const startDate = new Date(firstDay);
+            const dayOfWeek = firstDay.getDay();
+            const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday = 0
+            startDate.setDate(firstDay.getDate() - daysToSubtract);
+            
+            // Generate 6 weeks (42 days)
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                
+                const dateElement = document.createElement('div');
+                dateElement.className = 'calendar-date';
+                dateElement.textContent = currentDate.getDate();
+                
+                // Add classes based on date status
+                const isCurrentMonth = currentDate.getMonth() === this.viewDate.getMonth();
+                const isEnabled = this.isDateEnabled(currentDate);
+                const isSelected = this.selectedDate && 
+                    currentDate.getTime() === this.selectedDate.getTime();
+                
+                if (!isCurrentMonth) {
+                    dateElement.classList.add('other-month');
+                }
+                
+                if (isEnabled) {
+                    dateElement.classList.add('enabled');
+                    dateElement.addEventListener('click', () => this.selectDate(currentDate));
+                } else {
+                    dateElement.classList.add('disabled');
+                }
+                
+                if (isSelected) {
+                    dateElement.classList.add('selected');
+                }
+                
+                this.calendarDates.appendChild(dateElement);
+            }
+        }
+        
+        selectDate(date) {
+            if (!this.isDateEnabled(date)) return;
+            
+            // Update selected date
+            this.selectedDate = new Date(date);
+            this.selectedDate.setHours(0, 0, 0, 0);
             
             // Update input field
             const formattedDate = this.formatDate(date);
             this.dateInput.value = formattedDate;
-            this.selectedDate = date;
             
             // Clear any error
             const errorElement = document.getElementById('deliveryDate-error');
             if (errorElement) {
                 errorElement.style.display = 'none';
             }
+            
+            // Re-render calendar to show selection
+            this.renderCalendar();
             
             // Close calendar after short delay for better UX
             setTimeout(() => {
@@ -2066,9 +2114,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
+        previousMonth() {
+            this.viewDate.setMonth(this.viewDate.getMonth() - 1);
+            this.renderCalendar();
+        }
+        
+        nextMonth() {
+            this.viewDate.setMonth(this.viewDate.getMonth() + 1);
+            this.renderCalendar();
+        }
+        
         openCalendar() {
+            // Set view date to current month
+            this.viewDate = new Date();
+            this.renderCalendar();
+            
             this.calendarOverlay.classList.add('active');
-            console.log('📅 Calendar opened');
+            console.log('📅 Classical calendar opened');
             
             // Prevent body scroll on mobile
             if (isMobileDevice) {
@@ -2078,7 +2140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         closeCalendar() {
             this.calendarOverlay.classList.remove('active');
-            console.log('📅 Calendar closed');
+            console.log('📅 Classical calendar closed');
             
             // Restore body scroll
             if (isMobileDevice) {
@@ -2097,10 +2159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         reset() {
             this.dateInput.value = '';
             this.selectedDate = null;
-            const selected = this.calendarDates.querySelector('.calendar-date-option.selected');
-            if (selected) {
-                selected.classList.remove('selected');
-            }
+            this.renderCalendar();
         }
     }
     
@@ -2151,20 +2210,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         return true;
     }
     
-    // Initialize custom calendar
-    let bakeryDatePicker;
+    // Initialize classical calendar
+    let classicalCalendar;
     
     // Initialize calendar when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            bakeryDatePicker = new BakeryDatePicker();
+            classicalCalendar = new ClassicalCalendar();
         });
     } else {
-        bakeryDatePicker = new BakeryDatePicker();
+        classicalCalendar = new ClassicalCalendar();
     }
     
     // Make calendar globally accessible for debugging
-    window.bakeryDatePicker = bakeryDatePicker;
+    window.classicalCalendar = classicalCalendar;
     window.validateDeliveryDate = validateDeliveryDate;
     
     // ===== END CUSTOM CALENDAR IMPLEMENTATION =====

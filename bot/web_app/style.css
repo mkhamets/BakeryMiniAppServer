@@ -2210,8 +2210,42 @@ body * {
     }
 }
 
-/* ===== CUSTOM CALENDAR STYLES ===== */
-.custom-calendar-overlay {
+/* ===== CLASSICAL CALENDAR STYLES ===== */
+
+/* Date input with calendar icon */
+.date-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-container input {
+    flex: 1;
+    padding-right: 45px;
+}
+
+.calendar-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #b76c4b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.calendar-icon:hover {
+    background-color: rgba(183, 108, 75, 0.1);
+}
+
+.calendar-icon svg {
+    display: block;
+}
+
+/* Calendar overlay */
+.calendar-overlay {
     display: none;
     position: fixed;
     top: 0;
@@ -2226,19 +2260,21 @@ body * {
     box-sizing: border-box;
 }
 
-.custom-calendar-overlay.active {
+.calendar-overlay.active {
     display: flex;
 }
 
-.custom-calendar-popup {
+/* Calendar popup */
+.calendar-popup {
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    max-width: 320px;
+    max-width: 350px;
     width: 100%;
     max-height: 90vh;
     overflow: hidden;
     animation: calendarSlideIn 0.3s ease-out;
+    border: 2px solid #b76c4b;
 }
 
 @keyframes calendarSlideIn {
@@ -2252,6 +2288,7 @@ body * {
     }
 }
 
+/* Calendar header */
 .calendar-header {
     background: #b76c4b;
     color: white;
@@ -2259,15 +2296,38 @@ body * {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 }
 
-.calendar-header h3 {
+.calendar-month-year {
     margin: 0;
     font-size: 1.1em;
     font-weight: 600;
+    flex: 1;
+    text-align: center;
+}
+
+.calendar-nav {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    font-weight: bold;
+}
+
+.calendar-nav:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .calendar-close {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
     color: white;
@@ -2287,71 +2347,115 @@ body * {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Calendar body */
 .calendar-body {
     padding: 20px;
-}
-
-.calendar-dates {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.calendar-date-option {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 16px;
     background: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
+}
+
+/* Weekdays header */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.calendar-weekday {
+    padding: 8px 4px;
     text-align: center;
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.calendar-date-option:hover {
-    border-color: #b76c4b;
+    font-size: 14px;
+    font-weight: 600;
+    color: #b76c4b;
     background-color: #faf5f3;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(183, 108, 75, 0.15);
+    border-radius: 6px;
 }
 
-.calendar-date-option:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(183, 108, 75, 0.2);
+/* Calendar dates grid */
+.calendar-dates {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
 }
 
-.calendar-date-option.selected {
+.calendar-date {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    background: white;
+    color: #333;
+}
+
+.calendar-date:hover {
+    background-color: #faf5f3;
     border-color: #b76c4b;
+    transform: scale(1.05);
+}
+
+.calendar-date.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+.calendar-date.disabled:hover {
+    background-color: #f5f5f5;
+    border-color: transparent;
+    transform: none;
+}
+
+.calendar-date.enabled {
+    background-color: #e8f4e8;
+    color: #2d5a2d;
+    font-weight: 600;
+    border-color: #4caf50;
+}
+
+.calendar-date.enabled:hover {
+    background-color: #d4e8d4;
+    border-color: #388e3c;
+    transform: scale(1.1);
+}
+
+.calendar-date.selected {
     background-color: #b76c4b;
     color: white;
+    border-color: #a0522d;
+    font-weight: bold;
+    transform: scale(1.05);
 }
 
-.calendar-date-label {
-    display: block;
-    font-size: 18px;
-    margin-bottom: 4px;
+.calendar-date.selected:hover {
+    background-color: #a0522d;
+    transform: scale(1.1);
 }
 
-.calendar-date-day {
-    display: block;
-    font-size: 14px;
-    opacity: 0.8;
+.calendar-date.other-month {
+    color: #ddd;
+    font-weight: normal;
 }
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
-    .custom-calendar-popup {
+    .calendar-popup {
         margin: 10px;
         max-width: none;
         width: calc(100% - 20px);
+        max-width: 340px;
     }
     
     .calendar-header {
         padding: 14px 16px;
     }
     
-    .calendar-header h3 {
+    .calendar-month-year {
         font-size: 1.05em;
     }
     
@@ -2359,26 +2463,35 @@ body * {
         padding: 16px;
     }
     
-    .calendar-date-option {
-        padding: 18px 16px;
-        font-size: 17px;
+    .calendar-date {
+        font-size: 16px;
+        min-height: 40px;
     }
     
-    .calendar-date-label {
-        font-size: 19px;
+    .calendar-weekday {
+        padding: 10px 4px;
+        font-size: 13px;
+    }
+    
+    .date-input-container input {
+        padding-right: 50px;
+    }
+    
+    .calendar-icon {
+        right: 15px;
     }
 }
 
 /* iOS specific fixes */
 @media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
-    .custom-calendar-overlay {
+    .calendar-overlay {
         -webkit-overflow-scrolling: touch;
     }
     
-    .calendar-date-option {
+    .calendar-date {
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
     }
 }
 
-/* ===== END CUSTOM CALENDAR STYLES ===== */
+/* ===== END CLASSICAL CALENDAR STYLES ===== */
