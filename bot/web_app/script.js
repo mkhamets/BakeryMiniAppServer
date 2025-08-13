@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.3.11';
+const CACHE_VERSION = '1.3.12';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -835,10 +835,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.11", image: "images/bakery.svg?v=1.3.11" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.11", image: "images/crouasan.svg?v=1.3.11" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.11", image: "images/bread1.svg?v=1.3.11" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.11", image: "images/cookie.svg?v=1.3.11" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.12", image: "images/bakery.svg?v=1.3.12" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.12", image: "images/crouasan.svg?v=1.3.12" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.12", image: "images/bread1.svg?v=1.3.12" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.12", image: "images/cookie.svg?v=1.3.12" }
     };
 
     await fetchProductsData();
@@ -1715,18 +1715,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                // Validate payment method
+                // Validate payment method (same style as pickup address validation)
                 if (orderDetails.deliveryMethod === 'courier') {
-                    const courierPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
-                    if (!courierPaymentRadio) {
-                        isValid = false;
+                    if (!orderDetails.paymentMethod) { 
+                        isValid = false; 
                         errorMessages.push('Пожалуйста, выберите способ оплаты.');
                         errorFields.push({ field: 'paymentMethod', element: document.getElementById('payment-method-section') });
                     }
                 } else if (orderDetails.deliveryMethod === 'pickup') {
-                    const pickupPaymentRadio = document.querySelector('input[name="paymentMethodPickup"]:checked');
-                    if (!pickupPaymentRadio) {
-                        isValid = false;
+                    if (!orderDetails.paymentMethodPickup) { 
+                        isValid = false; 
                         errorMessages.push('Пожалуйста, выберите способ оплаты.');
                         errorFields.push({ field: 'paymentMethodPickup', element: document.getElementById('payment-method-section-pickup') });
                     }
@@ -2218,7 +2216,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.11';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.12';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
