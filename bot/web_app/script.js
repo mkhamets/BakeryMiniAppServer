@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.3';
+const CACHE_VERSION = '1.2.4';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Cache management functions
@@ -1208,6 +1208,49 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orderDetails.pickupAddress = pickupAddressMapping[orderDetails.pickupAddress] || orderDetails.pickupAddress;
                 }
 
+                // Validate delivery date function
+                function validateDeliveryDate() {
+                    const dateInput = document.getElementById('delivery-date');
+                    const errorElement = document.getElementById('deliveryDate-error');
+                    
+                    if (!dateInput || !errorElement) return true;
+                    
+                    const selectedDate = dateInput.value;
+                    if (!selectedDate) {
+                        errorElement.style.display = 'block';
+                        return false;
+                    }
+                    
+                    // Parse the date (DD.MM.YYYY format)
+                    const parts = selectedDate.split('.');
+                    if (parts.length !== 3) {
+                        errorElement.style.display = 'block';
+                        return false;
+                    }
+                    
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1; // Month is 0-indexed
+                    const year = parseInt(parts[2]);
+                    
+                    const selectedDateObj = new Date(year, month, day);
+                    const today = new Date();
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
+                    // Reset time to compare only dates
+                    today.setHours(0, 0, 0, 0);
+                    tomorrow.setHours(0, 0, 0, 0);
+                    selectedDateObj.setHours(0, 0, 0, 0);
+                    
+                    if (selectedDateObj < today || selectedDateObj > tomorrow) {
+                        errorElement.style.display = 'block';
+                        return false;
+                    }
+                    
+                    errorElement.style.display = 'none';
+                    return true;
+                }
+
                 let isValid = true;
                 const errorMessages = [];
 
@@ -1227,7 +1270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     errorMessages.push('Пожалуйста, введите корректный Email.');
                 }
 
-                if (!orderDetails.deliveryDate) { isValid = false; errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.'); }
+                if (!validateDeliveryDate()) { isValid = false; errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.'); }
 
                 if (!orderDetails.deliveryMethod) {
                     isValid = false;
@@ -1510,35 +1553,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function setupDateInput() {
         const dateInput = document.getElementById('delivery-date');
-        if (dateInput) {
+        if (dateInput && typeof flatpickr !== 'undefined') {
             // Get today's date
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
             
-            // Format dates for input (YYYY-MM-DD)
-            const todayFormatted = today.toISOString().split('T')[0];
-            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
-            
-            // Set min and max dates
-            dateInput.min = todayFormatted;
-            dateInput.max = tomorrowFormatted;
+            // Format dates for display (DD.MM.YYYY)
+            const todayFormatted = today.toLocaleDateString('ru-RU');
+            const tomorrowFormatted = tomorrow.toLocaleDateString('ru-RU');
             
             // Set default value to today
             dateInput.value = todayFormatted;
             
-            // Add event listener to prevent selecting other dates
-            dateInput.addEventListener('input', function() {
-                const selectedDate = new Date(this.value);
-                const today = new Date();
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                
-                // Reset to today if date is not today or tomorrow
-                if (selectedDate < today || selectedDate > tomorrow) {
-                    this.value = today.toISOString().split('T')[0];
+            // Initialize flatpickr with confetti theme
+            const flatpickrInstance = flatpickr(dateInput, {
+                theme: "confetti",
+                dateFormat: "d.m.Y",
+                locale: "ru",
+                minDate: today,
+                maxDate: tomorrow,
+                defaultDate: today,
+                disableMobile: false, // Enable mobile support
+                allowInput: false, // Disable manual input
+                clickOpens: true,
+                closeOnSelect: true,
+                static: true, // Prevent scrolling issues on mobile
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Update the input value with the selected date
+                    dateInput.value = dateStr;
+                    
+                    // Trigger validation
+                    validateDeliveryDate();
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Ensure the picker opens properly on mobile
+                    setTimeout(() => {
+                        instance.calendarContainer.style.zIndex = '9999';
+                    }, 100);
                 }
             });
+            
+            // Store the flatpickr instance for later use
+            dateInput.flatpickrInstance = flatpickrInstance;
         }
     }
 

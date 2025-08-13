@@ -886,6 +886,56 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     min-width: 200px;
 }
 
+/* Flatpickr Date Picker Styles */
+.flatpickr-calendar {
+    z-index: 9999 !important;
+    font-family: Arial, sans-serif !important;
+}
+
+.flatpickr-calendar.open {
+    display: inline-block !important;
+}
+
+/* Mobile-specific flatpickr fixes */
+@media (max-width: 768px) {
+    .flatpickr-calendar {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90% !important;
+        max-width: 320px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-months {
+        background: #b76c4b !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-current-month {
+        color: white !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-monthDropdown-months {
+        color: white !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-weekday {
+        color: #b76c4b !important;
+    }
+}
+
+/* Ensure the date input is properly styled */
+#delivery-date {
+    cursor: pointer;
+    background-color: white;
+}
+
+#delivery-date:focus {
+    border-color: #b76c4b;
+    outline: none;
+    box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
+}
+
 .radio-group {
     display: flex;
     flex-wrap: wrap; /* Для переноса на новую строку на маленьких экранах */
