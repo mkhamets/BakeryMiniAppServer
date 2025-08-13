@@ -660,105 +660,55 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 /* iOS-specific fixes to prevent twitching/glitching */
 @supports (-webkit-touch-callout: none) {
     .category-card-item {
-        -webkit-transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        -webkit-perspective: 1000 !important;
-        transform: translateZ(0) !important;
-        backface-visibility: hidden !important;
-        perspective: 1000 !important;
-        will-change: auto !important;
-        -webkit-transform-style: preserve-3d !important;
-        transform-style: preserve-3d !important;
+        -webkit-transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        -webkit-perspective: 1000;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000;
+        will-change: auto;
     }
     
     .category-image {
-        -webkit-transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        transform: translateZ(0) !important;
-        backface-visibility: hidden !important;
-        will-change: auto !important;
-        -webkit-transform-style: preserve-3d !important;
-        transform-style: preserve-3d !important;
+        -webkit-transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        will-change: auto;
     }
     
     .category-text-wrapper {
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
-    .category-title-text {
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-    }
-    
-    .category-link-text {
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-    }
-    
-    .category-arrow-svg {
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-    }
-    
-    /* Completely disable hover effects on iOS to prevent glitches */
+    /* Disable hover effects on iOS to prevent glitches */
     .category-card-item:hover {
-        transform: translateZ(0) !important;
-        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
     }
     
     .category-card-item:hover .category-image {
-        transform: translateZ(0) !important;
-        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
     }
     
     .category-card-item:hover .category-arrow-svg {
-        transform: translateZ(0) !important;
-        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
     }
     
     /* iOS optimization class */
     .ios-optimized {
-        -webkit-transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        transform: translateZ(0) !important;
-        backface-visibility: hidden !important;
-        -webkit-perspective: 1000 !important;
-        perspective: 1000 !important;
+        -webkit-transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        backface-visibility: hidden;
     }
     
     .ios-optimized .category-card-item {
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-    }
-    
-    /* Force hardware acceleration on all category elements */
-    .categories-grid {
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-    }
-    
-    /* Disable all transitions on iOS */
-    .category-card-item,
-    .category-image,
-    .category-text-wrapper,
-    .category-title-text,
-    .category-link-text,
-    .category-arrow-svg {
-        transition: none !important;
-        -webkit-transition: none !important;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
 }
 
