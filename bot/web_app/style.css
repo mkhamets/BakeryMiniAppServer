@@ -25,7 +25,7 @@ body {
 
 /* Add background only after loading */
 body.loaded {
-    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.4');
+    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.5');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2049,9 +2049,10 @@ body * {
 /* Payment method styles */
 .payment-method-group {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: 20px;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .payment-method-item {
@@ -2064,7 +2065,8 @@ body * {
     border: none;
     border-radius: 0;
     transition: all 0.2s ease;
-    width: 100%;
+    min-width: 200px;
+    flex: 1;
 }
 
 .payment-method-item:hover {
@@ -2074,7 +2076,7 @@ body * {
 .payment-method-item input[type="radio"] {
     width: 20px;
     height: 20px;
-    margin: 0;
+    margin: 0 12px 0 0;
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
@@ -2123,13 +2125,12 @@ body * {
 }
 
 .payment-description {
-    margin: 0 0 0 28px;
+    margin: 0 0 0 32px;
     font-family: 'Yeseva One', serif;
     font-size: 14px;
     font-weight: normal;
-    color: #666;
+    color: #000;
     line-height: 1.4;
-    font-style: italic;
 }
 
 .payment-method-item.selected {
