@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.3.3';
+const CACHE_VERSION = '1.3.4';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -769,10 +769,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.3", image: "images/bakery.svg?v=1.3.3" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.3", image: "images/crouasan.svg?v=1.3.3" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.3", image: "images/bread1.svg?v=1.3.3" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.3", image: "images/cookie.svg?v=1.3.3" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.4", image: "images/bakery.svg?v=1.3.4" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.4", image: "images/crouasan.svg?v=1.3.4" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.4", image: "images/bread1.svg?v=1.3.4" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.4", image: "images/cookie.svg?v=1.3.4" }
     };
 
     await fetchProductsData();
@@ -1709,6 +1709,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Очищаем поля самовывоза при переключении на доставку курьером
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.checked = false);
                 document.getElementById('comment-pickup').value = '';
+                
+                // Show courier payment methods, hide pickup payment methods
+                const courierPaymentSection = document.getElementById('payment-method-section');
+                const pickupPaymentSection = document.getElementById('payment-method-section-pickup');
+                if (courierPaymentSection) courierPaymentSection.classList.remove('hidden');
+                if (pickupPaymentSection) pickupPaymentSection.classList.add('hidden');
             } else if (method === 'pickup') {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.remove('hidden');
@@ -1726,6 +1732,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').value = '';
                 document.getElementById('address-line').value = '';
                 document.getElementById('comment-delivery').value = '';
+                
+                // Hide courier payment methods, show pickup payment methods
+                const courierPaymentSection = document.getElementById('payment-method-section');
+                const pickupPaymentSection = document.getElementById('payment-method-section-pickup');
+                if (courierPaymentSection) courierPaymentSection.classList.add('hidden');
+                if (pickupPaymentSection) pickupPaymentSection.classList.remove('hidden');
             } else {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.add('hidden');
@@ -1834,6 +1846,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Add click handlers for delivery method items
     const deliveryMethodItems = document.querySelectorAll('.delivery-method-item');
     deliveryMethodItems.forEach(item => {
+        item.addEventListener('click', (event) => {
+            const radio = item.querySelector('input[type="radio"]');
+            if (radio && !event.target.matches('input[type="radio"]')) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+    
+    // Add payment method functionality
+    const paymentMethodRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    if (paymentMethodRadios.length > 0) {
+        paymentMethodRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                // Remove selected class from all payment method items
+                document.querySelectorAll('.payment-method-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                // Add selected class to the current payment method item
+                const currentItem = event.target.closest('.payment-method-item');
+                if (currentItem) {
+                    currentItem.classList.add('selected');
+                }
+            });
+        });
+        
+        // Set initial selected state for payment method
+        const initialSelectedRadio = document.querySelector('input[name="paymentMethod"]:checked');
+        if (initialSelectedRadio) {
+            const initialItem = initialSelectedRadio.closest('.payment-method-item');
+            if (initialItem) {
+                initialItem.classList.add('selected');
+            }
+        }
+    }
+    
+    // Add click handlers for payment method items
+    const paymentMethodItems = document.querySelectorAll('.payment-method-item');
+    paymentMethodItems.forEach(item => {
         item.addEventListener('click', (event) => {
             const radio = item.querySelector('input[type="radio"]');
             if (radio && !event.target.matches('input[type="radio"]')) {
@@ -1973,7 +2025,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.3';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.4';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
