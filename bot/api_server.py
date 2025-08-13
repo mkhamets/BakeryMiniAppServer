@@ -190,12 +190,6 @@ async def setup_api_server():
         file_path = request.match_info.get('filename', '')
         full_path = os.path.join(WEB_APP_DIR, file_path)
         
-        # Debug logging for service worker requests
-        if file_path.endswith('sw.js'):
-            logger.info(f"Service Worker requested: {file_path} -> {full_path}")
-            logger.info(f"File exists: {os.path.exists(full_path)}")
-            logger.info(f"Is file: {os.path.isfile(full_path)}")
-        
         if os.path.exists(full_path) and os.path.isfile(full_path):
             # Read file content first
             try:
@@ -218,15 +212,7 @@ async def setup_api_server():
             elif file_path.endswith('.svg'):
                 content_type = 'image/svg+xml'
             
-            # Special handling for service worker - no caching
-            if file_path.endswith('sw.js'):
-                headers = {
-                    'Content-Type': 'application/javascript',
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                }
-                return web.Response(body=content, headers=headers)
+
             
             # Check if file has version query parameter (e.g., ?v=1.2.0)
             query_string = request.query_string
@@ -255,8 +241,7 @@ async def setup_api_server():
     # Маршрут для статических файлов с умным контролем кеширования
     app.router.add_get('/bot-app/{filename:.+\.(css|js|png|jpg|jpeg|svg|ico)}', serve_static_with_cache_control)
     
-    # Special route for service worker (sw.js)
-    app.router.add_get('/bot-app/sw.js', serve_static_with_cache_control)
+
 
     # 5. Маршрут-заглушка для любых других путей внутри /bot-app/, которые не являются статическими файлами
     app.router.add_get('/bot-app/{tail:.*}', serve_main_app_page)

@@ -82,10 +82,9 @@ async function initializeCacheManagement() {
             }
         }, 600000); // Check every 10 minutes
         
-        // TEMPORARILY DISABLED SERVICE WORKER INTEGRATION FOR TWITCHING FIX TESTING
-        // await initializeServiceWorkerIntegration();
+        // Service Worker integration removed to fix iOS twitching issues
         
-        console.log('✅ Cache management initialized (Service Worker disabled)');
+        console.log('✅ Cache management initialized (Service Worker removed)');
     } catch (error) {
         console.error('❌ Error initializing cache management:', error);
     }
@@ -229,150 +228,7 @@ function getCartAge() {
 // ===== END PHASE 5 =====
 
 // ===== PHASE 6: SERVICE WORKER INTEGRATION =====
-// Service Worker communication and management
-
-// Check if service worker is supported and active
-function isServiceWorkerSupported() {
-    return 'serviceWorker' in navigator;
-}
-
-// Get service worker registration
-async function getServiceWorkerRegistration() {
-    if (!isServiceWorkerSupported()) {
-        return null;
-    }
-    
-    try {
-        const registration = await navigator.serviceWorker.getRegistration();
-        return registration;
-    } catch (error) {
-        console.error('❌ Error getting service worker registration:', error);
-        return null;
-    }
-}
-
-// Send message to service worker
-async function sendMessageToServiceWorker(type, data = {}) {
-    if (!isServiceWorkerSupported()) {
-        console.log('⚠️ Service Worker not supported');
-        return null;
-    }
-    
-    try {
-        const registration = await getServiceWorkerRegistration();
-        if (registration && registration.active) {
-            const response = await new Promise((resolve, reject) => {
-                const messageChannel = new MessageChannel();
-                messageChannel.port1.onmessage = (event) => {
-                    resolve(event.data);
-                };
-                
-                // Set timeout for message response
-                setTimeout(() => {
-                    reject(new Error('Service Worker message timeout'));
-                }, 5000);
-                
-                registration.active.postMessage({ type, data }, [messageChannel.port2]);
-            });
-            
-            console.log(`📨 Service Worker message sent (${type}):`, response);
-            return response;
-        } else {
-            console.log('⚠️ Service Worker not active');
-            return null;
-        }
-    } catch (error) {
-        console.error(`❌ Error sending message to Service Worker (${type}):`, error);
-        return null;
-    }
-}
-
-// Update service worker
-async function updateServiceWorker() {
-    if (!isServiceWorkerSupported()) {
-        console.log('⚠️ Service Worker not supported');
-        return false;
-    }
-    
-    try {
-        const registration = await getServiceWorkerRegistration();
-        if (registration) {
-            await registration.update();
-            console.log('🔄 Service Worker update requested');
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('❌ Error updating service worker:', error);
-        return false;
-    }
-}
-
-// Skip waiting for service worker (force activation)
-async function skipServiceWorkerWaiting() {
-    if (!isServiceWorkerSupported()) {
-        console.log('⚠️ Service Worker not supported');
-        return false;
-    }
-    
-    try {
-        await sendMessageToServiceWorker('SKIP_WAITING');
-        console.log('🔄 Service Worker skip waiting requested');
-        return true;
-    } catch (error) {
-        console.error('❌ Error skipping service worker waiting:', error);
-        return false;
-    }
-}
-
-// Initialize service worker integration
-async function initializeServiceWorkerIntegration() {
-    try {
-        if (!isServiceWorkerSupported()) {
-            console.log('⚠️ Service Worker not supported, skipping integration');
-            return;
-        }
-        
-        // Check service worker status
-        const registration = await getServiceWorkerRegistration();
-        if (registration) {
-            console.log('✅ Service Worker integration initialized');
-            
-            // Set up periodic service worker health check
-            setInterval(async () => {
-                const swStatus = await getServiceWorkerStatus();
-                if (swStatus && !swStatus.active) {
-                    console.warn('⚠️ Service Worker not active, attempting to update');
-                    await updateServiceWorker();
-                }
-            }, 300000); // Check every 5 minutes
-        } else {
-            console.log('⚠️ No Service Worker registration found');
-        }
-    } catch (error) {
-        console.error('❌ Error initializing service worker integration:', error);
-    }
-}
-
-// Get service worker status
-async function getServiceWorkerStatus() {
-    try {
-        const registration = await getServiceWorkerRegistration();
-        if (!registration) return null;
-        
-        return {
-            active: !!registration.active,
-            installing: !!registration.installing,
-            waiting: !!registration.waiting,
-            scope: registration.scope,
-            updateViaCache: registration.updateViaCache
-        };
-    } catch (error) {
-        console.error('❌ Error getting service worker status:', error);
-        return null;
-    }
-}
-
+// Service Worker removed to fix iOS twitching issues
 // ===== END PHASE 6 =====
 
 // Helper function to create SVG icons
@@ -1230,8 +1086,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     totalValue: Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0)
                 },
                 serviceWorker: {
-                    supported: isServiceWorkerSupported(),
-                    status: await getServiceWorkerStatus()
+                    supported: false,
+                    status: 'removed'
                 }
             };
             
@@ -1896,11 +1752,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.CART_DATA_VERSION = CART_DATA_VERSION;
     window.CART_EXPIRATION_DAYS = CART_EXPIRATION_DAYS;
     
-    // Service Worker functions for debugging
-    window.isServiceWorkerSupported = isServiceWorkerSupported;
-    window.getServiceWorkerStatus = getServiceWorkerStatus;
-    window.updateServiceWorker = updateServiceWorker;
-    window.skipServiceWorkerWaiting = skipServiceWorkerWaiting;
-    window.sendMessageToServiceWorker = sendMessageToServiceWorker;
+    // Service Worker functions removed to fix iOS twitching issues
 
 });

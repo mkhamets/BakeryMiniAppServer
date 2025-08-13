@@ -12,44 +12,7 @@
         <link rel="stylesheet" href="/bot-app/style.css?v=1.2.0">
         <!-- Подключение Telegram Web App SDK -->
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        <!-- Service Worker Registration -->
-        <script>
-            // ===== PHASE 6: SERVICE WORKER REGISTRATION =====
-            // TEMPORARILY DISABLED TO TEST TWITCHING FIX
-            /*
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', async () => {
-                    try {
-                        const registration = await navigator.serviceWorker.register('/bot-app/sw.js');
-                        console.log('✅ Service Worker registered successfully:', registration);
-                        
-                        // Handle service worker updates
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('🔄 New Service Worker available');
-                                    // Optionally show update notification to user
-                                }
-                            });
-                        });
-                        
-                        // Handle service worker messages
-                        navigator.serviceWorker.addEventListener('message', (event) => {
-                            console.log('📨 Service Worker message:', event.data);
-                        });
-                        
-                    } catch (error) {
-                        console.error('❌ Service Worker registration failed:', error);
-                    }
-                });
-            } else {
-                console.log('⚠️ Service Worker not supported in this browser');
-            }
-            */
-            console.log('🔧 Service Worker temporarily disabled for twitching fix testing');
-            // ===== END SERVICE WORKER REGISTRATION =====
-        </script>
+        <!-- Service Worker removed to fix iOS twitching issues -->
         <!-- SVG Sprite for Icons -->
         <div style="display: none;">
             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
