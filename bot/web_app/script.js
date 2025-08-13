@@ -4,12 +4,13 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.3.0';
+const CACHE_VERSION = '1.3.1';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Mobile detection for cache strategy
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isAndroidDevice = /Android/i.test(navigator.userAgent);
 const isTelegramWebView = window.Telegram && window.Telegram.WebApp;
 
 // Smart cache management functions that preserve cart data
@@ -562,10 +563,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.2.0", image: "images/bakery.svg?v=1.2.0" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.2.0", image: "images/crouasan.svg?v=1.2.0" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.2.0", image: "images/bread1.svg?v=1.2.0" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.2.0", image: "images/cookie.svg?v=1.2.0" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.1", image: "images/bakery.svg?v=1.3.1" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.1", image: "images/crouasan.svg?v=1.3.1" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.1", image: "images/bread1.svg?v=1.3.1" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.1", image: "images/cookie.svg?v=1.3.1" }
     };
 
     await fetchProductsData();
@@ -683,14 +684,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     break;
                 case 'welcome':
-                    if (welcomeContainer) welcomeContainer.classList.remove('hidden');
-                    if (mainPageContainer) mainPageContainer.classList.add('hidden');
+                    if (welcomeContainer) {
+                        welcomeContainer.classList.remove('hidden');
+                        if (isAndroidDevice) welcomeContainer.style.display = 'block';
+                    }
+                    if (mainPageContainer) {
+                        mainPageContainer.classList.add('hidden');
+                        if (isAndroidDevice) mainPageContainer.style.display = 'none';
+                    }
                     Telegram.WebApp.MainButton.hide();
                     // Scroll to top of the page when welcome view is displayed
                     scrollToTop();
                     break;
                 case 'categories':
-                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (mainPageContainer) {
+                        mainPageContainer.classList.remove('hidden');
+                        if (isAndroidDevice) mainPageContainer.style.display = 'block';
+                    }
                     if (categoriesContainer) categoriesContainer.classList.remove('hidden');
                     if (mainCategoryTitle) {
                         mainCategoryTitle.textContent = 'Наше меню';
@@ -706,7 +716,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     scrollToTop();
                     break;
                 case 'products':
-                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (mainPageContainer) {
+                        mainPageContainer.classList.remove('hidden');
+                        if (isAndroidDevice) mainPageContainer.style.display = 'block';
+                    }
                     if (productsContainer) productsContainer.classList.remove('hidden');
                     if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
                     loadProducts(categoryKey);
@@ -724,7 +737,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     scrollToTop();
                     break;
                 case 'cart':
-                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (mainPageContainer) {
+                        mainPageContainer.classList.remove('hidden');
+                        if (isAndroidDevice) mainPageContainer.style.display = 'block';
+                    }
                     if (cartContainer) cartContainer.classList.remove('hidden');
                     if (mainCategoryTitle) {
                         mainCategoryTitle.textContent = 'Ваша корзина';
@@ -736,7 +752,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     scrollToTop();
                     break;
                 case 'checkout':
-                    if (mainPageContainer) mainPageContainer.classList.remove('hidden');
+                    if (mainPageContainer) {
+                        mainPageContainer.classList.remove('hidden');
+                        if (isAndroidDevice) mainPageContainer.style.display = 'block';
+                    }
                     if (checkoutContainer) checkoutContainer.classList.remove('hidden');
                     if (mainCategoryTitle) {
                         mainCategoryTitle.textContent = 'Оформление заказа';
@@ -1688,13 +1707,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initialCategory = getUrlParameter('category');
     const initialView = getUrlParameter('view');
 
-    // Show loading overlay first
+    // Show loading overlay first - critical for Android
     const loadingOverlay = document.getElementById('loading-overlay');
-    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove('hidden');
+        loadingOverlay.style.display = 'flex'; // Force display for Android
+    }
 
-    // Hide all content initially
-    if (mainPageContainer) mainPageContainer.classList.add('hidden');
-    if (welcomeContainer) welcomeContainer.classList.add('hidden');
+    // Hide all content initially - Android-specific fixes
+    if (mainPageContainer) {
+        mainPageContainer.classList.add('hidden');
+        if (isAndroidDevice) {
+            mainPageContainer.style.display = 'none'; // Force hide for Android
+        }
+    }
+    if (welcomeContainer) {
+        welcomeContainer.classList.add('hidden');
+        if (isAndroidDevice) {
+            welcomeContainer.style.display = 'none'; // Force hide for Android
+        }
+    }
 
     // Hide Telegram Web App buttons during loading
     if (Telegram.WebApp.MainButton) {
@@ -1706,7 +1738,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.2.0';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.1';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
