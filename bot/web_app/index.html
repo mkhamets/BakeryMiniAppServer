@@ -16,9 +16,9 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         
         <!-- Подключение стилей с версионированием для предотвращения кеширования -->
-        <link rel="stylesheet" href="/bot-app/main.min.css?v=1.2.6">
+        <link rel="stylesheet" href="/bot-app/main.min.css?v=1.2.7">
         <!-- Подключение вашего кастомного CSS файла (для переопределений, если нужно) -->
-        <link rel="stylesheet" href="/bot-app/style.css?v=1.2.6">
+        <link rel="stylesheet" href="/bot-app/style.css?v=1.2.7">
         <!-- Подключение Telegram Web App SDK -->
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
         <!-- Service Worker removed to fix iOS twitching issues -->
@@ -41,12 +41,12 @@
         <!-- Loading Overlay -->
         <div class="loading-overlay" id="loading-overlay">
             <div class="loading-logo-container" id="loading-logo-container">
-                <img src="images/logo-dark.svg?v=1.2.6" alt="Drazhin Logo" class="loading-logo" id="loading-logo">
+                <img src="images/logo-dark.svg?v=1.2.7" alt="Drazhin Logo" class="loading-logo" id="loading-logo">
             </div>
         </div>
         <!-- Welcome Container - теперь находится вне основного контейнера приложения -->
         <div id="welcome-container" class="welcome-container hidden">
-            <img src="images/logo.svg?v=1.2.6" alt="Drazhin Logo" class="welcome-logo">
+            <img src="images/logo.svg?v=1.2.7" alt="Drazhin Logo" class="welcome-logo">
             <h1 class="welcome-title">Всегда с теплотой и заботой</h1>
             <p class="welcome-text">
             Свежий хлеб на закваске, круассаны и другая выпечка с доставкой по Минску, а также в фирменных точках продаж и в ресторанах наших партнеров. </p>
@@ -56,7 +56,7 @@
         <div class="container" id="main-page-container">
             <!-- Логотип для всех экранов (кроме welcome и product) -->
             <div class="main-page-logo-container">
-                <img src="images/logo-dark.svg?v=1.2.6" alt="Логотип" class="main-page-logo">
+                <img src="images/logo-dark.svg?v=1.2.7" alt="Логотип" class="main-page-logo">
             </div>
             <!-- Заголовок для продуктов, корзины, оформления заказа (управляется script.js) -->
             <h2 class="category-title hidden" id="main-category-title">Загрузка...</h2>
@@ -143,9 +143,7 @@
                             <div class="calendar-overlay" id="calendar-overlay">
                                 <div class="calendar-popup">
                                     <div class="calendar-header">
-                                        <button type="button" class="calendar-nav" id="calendar-prev">&lt;</button>
                                         <h3 class="calendar-month-year" id="calendar-month-year">Декабрь 2024</h3>
-                                        <button type="button" class="calendar-nav" id="calendar-next">&gt;</button>
                                         <button type="button" class="calendar-close" id="calendar-close">&times;</button>
                                     </div>
                                     <div class="calendar-body">
@@ -341,6 +339,6 @@
         <!-- Removed product screen from outside container -->
 
     <!-- Подключение внешнего JavaScript файла -->
-    <script src="/bot-app/script.js?v=1.2.6"></script>
+    <script src="/bot-app/script.js?v=1.2.7"></script>
 </body>
 </html>

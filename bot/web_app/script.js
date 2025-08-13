@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-const CACHE_VERSION = '1.2.6';
+const CACHE_VERSION = '1.2.7';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Mobile detection for cache strategy
@@ -1967,8 +1967,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             this.calendarIcon = document.getElementById('calendar-icon');
             this.calendarOverlay = document.getElementById('calendar-overlay');
             this.calendarClose = document.getElementById('calendar-close');
-            this.calendarPrev = document.getElementById('calendar-prev');
-            this.calendarNext = document.getElementById('calendar-next');
             this.calendarMonthYear = document.getElementById('calendar-month-year');
             this.calendarDates = document.getElementById('calendar-dates');
             
@@ -1995,8 +1993,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             this.dateInput.addEventListener('focus', () => this.openCalendar());
             this.calendarIcon.addEventListener('click', () => this.openCalendar());
             this.calendarClose.addEventListener('click', () => this.closeCalendar());
-            this.calendarPrev.addEventListener('click', () => this.previousMonth());
-            this.calendarNext.addEventListener('click', () => this.nextMonth());
             this.calendarOverlay.addEventListener('click', (e) => {
                 if (e.target === this.calendarOverlay) {
                     this.closeCalendar();
@@ -2114,23 +2110,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        previousMonth() {
-            this.viewDate.setMonth(this.viewDate.getMonth() - 1);
-            this.renderCalendar();
-        }
-        
-        nextMonth() {
-            this.viewDate.setMonth(this.viewDate.getMonth() + 1);
-            this.renderCalendar();
-        }
+        // Month navigation removed - calendar automatically follows current date
         
         openCalendar() {
-            // Set view date to current month
-            this.viewDate = new Date();
+            // Automatically determine which month to show based on available dates
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            // If tomorrow is in next month, show the month that contains both dates
+            // Otherwise, show current month
+            if (today.getMonth() !== tomorrow.getMonth()) {
+                // Today is last day of month, tomorrow is first day of next month
+                // Show current month (where today is)
+                this.viewDate = new Date(today);
+            } else {
+                // Both dates are in same month, show that month
+                this.viewDate = new Date(today);
+            }
+            
             this.renderCalendar();
             
             this.calendarOverlay.classList.add('active');
-            console.log('📅 Classical calendar opened');
+            console.log('📅 Classical calendar opened - showing month with available dates');
             
             // Prevent body scroll on mobile
             if (isMobileDevice) {

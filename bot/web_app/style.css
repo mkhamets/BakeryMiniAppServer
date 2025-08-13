@@ -2304,30 +2304,10 @@ body * {
     font-size: 1.1em;
     font-weight: 600;
     flex: 1;
-    text-align: center;
-}
-
-.calendar-nav {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: background-color 0.2s;
-    font-weight: bold;
-}
-
-.calendar-nav:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    text-align: left;
 }
 
 .calendar-close {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
     background: none;
     border: none;
     color: white;
@@ -2341,6 +2321,7 @@ body * {
     justify-content: center;
     border-radius: 50%;
     transition: background-color 0.2s;
+    flex-shrink: 0;
 }
 
 .calendar-close:hover {
@@ -2375,11 +2356,16 @@ body * {
 .calendar-dates {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
     gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .calendar-date {
-    aspect-ratio: 1;
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2391,6 +2377,7 @@ body * {
     border: 2px solid transparent;
     background: white;
     color: #333;
+    box-sizing: border-box;
 }
 
 .calendar-date:hover {
