@@ -626,7 +626,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-weight: bold;
+    font-weight: normal;
     background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
     color: white;
     min-width: 200px;
@@ -2157,7 +2157,7 @@ body * {
 
 .payment-description {
     margin: 0 0 0 32px;
-    font-family: 'Yeseva One', serif;
+    font-family: Arial, sans-serif;
     font-size: 14px;
     font-weight: normal;
     color: #000;
@@ -2736,3 +2736,51 @@ body * {
 }
 
 /* ===== END CLASSICAL CALENDAR STYLES ===== */
+
+/* Telegram WebApp Main Button (Cart Button) Styles */
+.tgme_widget_login_button,
+.tgme_widget_login_button *,
+.tgme_widget_login_button::before,
+.tgme_widget_login_button::after {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Target the main button specifically */
+.tgme_widget_login_button {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Additional WebApp button targeting */
+[data-webapp-button],
+[class*="webapp"],
+[class*="tgme"] {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Target Telegram WebApp MainButton specifically */
+.tgme_widget_login_button,
+.tgme_widget_login_button *,
+.tgme_widget_login_button::before,
+.tgme_widget_login_button::after,
+.tgme_widget_login_button span,
+.tgme_widget_login_button div {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Target any element that might contain the cart button text */
+[class*="tgme"],
+[class*="webapp"],
+[class*="main-button"],
+[class*="cart-button"] {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* But preserve Yeseva One for specific elements */
+h1, .category-title, .category-title-with-icon {
+    font-family: 'Yeseva One', serif !important;
+}
