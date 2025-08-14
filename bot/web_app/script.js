@@ -1705,7 +1705,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Элемент с ID "back-from-checkout-to-cart" не найден в DOM. Невозможно прикрепить слушатель кликов.');
         }
 
+        console.log('🔍 === FORM INITIALIZATION DEBUG ===');
+        console.log('🔍 checkoutForm element found:', !!checkoutForm);
+        console.log('🔍 checkoutForm element:', checkoutForm);
+        
         if (checkoutForm) {
+            console.log('✅ Adding submit event listener to checkoutForm');
             checkoutForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 
@@ -1957,7 +1962,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         } else {
-            console.error('Элемент с ID "checkout-form" не найден. Невозможно прикрепить слушатель отправки.');
+            console.error('❌ Элемент с ID "checkout-form" не найден. Невозможно прикрепить слушатель отправки.');
+        }
+        
+        // Add direct click event listener to submit button as backup
+        const submitButton = document.querySelector('.submit-order-button');
+        console.log('🔍 submitButton element found:', !!submitButton);
+        console.log('🔍 submitButton element:', submitButton);
+        
+        if (submitButton) {
+            console.log('✅ Adding click event listener to submit button as backup');
+            submitButton.addEventListener('click', (event) => {
+                console.log('🚀 === SUBMIT BUTTON CLICKED (BACKUP) ===');
+                console.log('📅 Current timestamp:', new Date().toISOString());
+                
+                // Prevent default and trigger form submission
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Manually trigger form submission
+                if (checkoutForm) {
+                    console.log('✅ Manually triggering form submission');
+                    checkoutForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                } else {
+                    console.error('❌ checkoutForm not found for manual submission');
+                }
+            });
+        } else {
+            console.error('❌ submit button not found');
         }
     }
 
