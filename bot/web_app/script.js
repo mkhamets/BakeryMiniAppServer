@@ -2240,7 +2240,8 @@ function addErrorClearingListeners() {
                 locale: "ru",
                 minDate: today,
                 maxDate: tomorrow,
-                defaultDate: today,
+                // Don't set default date - let user select
+                // defaultDate: today,
                 disableMobile: false, // Enable mobile support
                 allowInput: false, // Disable manual input
                 clickOpens: true,
