@@ -1001,43 +1001,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-style: italic;
 }
 
-/* Flatpickr Date Picker Styles */
-.flatpickr-calendar {
-    z-index: 9999 !important;
-    font-family: Arial, sans-serif !important;
-}
 
-.flatpickr-calendar.open {
-    display: inline-block !important;
-}
-
-/* Mobile-specific flatpickr fixes */
-@media (max-width: 768px) {
-    .flatpickr-calendar {
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 90% !important;
-        max-width: 320px !important;
-    }
-    
-    .flatpickr-calendar .flatpickr-months {
-        background: #b76c4b !important;
-    }
-    
-    .flatpickr-calendar .flatpickr-current-month {
-        color: white !important;
-    }
-    
-    .flatpickr-calendar .flatpickr-monthDropdown-months {
-        color: white !important;
-    }
-    
-    .flatpickr-calendar .flatpickr-weekday {
-        color: #b76c4b !important;
-    }
-}
 
 /* Ensure the date input is properly styled */
 #delivery-date {
