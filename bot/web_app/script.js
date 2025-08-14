@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.26';
+    const CACHE_VERSION = '1.3.27';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -744,6 +744,9 @@ function clearAllErrors() {
     // Hide all error messages
     document.querySelectorAll('.error-message').forEach(message => {
         message.classList.remove('show');
+        // Reset display style to hide the error message
+        message.style.display = 'none';
+        message.style.color = '';
     });
 }
 
@@ -766,6 +769,9 @@ function clearFieldError(fieldName) {
     }
     if (errorMessageElement) {
         errorMessageElement.classList.remove('show');
+        // Reset display style to hide the error message
+        errorMessageElement.style.display = 'none';
+        errorMessageElement.style.color = '';
     }
 }
 
@@ -1110,10 +1116,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.26&t=1755174008", image: "images/bakery.svg?v=1.3.26&t=1755174008" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.26&t=1755174008", image: "images/crouasan.svg?v=1.3.26&t=1755174008" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.26&t=1755174008", image: "images/bread1.svg?v=1.3.26&t=1755174008" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.26&t=1755174008", image: "images/cookie.svg?v=1.3.26&t=1755174008" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.27&t=1755174008", image: "images/bakery.svg?v=1.3.27&t=1755174008" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.27&t=1755174008", image: "images/crouasan.svg?v=1.3.27&t=1755174008" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.27&t=1755174008", image: "images/bread1.svg?v=1.3.27&t=1755174008" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.27&t=1755174008", image: "images/cookie.svg?v=1.3.27&t=1755174008" }
     };
 
     await fetchProductsData();
