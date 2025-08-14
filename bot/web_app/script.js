@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.22';
+    const CACHE_VERSION = '1.3.26';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -852,8 +852,6 @@ function showValidationErrors(errorFields, errorMessages) {
 // Add this before the DOMContentLoaded event listener
 
 function validateField(value, validation) {
-    console.log(`🔍 Validating field ${validation.field}:`, value);
-    
     // Empty check
     if (!value || value.trim() === '') {
         console.log(`❌ ${validation.field} validation FAILED - empty value`);
@@ -869,11 +867,12 @@ function validateField(value, validation) {
     // Custom validation
     if (validation.customValidation) {
         const customResult = validation.customValidation(value);
-        console.log(`🔍 ${validation.field} custom validation result:`, customResult);
+        if (!customResult) {
+            console.log(`❌ ${validation.field} validation FAILED - custom validation`);
+        }
         return customResult;
     }
 
-    console.log(`✅ ${validation.field} validation PASSED`);
     return true;
 }
 
@@ -936,8 +935,6 @@ function validatePaymentMethodField(value) {
 }
 
 function validateOrderForm(orderDetails) {
-    console.log('🔍 === STARTING UNIFIED VALIDATION ===');
-    console.log('📋 Order details to validate:', orderDetails);
     
     const validationOrder = [
         { 
@@ -1044,20 +1041,16 @@ function validateOrderForm(orderDetails) {
         }
     }
 
-    console.log('📊 === VALIDATION SUMMARY ===');
-    console.log('✅ Is form valid:', errors.length === 0);
-    console.log('📝 Error messages count:', errors.length);
-    console.log('📝 Error fields count:', errorFields.length);
-    console.log('📝 Error fields array:', errorFields.map(f => f.field));
-    console.log('📝 Error messages array:', errors);
-    console.log('=== END VALIDATION SUMMARY ===');
+    if (errors.length > 0) {
+        console.log('❌ === VALIDATION FAILED ===');
+        console.log('📝 Error fields:', errorFields.map(f => f.field));
+        console.log('📝 Error messages:', errors);
+    }
 
     return { isValid: errors.length === 0, errors, errorFields };
 }
 
 function collectFormData() {
-    console.log('🔍 === COLLECTING FORM DATA ===');
-    
     // Unified approach: Always collect from actual DOM elements
     // This ensures we get the current values regardless of caching or timing
     const orderDetails = {
@@ -1076,9 +1069,6 @@ function collectFormData() {
         commentDelivery: document.getElementById('comment-delivery')?.value || '',
         commentPickup: document.getElementById('comment-pickup')?.value || ''
     };
-
-    console.log('📋 DOM-based order details collected:', orderDetails);
-    console.log('=== END FORM DATA COLLECTION ===');
     
     return orderDetails;
 }
@@ -1120,10 +1110,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.22&t=1755174008", image: "images/bakery.svg?v=1.3.22&t=1755174008" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.22&t=1755174008", image: "images/crouasan.svg?v=1.3.22&t=1755174008" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.22&t=1755174008", image: "images/bread1.svg?v=1.3.22&t=1755174008" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.22&t=1755174008", image: "images/cookie.svg?v=1.3.22&t=1755174008" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.26&t=1755174008", image: "images/bakery.svg?v=1.3.26&t=1755174008" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.26&t=1755174008", image: "images/crouasan.svg?v=1.3.26&t=1755174008" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.26&t=1755174008", image: "images/bread1.svg?v=1.3.26&t=1755174008" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.26&t=1755174008", image: "images/cookie.svg?v=1.3.26&t=1755174008" }
     };
 
     await fetchProductsData();
