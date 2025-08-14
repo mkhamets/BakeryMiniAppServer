@@ -770,11 +770,15 @@ function clearFieldError(fieldName) {
 }
 
 function showValidationErrors(errorFields, errorMessages) {
+    console.log('🎯 === SHOW VALIDATION ERRORS CALLED ===');
+    console.log('📝 Error fields to process:', errorFields.length);
+    console.log('📝 Error messages to show:', errorMessages.length);
+    
     // Clear previous errors first
     clearAllErrors();
     
     // Debug: Check if error message elements exist
-    console.log('=== ERROR VALIDATION DEBUG ===');
+    console.log('🔍 === ERROR VALIDATION DEBUG ===');
     console.log('Error fields:', errorFields);
     console.log('Error messages:', errorMessages);
     
@@ -818,15 +822,24 @@ function showValidationErrors(errorFields, errorMessages) {
             
             // Focus on the first error field
             if (index === 0) {
+                console.log('🎯 === FOCUSING ON FIRST ERROR FIELD ===');
+                console.log('🎯 Field name:', errorField.field);
+                console.log('🎯 Field element:', errorField.element);
+                console.log('🎯 Field element ID:', errorField.element ? errorField.element.id : 'none');
+                console.log('🎯 Field element type:', errorField.element ? errorField.element.type : 'none');
+                
                 errorField.element.focus();
+                console.log('🎯 Focus() called on:', errorField.field);
                 
                 // Scroll to the error field if it's not visible
                 if (errorField.element.scrollIntoView) {
+                    console.log('🎯 Scrolling to field:', errorField.field);
                     errorField.element.scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'center' 
                     });
                 }
+                console.log('🎯 === FOCUS COMPLETED ===');
             }
         }
     });
@@ -1695,6 +1708,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (checkoutForm) {
             checkoutForm.addEventListener('submit', (event) => {
                 event.preventDefault();
+                
+                console.log('🚀 === PLACE ORDER BUTTON CLICKED ===');
+                console.log('📅 Current timestamp:', new Date().toISOString());
 
                 const formData = new FormData(checkoutForm);
                 const orderDetails = {};
@@ -1703,7 +1719,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 // Debug form data
-                console.log('=== FORM DATA DEBUG ===');
+                console.log('📋 === FORM DATA DEBUG ===');
                 console.log('Form data entries:', Array.from(formData.entries()));
                 console.log('Order details:', orderDetails);
                 console.log('=== END FORM DATA DEBUG ===');
@@ -1712,98 +1728,154 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // The backend _get_pickup_details function expects the numeric ID
                 // No conversion needed here - backend will handle the mapping
 
+                console.log('🔍 === STARTING VALIDATION ===');
                 let isValid = true;
                 const errorMessages = [];
                 const errorFields = [];
 
+                console.log('🔍 Validating lastName:', orderDetails.lastName);
                 if (!orderDetails.lastName) { 
                     isValid = false; 
                     errorMessages.push('Пожалуйста, введите вашу фамилию.');
                     errorFields.push({ field: 'lastName', element: document.getElementById('last-name') });
+                    console.log('❌ lastName validation FAILED - added to error array');
+                } else {
+                    console.log('✅ lastName validation PASSED');
                 }
+                console.log('🔍 Validating firstName:', orderDetails.firstName);
                 if (!orderDetails.firstName) { 
                     isValid = false; 
                     errorMessages.push('Пожалуйста, введите ваше имя.');
                     errorFields.push({ field: 'firstName', element: document.getElementById('first-name') });
+                    console.log('❌ firstName validation FAILED - added to error array');
+                } else {
+                    console.log('✅ firstName validation PASSED');
                 }
+                console.log('🔍 Validating middleName:', orderDetails.middleName);
                 if (!orderDetails.middleName) { 
                     isValid = false; 
                     errorMessages.push('Пожалуйста, введите ваше отчество.');
                     errorFields.push({ field: 'middleName', element: document.getElementById('middle-name') });
+                    console.log('❌ middleName validation FAILED - added to error array');
+                } else {
+                    console.log('✅ middleName validation PASSED');
                 }
 
+                console.log('🔍 Validating phoneNumber:', orderDetails.phoneNumber);
                 const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
                 if (!orderDetails.phoneNumber || !phoneRegex.test(orderDetails.phoneNumber)) {
                     isValid = false;
                     errorMessages.push('Пожалуйста, введите корректный номер телефона.');
                     errorFields.push({ field: 'phoneNumber', element: document.getElementById('phone-number') });
+                    console.log('❌ phoneNumber validation FAILED - added to error array');
+                } else {
+                    console.log('✅ phoneNumber validation PASSED');
                 }
 
+                console.log('🔍 Validating email:', orderDetails.email);
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!orderDetails.email || !emailRegex.test(orderDetails.email)) {
                     isValid = false;
                     errorMessages.push('Пожалуйста, введите корректный Email.');
                     errorFields.push({ field: 'email', element: document.getElementById('email') });
+                    console.log('❌ email validation FAILED - added to error array');
+                } else {
+                    console.log('✅ email validation PASSED');
                 }
 
-                // Validate delivery date
+                                // Validate delivery date
+                console.log('🔍 === DELIVERY DATE VALIDATION ===');
                 const deliveryDateValue = orderDetails.deliveryDate;
-                console.log('=== DELIVERY DATE VALIDATION DEBUG ===');
-                console.log('Delivery date value:', deliveryDateValue);
-                console.log('Delivery date trimmed:', deliveryDateValue ? deliveryDateValue.trim() : 'null');
-                console.log('Is empty check:', !deliveryDateValue || deliveryDateValue.trim() === '');
+                console.log('📅 Delivery date value:', deliveryDateValue);
+                console.log('📅 Delivery date trimmed:', deliveryDateValue ? deliveryDateValue.trim() : 'null');
+                console.log('📅 Is empty check:', !deliveryDateValue || deliveryDateValue.trim() === '');
+                console.log('📅 Is "Выберите дату" check:', deliveryDateValue ? deliveryDateValue.trim() === 'Выберите дату' : 'N/A');
                 console.log('=== END DELIVERY DATE DEBUG ===');
                 
-                if (!deliveryDateValue || deliveryDateValue.trim() === '' || deliveryDateValue.trim() === 'Выберите дату') { 
+                if (!deliveryDateValue || deliveryDateValue.trim() === '' || deliveryDateValue.trim() === 'Выберите дату') {
                     isValid = false; 
                     errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.');
                     errorFields.push({ field: 'deliveryDate', element: document.getElementById('delivery-date') });
-                    console.log('Delivery date validation failed - error added');
+                    console.log('❌ deliveryDate validation FAILED - added to error array');
                 } else {
-                    console.log('Delivery date validation passed');
+                    console.log('✅ deliveryDate validation PASSED');
                 }
 
+                console.log('🔍 Validating deliveryMethod:', orderDetails.deliveryMethod);
                 if (!orderDetails.deliveryMethod) {
                     isValid = false;
                     errorMessages.push('Пожалуйста, выберите способ получения.');
                     errorFields.push({ field: 'deliveryMethod', element: document.getElementById('delivery-courier-radio') });
+                    console.log('❌ deliveryMethod validation FAILED - added to error array');
                 } else {
+                    console.log('✅ deliveryMethod validation PASSED');
                     if (orderDetails.deliveryMethod === 'courier') {
+                        console.log('🔍 Validating city (courier delivery):', orderDetails.city);
                         if (!orderDetails.city) { 
                             isValid = false; 
                             errorMessages.push('Пожалуйста, выберите город для доставки.');
                             errorFields.push({ field: 'city', element: document.getElementById('city') });
+                            console.log('❌ city validation FAILED - added to error array');
+                        } else {
+                            console.log('✅ city validation PASSED');
                         }
+                        console.log('🔍 Validating addressLine (courier delivery):', orderDetails.addressLine);
                         if (!orderDetails.addressLine) { 
                             isValid = false; 
                             errorMessages.push('Пожалуйста, введите адрес доставки.');
                             errorFields.push({ field: 'addressLine', element: document.getElementById('address-line') });
+                            console.log('❌ addressLine validation FAILED - added to error array');
+                        } else {
+                            console.log('✅ addressLine validation PASSED');
                         }
                     } else if (orderDetails.deliveryMethod === 'pickup') {
+                        console.log('🔍 Validating pickupAddress (pickup delivery):', orderDetails.pickupAddress);
                         if (!orderDetails.pickupAddress) { 
                             isValid = false; 
                             errorMessages.push('Пожалуйста, выберите адрес самовывоза.');
                             errorFields.push({ field: 'pickupAddress', element: document.getElementById('pickup-radio-group') });
+                            console.log('❌ pickupAddress validation FAILED - added to error array');
+                        } else {
+                            console.log('✅ pickupAddress validation PASSED');
                         }
                     }
                 }
 
                 // Validate payment method (same style as pickup address validation)
                 if (orderDetails.deliveryMethod === 'courier') {
+                    console.log('🔍 Validating paymentMethod (courier delivery):', orderDetails.paymentMethod);
                     if (!orderDetails.paymentMethod) { 
                         isValid = false; 
                         errorMessages.push('Пожалуйста, выберите способ оплаты.');
                         errorFields.push({ field: 'paymentMethod', element: document.querySelector('#payment-method-section .payment-method-item:first-of-type') });
+                        console.log('❌ paymentMethod validation FAILED - added to error array');
+                    } else {
+                        console.log('✅ paymentMethod validation PASSED');
                     }
                 } else if (orderDetails.deliveryMethod === 'pickup') {
+                    console.log('🔍 Validating paymentMethodPickup (pickup delivery):', orderDetails.paymentMethodPickup);
                     if (!orderDetails.paymentMethodPickup) { 
                         isValid = false; 
                         errorMessages.push('Пожалуйста, выберите способ оплаты.');
                         errorFields.push({ field: 'paymentMethodPickup', element: document.querySelector('#payment-method-section-pickup .payment-method-item:first-of-type') });
+                        console.log('❌ paymentMethodPickup validation FAILED - added to error array');
+                    } else {
+                        console.log('✅ paymentMethodPickup validation PASSED');
                     }
                 }
 
+                console.log('📊 === VALIDATION SUMMARY ===');
+                console.log('✅ Is form valid:', isValid);
+                console.log('📝 Error messages count:', errorMessages.length);
+                console.log('📝 Error fields count:', errorFields.length);
+                console.log('📝 Error fields array:', errorFields.map(f => f.field));
+                console.log('📝 Error messages array:', errorMessages);
+                console.log('=== END VALIDATION SUMMARY ===');
+                
                 if (!isValid) {
+                    console.log('❌ === FORM VALIDATION FAILED ===');
+                    console.log('🎯 First error field that will get focus:', errorFields[0] ? errorFields[0].field : 'none');
+                    console.log('🎯 First error field element:', errorFields[0] ? errorFields[0].element : 'none');
                     // Show errors and focus on first error field
                     showValidationErrors(errorFields, errorMessages);
                     return;
