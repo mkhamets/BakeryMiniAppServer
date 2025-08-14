@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.17';
+    const CACHE_VERSION = '1.3.18';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -870,10 +870,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.17", image: "images/bakery.svg?v=1.3.17" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.17", image: "images/crouasan.svg?v=1.3.17" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.17", image: "images/bread1.svg?v=1.3.17" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.17", image: "images/cookie.svg?v=1.3.17" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.18", image: "images/bakery.svg?v=1.3.18" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.18", image: "images/crouasan.svg?v=1.3.18" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.18", image: "images/bread1.svg?v=1.3.18" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.18", image: "images/cookie.svg?v=1.3.18" }
     };
 
     await fetchProductsData();
@@ -1748,10 +1748,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Validate delivery date
                 const deliveryDateValue = orderDetails.deliveryDate;
-                if (!deliveryDateValue || deliveryDateValue.trim() === '') { 
+                console.log('=== DELIVERY DATE VALIDATION DEBUG ===');
+                console.log('Delivery date value:', deliveryDateValue);
+                console.log('Delivery date trimmed:', deliveryDateValue ? deliveryDateValue.trim() : 'null');
+                console.log('Is empty check:', !deliveryDateValue || deliveryDateValue.trim() === '');
+                console.log('=== END DELIVERY DATE DEBUG ===');
+                
+                if (!deliveryDateValue || deliveryDateValue.trim() === '' || deliveryDateValue.trim() === 'Выберите дату') { 
                     isValid = false; 
                     errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.');
                     errorFields.push({ field: 'deliveryDate', element: document.getElementById('delivery-date') });
+                    console.log('Delivery date validation failed - error added');
+                } else {
+                    console.log('Delivery date validation passed');
                 }
 
                 if (!orderDetails.deliveryMethod) {
@@ -2221,8 +2230,8 @@ function addErrorClearingListeners() {
             const todayFormatted = today.toLocaleDateString('ru-RU');
             const tomorrowFormatted = tomorrow.toLocaleDateString('ru-RU');
             
-            // Set default value to today
-            dateInput.value = todayFormatted;
+            // Don't set default value - let user select date
+            // dateInput.value = todayFormatted;
             
             // Initialize flatpickr with confetti theme
             const flatpickrInstance = flatpickr(dateInput, {
@@ -2291,7 +2300,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.17';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.18';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
