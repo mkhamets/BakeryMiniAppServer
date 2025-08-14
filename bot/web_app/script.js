@@ -848,6 +848,139 @@ function showValidationErrors(errorFields, errorMessages) {
     console.error('Validation errors:', errorMessages.join('\n'));
 }
 
+// ===== UNIFIED FORM VALIDATION SYSTEM =====
+// Add this before the DOMContentLoaded event listener
+
+function validateField(value, validation) {
+    console.log(`🔍 Validating field ${validation.field}:`, value);
+    
+    // Empty check
+    if (!value || value.trim() === '') {
+        console.log(`❌ ${validation.field} validation FAILED - empty value`);
+        return false;
+    }
+
+    // Regex validation
+    if (validation.regex && !validation.regex.test(value)) {
+        console.log(`❌ ${validation.field} validation FAILED - regex mismatch`);
+        return false;
+    }
+
+    // Custom validation
+    if (validation.customValidation) {
+        const customResult = validation.customValidation(value);
+        console.log(`🔍 ${validation.field} custom validation result:`, customResult);
+        return customResult;
+    }
+
+    // Special cases
+    if (validation.field === 'deliveryDate' && value.trim() === 'Выберите дату') {
+        console.log(`❌ ${validation.field} validation FAILED - default placeholder value`);
+        return false;
+    }
+
+    console.log(`✅ ${validation.field} validation PASSED`);
+    return true;
+}
+
+function validateOrderForm(orderDetails) {
+    console.log('🔍 === STARTING UNIFIED VALIDATION ===');
+    console.log('📋 Order details to validate:', orderDetails);
+    
+    const validationOrder = [
+        { field: 'lastName', label: 'фамилию', element: 'last-name' },
+        { field: 'firstName', label: 'имя', element: 'first-name' },
+        { field: 'middleName', label: 'отчество', element: 'middle-name' },
+        { field: 'phoneNumber', label: 'номер телефона', element: 'phone-number', regex: /^\+?[\d\s\-\(\)]{7,20}$/ },
+        { field: 'email', label: 'Email', element: 'email', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+        { field: 'deliveryDate', label: 'дату доставки/самовывоза', element: 'delivery-date', customValidation: validateDeliveryDate },
+        { field: 'deliveryMethod', label: 'способ получения', element: 'delivery-courier-radio' },
+        // Conditional fields based on delivery method
+        { field: 'city', label: 'город для доставки', element: 'city', condition: () => orderDetails.deliveryMethod === 'courier' },
+        { field: 'addressLine', label: 'адрес доставки', element: 'address-line', condition: () => orderDetails.deliveryMethod === 'courier' },
+        { field: 'paymentMethod', label: 'способ оплаты', element: 'payment-method-section', condition: () => orderDetails.deliveryMethod === 'courier' },
+        { field: 'pickupAddress', label: 'адрес самовывоза', element: 'pickup-radio-group', condition: () => orderDetails.deliveryMethod === 'pickup' },
+        { field: 'paymentMethodPickup', label: 'способ оплаты', element: 'payment-method-section-pickup', condition: () => orderDetails.deliveryMethod === 'pickup' }
+    ];
+
+    const errors = [];
+    const errorFields = [];
+
+    for (const validation of validationOrder) {
+        const value = orderDetails[validation.field];
+        
+        // Check if field should be validated based on condition
+        if (validation.condition && !validation.condition()) {
+            console.log(`⏭️ Skipping ${validation.field} - condition not met`);
+            continue;
+        }
+
+        // Perform validation
+        const isValid = validateField(value, validation);
+        
+        if (!isValid) {
+            errors.push(`Пожалуйста, введите ${validation.label}.`);
+            errorFields.push({ 
+                field: validation.field, 
+                element: document.getElementById(validation.element) 
+            });
+        }
+    }
+
+    console.log('📊 === VALIDATION SUMMARY ===');
+    console.log('✅ Is form valid:', errors.length === 0);
+    console.log('📝 Error messages count:', errors.length);
+    console.log('📝 Error fields count:', errorFields.length);
+    console.log('📝 Error fields array:', errorFields.map(f => f.field));
+    console.log('📝 Error messages array:', errors);
+    console.log('=== END VALIDATION SUMMARY ===');
+
+    return { isValid: errors.length === 0, errors, errorFields };
+}
+
+function collectFormData() {
+    console.log('🔍 === COLLECTING FORM DATA ===');
+    
+    // Primary: FormData collection
+    const checkoutForm = document.getElementById('checkout-form');
+    const formData = new FormData(checkoutForm);
+    const orderDetails = {};
+    for (let [key, value] of formData.entries()) {
+        orderDetails[key] = value;
+    }
+    
+    console.log('📋 FormData collected:', orderDetails);
+
+    // Secondary: Manual extraction for problematic fields
+    // This ensures we capture all fields regardless of visibility/state
+    const manualFields = {
+        lastName: document.getElementById('last-name')?.value || '',
+        firstName: document.getElementById('first-name')?.value || '',
+        middleName: document.getElementById('middle-name')?.value || '',
+        phoneNumber: document.getElementById('phone-number')?.value || '',
+        email: document.getElementById('email')?.value || '',
+        deliveryDate: document.getElementById('delivery-date')?.value || '',
+        deliveryMethod: document.querySelector('input[name="deliveryMethod"]:checked')?.value || '',
+        city: document.getElementById('city')?.value || '',
+        addressLine: document.getElementById('address-line')?.value || '',
+        pickupAddress: document.querySelector('input[name="pickupAddress"]:checked')?.value || '',
+        paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value || '',
+        paymentMethodPickup: document.querySelector('input[name="paymentMethodPickup"]:checked')?.value || ''
+    };
+
+    console.log('📋 Manual fields collected:', manualFields);
+
+    // Merge with FormData (manual fields take precedence)
+    const finalOrderDetails = { ...orderDetails, ...manualFields };
+    
+    console.log('📋 Final merged order details:', finalOrderDetails);
+    console.log('=== END FORM DATA COLLECTION ===');
+    
+    return finalOrderDetails;
+}
+
+// ===== END UNIFIED FORM VALIDATION SYSTEM =====
+
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -1717,166 +1850,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log('🚀 === PLACE ORDER BUTTON CLICKED ===');
                 console.log('📅 Current timestamp:', new Date().toISOString());
 
-                const formData = new FormData(checkoutForm);
-                const orderDetails = {};
-                for (let [key, value] of formData.entries()) {
-                    orderDetails[key] = value;
-                }
+                // Use unified form data collection
+                const orderDetails = collectFormData();
                 
-                // Debug form data
-                console.log('📋 === FORM DATA DEBUG ===');
-                console.log('Form data entries:', Array.from(formData.entries()));
-                console.log('Order details:', orderDetails);
-                console.log('=== END FORM DATA DEBUG ===');
-
                 // Keep pickup address ID as-is for backend processing
                 // The backend _get_pickup_details function expects the numeric ID
                 // No conversion needed here - backend will handle the mapping
 
-                console.log('🔍 === STARTING VALIDATION ===');
-                let isValid = true;
-                const errorMessages = [];
-                const errorFields = [];
+                // Use unified validation system
+                const validationResult = validateOrderForm(orderDetails);
+                const { isValid, errors: errorMessages, errorFields } = validationResult;
 
-                console.log('🔍 Validating lastName:', orderDetails.lastName);
-                if (!orderDetails.lastName) { 
-                    isValid = false; 
-                    errorMessages.push('Пожалуйста, введите вашу фамилию.');
-                    errorFields.push({ field: 'lastName', element: document.getElementById('last-name') });
-                    console.log('❌ lastName validation FAILED - added to error array');
-                } else {
-                    console.log('✅ lastName validation PASSED');
-                }
-                console.log('🔍 Validating firstName:', orderDetails.firstName);
-                if (!orderDetails.firstName) { 
-                    isValid = false; 
-                    errorMessages.push('Пожалуйста, введите ваше имя.');
-                    errorFields.push({ field: 'firstName', element: document.getElementById('first-name') });
-                    console.log('❌ firstName validation FAILED - added to error array');
-                } else {
-                    console.log('✅ firstName validation PASSED');
-                }
-                console.log('🔍 Validating middleName:', orderDetails.middleName);
-                if (!orderDetails.middleName) { 
-                    isValid = false; 
-                    errorMessages.push('Пожалуйста, введите ваше отчество.');
-                    errorFields.push({ field: 'middleName', element: document.getElementById('middle-name') });
-                    console.log('❌ middleName validation FAILED - added to error array');
-                } else {
-                    console.log('✅ middleName validation PASSED');
-                }
-
-                console.log('🔍 Validating phoneNumber:', orderDetails.phoneNumber);
-                const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
-                if (!orderDetails.phoneNumber || !phoneRegex.test(orderDetails.phoneNumber)) {
-                    isValid = false;
-                    errorMessages.push('Пожалуйста, введите корректный номер телефона.');
-                    errorFields.push({ field: 'phoneNumber', element: document.getElementById('phone-number') });
-                    console.log('❌ phoneNumber validation FAILED - added to error array');
-                } else {
-                    console.log('✅ phoneNumber validation PASSED');
-                }
-
-                console.log('🔍 Validating email:', orderDetails.email);
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!orderDetails.email || !emailRegex.test(orderDetails.email)) {
-                    isValid = false;
-                    errorMessages.push('Пожалуйста, введите корректный Email.');
-                    errorFields.push({ field: 'email', element: document.getElementById('email') });
-                    console.log('❌ email validation FAILED - added to error array');
-                } else {
-                    console.log('✅ email validation PASSED');
-                }
-
-                                // Validate delivery date
-                console.log('🔍 === DELIVERY DATE VALIDATION ===');
-                const deliveryDateValue = orderDetails.deliveryDate;
-                console.log('📅 Delivery date value:', deliveryDateValue);
-                console.log('📅 Delivery date trimmed:', deliveryDateValue ? deliveryDateValue.trim() : 'null');
-                console.log('📅 Is empty check:', !deliveryDateValue || deliveryDateValue.trim() === '');
-                console.log('📅 Is "Выберите дату" check:', deliveryDateValue ? deliveryDateValue.trim() === 'Выберите дату' : 'N/A');
-                console.log('=== END DELIVERY DATE DEBUG ===');
-                
-                if (!deliveryDateValue || deliveryDateValue.trim() === '' || deliveryDateValue.trim() === 'Выберите дату') {
-                    isValid = false; 
-                    errorMessages.push('Пожалуйста, выберите дату доставки/самовывоза.');
-                    errorFields.push({ field: 'deliveryDate', element: document.getElementById('delivery-date') });
-                    console.log('❌ deliveryDate validation FAILED - added to error array');
-                } else {
-                    console.log('✅ deliveryDate validation PASSED');
-                }
-
-                console.log('🔍 Validating deliveryMethod:', orderDetails.deliveryMethod);
-                if (!orderDetails.deliveryMethod) {
-                    isValid = false;
-                    errorMessages.push('Пожалуйста, выберите способ получения.');
-                    errorFields.push({ field: 'deliveryMethod', element: document.getElementById('delivery-courier-radio') });
-                    console.log('❌ deliveryMethod validation FAILED - added to error array');
-                } else {
-                    console.log('✅ deliveryMethod validation PASSED');
-                    if (orderDetails.deliveryMethod === 'courier') {
-                        console.log('🔍 Validating city (courier delivery):', orderDetails.city);
-                        if (!orderDetails.city) { 
-                            isValid = false; 
-                            errorMessages.push('Пожалуйста, выберите город для доставки.');
-                            errorFields.push({ field: 'city', element: document.getElementById('city') });
-                            console.log('❌ city validation FAILED - added to error array');
-                        } else {
-                            console.log('✅ city validation PASSED');
-                        }
-                        console.log('🔍 Validating addressLine (courier delivery):', orderDetails.addressLine);
-                        if (!orderDetails.addressLine) { 
-                            isValid = false; 
-                            errorMessages.push('Пожалуйста, введите адрес доставки.');
-                            errorFields.push({ field: 'addressLine', element: document.getElementById('address-line') });
-                            console.log('❌ addressLine validation FAILED - added to error array');
-                        } else {
-                            console.log('✅ addressLine validation PASSED');
-                        }
-                    } else if (orderDetails.deliveryMethod === 'pickup') {
-                        console.log('🔍 Validating pickupAddress (pickup delivery):', orderDetails.pickupAddress);
-                        if (!orderDetails.pickupAddress) { 
-                            isValid = false; 
-                            errorMessages.push('Пожалуйста, выберите адрес самовывоза.');
-                            errorFields.push({ field: 'pickupAddress', element: document.getElementById('pickup-radio-group') });
-                            console.log('❌ pickupAddress validation FAILED - added to error array');
-                        } else {
-                            console.log('✅ pickupAddress validation PASSED');
-                        }
-                    }
-                }
-
-                // Validate payment method (same style as pickup address validation)
-                if (orderDetails.deliveryMethod === 'courier') {
-                    console.log('🔍 Validating paymentMethod (courier delivery):', orderDetails.paymentMethod);
-                    if (!orderDetails.paymentMethod) { 
-                        isValid = false; 
-                        errorMessages.push('Пожалуйста, выберите способ оплаты.');
-                        errorFields.push({ field: 'paymentMethod', element: document.querySelector('#payment-method-section .payment-method-item:first-of-type') });
-                        console.log('❌ paymentMethod validation FAILED - added to error array');
-                    } else {
-                        console.log('✅ paymentMethod validation PASSED');
-                    }
-                } else if (orderDetails.deliveryMethod === 'pickup') {
-                    console.log('🔍 Validating paymentMethodPickup (pickup delivery):', orderDetails.paymentMethodPickup);
-                    if (!orderDetails.paymentMethodPickup) { 
-                        isValid = false; 
-                        errorMessages.push('Пожалуйста, выберите способ оплаты.');
-                        errorFields.push({ field: 'paymentMethodPickup', element: document.querySelector('#payment-method-section-pickup .payment-method-item:first-of-type') });
-                        console.log('❌ paymentMethodPickup validation FAILED - added to error array');
-                    } else {
-                        console.log('✅ paymentMethodPickup validation PASSED');
-                    }
-                }
-
-                console.log('📊 === VALIDATION SUMMARY ===');
-                console.log('✅ Is form valid:', isValid);
-                console.log('📝 Error messages count:', errorMessages.length);
-                console.log('📝 Error fields count:', errorFields.length);
-                console.log('📝 Error fields array:', errorFields.map(f => f.field));
-                console.log('📝 Error messages array:', errorMessages);
-                console.log('=== END VALIDATION SUMMARY ===');
-                
+                // Validation is already complete from validateOrderForm()
+                // Just handle the validation result
                 if (!isValid) {
                     console.log('❌ === FORM VALIDATION FAILED ===');
                     console.log('🎯 First error field that will get focus:', errorFields[0] ? errorFields[0].field : 'none');
