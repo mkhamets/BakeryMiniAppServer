@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.18';
+    const CACHE_VERSION = '1.3.22';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -873,14 +873,66 @@ function validateField(value, validation) {
         return customResult;
     }
 
-    // Special cases
-    if (validation.field === 'deliveryDate' && value.trim() === 'Выберите дату') {
-        console.log(`❌ ${validation.field} validation FAILED - default placeholder value`);
-        return false;
-    }
-
     console.log(`✅ ${validation.field} validation PASSED`);
     return true;
+}
+
+// Custom validation functions for all field types
+function validateNameField(value) {
+    if (!value || value.trim() === '') return false;
+    // Allow letters, spaces, hyphens, and apostrophes for names
+    const nameRegex = /^[а-яёa-z\s\-']+$/i;
+    return nameRegex.test(value.trim());
+}
+
+function validatePhoneField(value) {
+    if (!value || value.trim() === '') return false;
+    const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
+    return phoneRegex.test(value.trim());
+}
+
+function validateEmailField(value) {
+    if (!value || value.trim() === '') return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value.trim());
+}
+
+function validateDeliveryDateField(value) {
+    if (!value || value.trim() === '') return false;
+    if (value.trim() === 'Выберите дату') return false;
+    
+    const selectedDate = new Date(value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Date must be today or in the future
+    return selectedDate >= today;
+}
+
+function validateDeliveryMethodField(value) {
+    return value === 'courier' || value === 'pickup';
+}
+
+function validateCityField(value) {
+    if (!value || value.trim() === '') return false;
+    // Allow letters, spaces, hyphens for city names
+    const cityRegex = /^[а-яёa-z\s\-]+$/i;
+    return cityRegex.test(value.trim());
+}
+
+function validateAddressField(value) {
+    if (!value || value.trim() === '') return false;
+    // Allow letters, numbers, spaces, hyphens, commas, dots for addresses
+    const addressRegex = /^[а-яёa-z0-9\s\-,\.]+$/i;
+    return addressRegex.test(value.trim());
+}
+
+function validatePickupAddressField(value) {
+    return value && value.trim() !== '';
+}
+
+function validatePaymentMethodField(value) {
+    return value && value.trim() !== '';
 }
 
 function validateOrderForm(orderDetails) {
@@ -888,19 +940,84 @@ function validateOrderForm(orderDetails) {
     console.log('📋 Order details to validate:', orderDetails);
     
     const validationOrder = [
-        { field: 'lastName', label: 'фамилию', element: 'last-name' },
-        { field: 'firstName', label: 'имя', element: 'first-name' },
-        { field: 'middleName', label: 'отчество', element: 'middle-name' },
-        { field: 'phoneNumber', label: 'номер телефона', element: 'phone-number', regex: /^\+?[\d\s\-\(\)]{7,20}$/ },
-        { field: 'email', label: 'Email', element: 'email', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
-        { field: 'deliveryDate', label: 'дату доставки/самовывоза', element: 'delivery-date', customValidation: validateDeliveryDate },
-        { field: 'deliveryMethod', label: 'способ получения', element: 'delivery-courier-radio' },
+        { 
+            field: 'lastName', 
+            label: 'фамилию', 
+            element: 'last-name',
+            customValidation: validateNameField
+        },
+        { 
+            field: 'firstName', 
+            label: 'имя', 
+            element: 'first-name',
+            customValidation: validateNameField
+        },
+        { 
+            field: 'middleName', 
+            label: 'отчество', 
+            element: 'middle-name',
+            customValidation: validateNameField
+        },
+        { 
+            field: 'phoneNumber', 
+            label: 'номер телефона', 
+            element: 'phone-number',
+            customValidation: validatePhoneField
+        },
+        { 
+            field: 'email', 
+            label: 'Email', 
+            element: 'email',
+            customValidation: validateEmailField
+        },
+        { 
+            field: 'deliveryDate', 
+            label: 'дату доставки/самовывоза', 
+            element: 'delivery-date',
+            customValidation: validateDeliveryDateField
+        },
+        { 
+            field: 'deliveryMethod', 
+            label: 'способ получения', 
+            element: 'delivery-courier-radio',
+            customValidation: validateDeliveryMethodField
+        },
         // Conditional fields based on delivery method
-        { field: 'city', label: 'город для доставки', element: 'city', condition: () => orderDetails.deliveryMethod === 'courier' },
-        { field: 'addressLine', label: 'адрес доставки', element: 'address-line', condition: () => orderDetails.deliveryMethod === 'courier' },
-        { field: 'paymentMethod', label: 'способ оплаты', element: 'payment-method-section', condition: () => orderDetails.deliveryMethod === 'courier' },
-        { field: 'pickupAddress', label: 'адрес самовывоза', element: 'pickup-radio-group', condition: () => orderDetails.deliveryMethod === 'pickup' },
-        { field: 'paymentMethodPickup', label: 'способ оплаты', element: 'payment-method-section-pickup', condition: () => orderDetails.deliveryMethod === 'pickup' }
+        { 
+            field: 'city', 
+            label: 'город для доставки', 
+            element: 'city', 
+            condition: () => orderDetails.deliveryMethod === 'courier',
+            customValidation: validateCityField
+        },
+        { 
+            field: 'addressLine', 
+            label: 'адрес доставки', 
+            element: 'address-line', 
+            condition: () => orderDetails.deliveryMethod === 'courier',
+            customValidation: validateAddressField
+        },
+        { 
+            field: 'paymentMethod', 
+            label: 'способ оплаты', 
+            element: 'payment-method-section', 
+            condition: () => orderDetails.deliveryMethod === 'courier',
+            customValidation: validatePaymentMethodField
+        },
+        { 
+            field: 'pickupAddress', 
+            label: 'адрес самовывоза', 
+            element: 'pickup-radio-group', 
+            condition: () => orderDetails.deliveryMethod === 'pickup',
+            customValidation: validatePickupAddressField
+        },
+        { 
+            field: 'paymentMethodPickup', 
+            label: 'способ оплаты', 
+            element: 'payment-method-section-pickup', 
+            condition: () => orderDetails.deliveryMethod === 'pickup',
+            customValidation: validatePaymentMethodField
+        }
     ];
 
     const errors = [];
@@ -915,7 +1032,7 @@ function validateOrderForm(orderDetails) {
             continue;
         }
 
-        // Perform validation
+        // Perform validation using unified custom validation
         const isValid = validateField(value, validation);
         
         if (!isValid) {
@@ -941,19 +1058,9 @@ function validateOrderForm(orderDetails) {
 function collectFormData() {
     console.log('🔍 === COLLECTING FORM DATA ===');
     
-    // Primary: FormData collection
-    const checkoutForm = document.getElementById('checkout-form');
-    const formData = new FormData(checkoutForm);
-    const orderDetails = {};
-    for (let [key, value] of formData.entries()) {
-        orderDetails[key] = value;
-    }
-    
-    console.log('📋 FormData collected:', orderDetails);
-
-    // Secondary: Manual extraction for problematic fields
-    // This ensures we capture all fields regardless of visibility/state
-    const manualFields = {
+    // Unified approach: Always collect from actual DOM elements
+    // This ensures we get the current values regardless of caching or timing
+    const orderDetails = {
         lastName: document.getElementById('last-name')?.value || '',
         firstName: document.getElementById('first-name')?.value || '',
         middleName: document.getElementById('middle-name')?.value || '',
@@ -965,18 +1072,15 @@ function collectFormData() {
         addressLine: document.getElementById('address-line')?.value || '',
         pickupAddress: document.querySelector('input[name="pickupAddress"]:checked')?.value || '',
         paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value || '',
-        paymentMethodPickup: document.querySelector('input[name="paymentMethodPickup"]:checked')?.value || ''
+        paymentMethodPickup: document.querySelector('input[name="paymentMethodPickup"]:checked')?.value || '',
+        commentDelivery: document.getElementById('comment-delivery')?.value || '',
+        commentPickup: document.getElementById('comment-pickup')?.value || ''
     };
 
-    console.log('📋 Manual fields collected:', manualFields);
-
-    // Merge with FormData (manual fields take precedence)
-    const finalOrderDetails = { ...orderDetails, ...manualFields };
-    
-    console.log('📋 Final merged order details:', finalOrderDetails);
+    console.log('📋 DOM-based order details collected:', orderDetails);
     console.log('=== END FORM DATA COLLECTION ===');
     
-    return finalOrderDetails;
+    return orderDetails;
 }
 
 // ===== END UNIFIED FORM VALIDATION SYSTEM =====
@@ -1016,10 +1120,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.18&t=1755174008", image: "images/bakery.svg?v=1.3.18&t=1755174008" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.18&t=1755174008", image: "images/crouasan.svg?v=1.3.18&t=1755174008" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.18&t=1755174008", image: "images/bread1.svg?v=1.3.18&t=1755174008" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.18&t=1755174008", image: "images/cookie.svg?v=1.3.18&t=1755174008" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.22&t=1755174008", image: "images/bakery.svg?v=1.3.22&t=1755174008" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.22&t=1755174008", image: "images/crouasan.svg?v=1.3.22&t=1755174008" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.22&t=1755174008", image: "images/bread1.svg?v=1.3.22&t=1755174008" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.22&t=1755174008", image: "images/cookie.svg?v=1.3.22&t=1755174008" }
     };
 
     await fetchProductsData();
@@ -2391,7 +2495,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.18&t=1755174008';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.22&t=1755174008';
     img.onload = () => {
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
