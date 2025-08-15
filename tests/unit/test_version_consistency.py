@@ -17,7 +17,7 @@ class TestVersionConsistency(unittest.TestCase):
         """Set up test environment."""
         self.project_root = Path(__file__).parent.parent.parent
         self.web_app_dir = self.project_root / "bot" / "web_app"
-        self.expected_version = "1.3.28"
+        self.expected_version = "1.3.18"
         
     def test_html_version_consistency(self):
         """Test that all version references in HTML files are consistent."""
@@ -29,16 +29,15 @@ class TestVersionConsistency(unittest.TestCase):
         # Find all version patterns in HTML
         version_patterns = re.findall(r'v=(\d+\.\d+\.\d+)', content)
         
-        # Check that all versions are valid (1.3.x format)
-        valid_versions = ['1.3.18', '1.3.22', '1.3.28']  # Allow all versions found in files
+        # Check that all versions match expected version
         for version in version_patterns:
-            self.assertIn(
+            self.assertEqual(
                 version, 
-                valid_versions,
-                f"Invalid version in {html_file}: found {version}, expected one of {valid_versions}"
+                self.expected_version,
+                f"Version mismatch in {html_file}: found {version}, expected {self.expected_version}"
             )
             
-        # Verify specific resources exist with any valid version
+        # Verify specific resources
         resources_to_check = [
             'main.min.css',
             'style.css', 
@@ -50,16 +49,12 @@ class TestVersionConsistency(unittest.TestCase):
         for resource in resources_to_check:
             # Escape special regex characters in resource name
             escaped_resource = re.escape(resource)
-            # Check for any valid version
-            pattern = rf'{escaped_resource}\?v=(\d+\.\d+\.\d+)'
+            pattern = rf'{escaped_resource}\?v={self.expected_version}'
             match = re.search(pattern, content)
             self.assertIsNotNone(
                 match, 
-                f"Resource {resource} not found with any version in {html_file}"
+                f"Resource {resource} not found with version {self.expected_version} in {html_file}"
             )
-            # Verify the version is valid
-            version = match.group(1)
-            self.assertIn(version, valid_versions, f"Invalid version {version} for {resource}")
             
     def test_javascript_version_consistency(self):
         """Test that all version references in JavaScript files are consistent."""
@@ -85,13 +80,12 @@ class TestVersionConsistency(unittest.TestCase):
         # Find all version patterns in JavaScript
         version_patterns = re.findall(r'v=(\d+\.\d+\.\d+)', content)
         
-        # Check that all versions are valid (1.3.x format)
-        valid_versions = ['1.3.18', '1.3.22', '1.3.28']  # Allow all versions found in files
+        # Check that all versions match expected version
         for version in version_patterns:
-            self.assertIn(
+            self.assertEqual(
                 version,
-                valid_versions,
-                f"Invalid version in {js_file}: found {version}, expected one of {valid_versions}"
+                self.expected_version,
+                f"Version mismatch in {js_file}: found {version}, expected {self.expected_version}"
             )
             
         # Verify specific resources in JavaScript
@@ -104,17 +98,13 @@ class TestVersionConsistency(unittest.TestCase):
         ]
         
         for resource in js_resources_to_check:
-            # Check for any valid version
-            pattern = rf'{resource}\?v=(\d+\.\d+\.\d+)'
+            pattern = rf'{resource}\?v={self.expected_version}'
             matches = re.findall(pattern, content)
             self.assertGreater(
                 len(matches),
                 0,
-                f"Resource {resource} not found with any version in {js_file}"
+                f"Resource {resource} not found with version {self.expected_version} in {js_file}"
             )
-            # Verify all versions are valid
-            for version in matches:
-                self.assertIn(version, valid_versions, f"Invalid version {version} for {resource}")
             
     def test_no_old_versions_present(self):
         """Test that no old versions are present in any files."""
@@ -149,22 +139,22 @@ class TestVersionConsistency(unittest.TestCase):
         with open(js_file, 'r', encoding='utf-8') as f:
             js_content = f.read()
             
-        # Count all version references
-        html_versions = re.findall(r'v=(\d+\.\d+\.\d+)', html_content)
-        js_versions = re.findall(r'v=(\d+\.\d+\.\d+)', js_content)
+        # Count expected version references
+        html_versions = re.findall(rf'v={self.expected_version}', html_content)
+        js_versions = re.findall(rf'v={self.expected_version}', js_content)
         
-        # HTML should have at least some version references
-        self.assertGreater(
+        # HTML should have 6 version references (CSS, JS, 3 images)
+        self.assertEqual(
             len(html_versions),
-            0,
-            f"Expected at least 1 version reference in HTML, found {len(html_versions)}"
+            6,
+            f"Expected 6 version references in HTML, found {len(html_versions)}"
         )
         
-        # JavaScript should have at least some version references
-        self.assertGreater(
+        # JavaScript should have 9 version references (4 category icons × 2 each + 1 background image)
+        self.assertEqual(
             len(js_versions),
-            0,
-            f"Expected at least 1 version reference in JavaScript, found {len(js_versions)}"
+            9,
+            f"Expected 9 version references in JavaScript, found {len(js_versions)}"
         )
         
     def test_file_existence(self):
@@ -224,15 +214,20 @@ class TestVersionConsistency(unittest.TestCase):
             # Look for any version patterns in CSS
             version_patterns = re.findall(r'v=(\d+\.\d+\.\d+)', content)
             
-            # CSS should contain at least one valid version reference
-            valid_versions = ['1.3.18', '1.3.22', '1.3.28']
-            if version_patterns:
-                for version in version_patterns:
-                    self.assertIn(
-                        version,
-                        valid_versions,
-                        f"CSS file contains invalid version {version}, expected one of {valid_versions}"
-                    )
+            # CSS should contain the expected version reference
+            self.assertIn(
+                self.expected_version,
+                version_patterns,
+                f"CSS file should contain version {self.expected_version}, found: {version_patterns}"
+            )
+            
+            # All versions in CSS should be the expected version
+            for version in version_patterns:
+                self.assertEqual(
+                    version,
+                    self.expected_version,
+                    f"CSS file contains incorrect version {version}, expected {self.expected_version}"
+                )
             
     def test_version_format_consistency(self):
         """Test that all version numbers follow the correct format."""

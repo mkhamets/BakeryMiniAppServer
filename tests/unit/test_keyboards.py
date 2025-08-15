@@ -29,7 +29,7 @@ class TestKeyboards(unittest.TestCase):
         self.assertTrue(keyboard.resize_keyboard)
         self.assertTrue(keyboard.is_persistent)
         self.assertFalse(keyboard.one_time_keyboard)
-        self.assertEqual(keyboard.input_field_placeholder, "Используйте меню ⬇️")
+        self.assertEqual(keyboard.input_field_placeholder, "Выберите категорию или действие ⬇️")
         
         # Check keyboard structure
         self.assertIsInstance(keyboard.keyboard, list)
@@ -169,7 +169,7 @@ class TestKeyboards(unittest.TestCase):
     def test_input_field_placeholder(self):
         """Test that input field placeholder is set correctly."""
         keyboard = generate_main_menu()
-        self.assertEqual(keyboard.input_field_placeholder, "Используйте меню ⬇️")
+        self.assertEqual(keyboard.input_field_placeholder, "Выберите категорию или действие ⬇️")
 
 
 if __name__ == '__main__':

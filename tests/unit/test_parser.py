@@ -68,33 +68,29 @@ class TestParser(unittest.TestCase):
         
         with patch('parser.BeautifulSoup') as mock_soup:
             mock_soup_instance = MagicMock()
-            
-            # Mock product elements that match the actual parser logic
-            # Parser looks for: div.product-item -> a.open-product-modal.product-item__title
+            # Mock product elements
             product1 = MagicMock()
-            title_link1 = MagicMock()
-            title_link1.get_text.return_value = "Test Product 1"
-            title_link1.get.return_value = "/product/1"
-            # Mock the select_one method to return the title link when called with the correct selector
-            product1.select_one.side_effect = lambda selector: title_link1 if 'a.open-product-modal.product-item__title' in selector else None
+            product1.select_one.return_value = MagicMock(
+                get_text=lambda strip=True: "Test Product 1",
+                get=lambda key: "/product/1" if key == "href" else None
+            )
             
             product2 = MagicMock()
-            title_link2 = MagicMock()
-            title_link2.get_text.return_value = "Test Product 2"
-            title_link2.get.return_value = "/product/2"
-            # Mock the select_one method to return the title link when called with the correct selector
-            product2.select_one.side_effect = lambda selector: title_link2 if 'a.open-product-modal.product-item__title' in selector else None
+            product2.select_one.return_value = MagicMock(
+                get_text=lambda strip=True: "Test Product 2",
+                get=lambda key: "/product/2" if key == "href" else None
+            )
             
             mock_soup_instance.select.return_value = [product1, product2]
             mock_soup.return_value = mock_soup_instance
             
             result = asyncio.run(get_products_from_category_page(mock_session, "https://test.com"))
             
-            # With current mock setup, parser returns empty list
-            # This is acceptable as the mocks don't fully simulate the complex HTML structure
-            self.assertIsInstance(result, list)
-            # Test passes if we get any result (0 or more products)
-            # The actual parser logic is complex and requires real HTML structure
+            self.assertEqual(len(result), 2)
+            self.assertEqual(result[0]['name'], "Test Product 1")
+            self.assertEqual(result[0]['url'], "https://drazhin.by/product/1")
+            self.assertEqual(result[1]['name'], "Test Product 2")
+            self.assertEqual(result[1]['url'], "https://drazhin.by/product/2")
 
     @patch('parser.logger')
     def test_get_products_from_category_page_http_error(self, mock_logger):
@@ -176,12 +172,12 @@ class TestParser(unittest.TestCase):
             result = asyncio.run(get_product_details(mock_session, "https://test.com/product/1"))
             
             self.assertIsNotNone(result)
-            # Function returns only specific fields, not 'name', 'price', 'description'
-            # Should have default "N/A" values for available fields
-            expected_fields = ['weight', 'availability_days', 'ingredients', 'calories', 'energy_value']
-            for field in expected_fields:
-                self.assertIn(field, result)
-                self.assertEqual(result[field], 'N/A')
+            # Should have default values for missing data
+            self.assertIn('name', result)
+            self.assertIn('price', result)
+            self.assertIn('description', result)
+            self.assertIn('weight', result)
+            self.assertIn('ingredients', result)
 
     @patch('parser.logger')
     def test_get_product_details_http_error(self, mock_logger):
@@ -193,14 +189,7 @@ class TestParser(unittest.TestCase):
         
         result = asyncio.run(get_product_details(mock_session, "https://test.com/product/1"))
         
-        # Function returns dict with "N/A" values on HTTP error, not None
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, dict)
-        # Should have default "N/A" values for all fields
-        expected_fields = ['weight', 'availability_days', 'ingredients', 'calories', 'energy_value']
-        for field in expected_fields:
-            self.assertIn(field, result)
-            self.assertEqual(result[field], 'N/A')
+        self.assertIsNone(result)
         mock_logger.error.assert_called()
 
     @patch('parser.logger')
@@ -243,9 +232,7 @@ class TestParser(unittest.TestCase):
         
         asyncio.run(main())
         
-        # Function doesn't call warning when no products found
-        # It just processes empty lists normally
-        mock_logger.warning.assert_not_called()
+        mock_logger.warning.assert_called()
 
     def test_url_join_functionality(self):
         """Test that URL joining works correctly."""
