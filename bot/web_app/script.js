@@ -760,12 +760,18 @@ function clearFieldError(fieldName) {
         fieldElement.classList.remove('form-field-error');
     }
     
-    // Hide corresponding error message - handle both naming conventions
+    // Hide corresponding error message - handle camelCase and kebab-case IDs
+    const toKebab = (s) => s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
     let errorMessageElement = document.getElementById(fieldName + '-error');
     if (!errorMessageElement) {
-        // Try camelCase version for error message IDs
+        // Try camelCase normalized from hyphenated input
         const camelCaseFieldName = fieldName.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
         errorMessageElement = document.getElementById(camelCaseFieldName + '-error');
+    }
+    if (!errorMessageElement) {
+        // Try kebab-case from camelCase input (e.g., deliveryDate -> delivery-date-error)
+        const kebabName = toKebab(fieldName);
+        errorMessageElement = document.getElementById(kebabName + '-error');
     }
     if (errorMessageElement) {
         errorMessageElement.classList.remove('show');
@@ -932,10 +938,16 @@ function validateDeliveryDateField(value) {
     selectedDate.setHours(0, 0, 0, 0);
 
     // Only today or tomorrow are valid (matches calendar availability)
-    return (
+    const valid = (
         selectedDate.getTime() === today.getTime() ||
         selectedDate.getTime() === tomorrow.getTime()
     );
+    // Update dataset.valid to reflect validation state
+    try {
+        const input = document.getElementById('delivery-date');
+        if (input) input.dataset.valid = valid ? 'true' : 'false';
+    } catch (e) {}
+    return valid;
 }
 
 function validateDeliveryMethodField(value) {
@@ -2918,11 +2930,12 @@ function addErrorClearingListeners() {
             // Mark as valid selection for state-based checks
             try { this.dateInput.dataset.valid = 'true'; } catch (e) {}
             
-            // Clear any error
+            // Clear any error and sync validity state
             const errorElement = document.getElementById('deliveryDate-error');
             if (errorElement) {
                 errorElement.style.display = 'none';
             }
+            try { this.dateInput.dataset.valid = 'true'; } catch (e) {}
             
             // Re-render calendar to show selection
             this.renderCalendar();
