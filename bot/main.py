@@ -354,24 +354,23 @@ async def send_email_notification(recipient_email: str, subject: str, body: str,
         })
 
 
-# Хендлеры команд и сообщений
-@dp.message(F.text == "/start")
-async def command_start_handler(message: Message) -> None:
-    """Обработчик команды /start."""
-    user_id = message.from_user.id
-    cart_count = sum(get_user_cart(user_id).values())
-    await message.answer(
-        "Привет! Я бот-помощник пекарни Дражина. Используй меню ниже, "
-        "чтобы выбрать категорию товаров или узнать информацию о нас.",
-        reply_markup=generate_main_menu(cart_count)
-    )
+# ===============================
+# Helper builders (presentation-only, no logic changes)
+# ===============================
+
+def cart_item_count(user_id: int) -> int:
+    """Calculate total number of items in the user's cart."""
+    return sum(get_user_cart(user_id).values())
 
 
-@dp.message(F.text == "О нас")
-async def about_us(message: Message):
-    """Обработчик кнопки 'О нас'."""
-    await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
-    text = (
+def reply_main_menu_for(user_id: int) -> ReplyKeyboardMarkup:
+    """Return main menu keyboard configured for a given user's current cart state."""
+    return generate_main_menu(cart_item_count(user_id))
+
+
+def build_about_message() -> str:
+    """Static HTML for the About section."""
+    return (
         "<b>О пекарне Дражина</b>\n\n"
         "Наша пекарня — это место, где традиции встречаются с современными технологиями. "
         "Мы готовим хлеб и выпечку по классическим рецептам, используя только натуральные ингредиенты.\n\n"
@@ -380,82 +379,58 @@ async def about_us(message: Message):
         "❤️ Любовь к своему делу\n\n"
         "Подробнее: https://drazhin.by/o-pekarne"
     )
-    await message.answer(
-        text, 
-        parse_mode=ParseMode.HTML, 
-        reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values()))
-    )
 
 
-@dp.message(F.text == "Наши адреса")
-async def show_addresses(message: Message):
-    """Обработчик кнопки 'Наши адреса'."""
-    await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
-    text = (
+def build_addresses_message() -> str:
+    """Static HTML for the Addresses section."""
+    return (
         "<b>📍 Наши магазины</b>\n\n"
         "🏬 <b>ТЦ \"Green City\"</b>\n"
         "ул. Притыцкого, 156, напротив Грин Сити\n"
         "🔗 <a href='https://maps.app.goo.gl/5oDagDvDidFYfm2X7'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIEUl9'>Yandex</a>\n\n"
-
         "🏬 <b>ТЦ \"Замок\"</b>\n"
         "пр‑т Победителей, 65, 1 этаж возле «Ив Роше»\n"
-        "🔗 <a href='hhttps://maps.app.goo.gl/qzEXBGMsrWdS8LQT6'>Google</a> | "
+        "🔗 <a href='https://maps.app.goo.gl/qzEXBGMsrWdS8LQT6'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIEJ3Z'>Yandex</a>\n\n"
-
         "🏠 <b>ул. Л. Беды, 26</b>\n"
         "вход в WINE&SPIRITS\n"
         "🔗 <a href='https://maps.app.goo.gl/oXs1TJdSs9pgQE9SA'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIEXnX'>Yandex</a>\n\n"
-
         "🏠 <b>ул. Мстиславца, 8</b>\n"
         "в Маяк Минска, вход со двора\n"
         "🔗 <a href='https://maps.app.goo.gl/bKcMpqMHLwz6h3TX7'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIIYme'>Yandex</a>\n\n"
-
         "🏠 <b>ул. Лученка, 1</b>\n"
         "в ЖК «Минск Мир»\n"
         "🔗 <a href='https://maps.app.goo.gl/KD1vp9ijDyiPmYH7A'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIII6lt'>Yandex</a>\n\n"
-
         "🏠 <b>ул. Авиационная, 8</b>\n"
         "Копище, Новая Боровая\n"
         "🔗 <a href='https://maps.app.goo.gl/myWiaKVe5iN8su96A'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIIDl~'>Yandex</a>\n\n"
-
         "🏠 <b>ул. Нововиленская, 45</b>\n"
         "г. Минск\n"
         "🔗 <a href='https://maps.app.goo.gl/XZpmmiSFnWdpiNsWA'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIIDl~'>Yandex</a>\n\n"
-
         "🏠 <b>ул. Морской риф 1/4</b>\n"
         "а/г Ратомка, ЖК «Пирс»\n"
         "🔗 <a href='https://maps.app.goo.gl/ig3KWvXrmczHP93u5'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIMRKA'>Yandex</a>\n\n"
-
         "🏠 <b>г. Заславль, ул. Вокзальная, 11</b>\n"
         "у ж/д станции «Беларусь»\n"
         "🔗 <a href='https://maps.app.goo.gl/YAwtb8zFt3h3TjiPA'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIMOpa'>Yandex</a>\n\n"
-
         "<b>📞 Наши контакты:</b>\n"
         " +375 (29) 117‑25‑77\n"
         "📧 info@drazhin.by\n"
         "<a href='https://drazhin.by/kontakty'>Подробнее на сайте</a>"
     )
-    await message.answer(
-        text, 
-        reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values())),
-        disable_web_page_preview=True, 
-        parse_mode=ParseMode.HTML
-    )
 
 
-@dp.message(F.text == "О доставке")
-async def delivery_info(message: Message):
-    """Обработчик кнопки 'О доставке'."""
-    await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
-    text = (
+def build_delivery_message() -> str:
+    """Static HTML for the Delivery section."""
+    return (
         "<b>Условия доставки</b>\n\n"
         "✅ Бесплатная доставка.\n"
         "❗️Минимальная сумма заказа для осуществления доставки — <b>70 рублей</b>.\n"
@@ -471,9 +446,54 @@ async def delivery_info(message: Message):
         "📧 info@drazhin.by\n"
         "<a href='https://drazhin.by/kontakty'>Подробнее на сайте</a>"
     )
+
+
+# ===============================
+# Хендлеры команд и сообщений
+# ===============================
+@dp.message(F.text == "/start")
+async def command_start_handler(message: Message) -> None:
+    """Обработчик команды /start."""
+    await message.answer(
+        "Привет! Я бот-помощник пекарни Дражина. Используй меню ниже, "
+        "чтобы выбрать категорию товаров или узнать информацию о нас.",
+        reply_markup=reply_main_menu_for(message.from_user.id)
+    )
+
+
+@dp.message(F.text == "О нас")
+async def about_us(message: Message):
+    """Обработчик кнопки 'О нас'."""
+    await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
+    text = build_about_message()
     await message.answer(
         text, 
-        reply_markup=generate_main_menu(sum(get_user_cart(message.from_user.id).values())),
+        parse_mode=ParseMode.HTML, 
+        reply_markup=reply_main_menu_for(message.from_user.id)
+    )
+
+
+@dp.message(F.text == "Наши адреса")
+async def show_addresses(message: Message):
+    """Обработчик кнопки 'Наши адреса'."""
+    await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
+    text = build_addresses_message()
+    await message.answer(
+        text,
+        reply_markup=reply_main_menu_for(message.from_user.id),
+        disable_web_page_preview=True, 
+        parse_mode=ParseMode.HTML
+    )
+
+
+@dp.message(F.text == "О доставке")
+async def delivery_info(message: Message):
+    """Обработчик кнопки 'О доставке'."""
+    await clear_user_cart_messages(message.chat.id)  # Очищаем корзину, если пользователь переходит в другой раздел
+    text = build_delivery_message()
+    await message.answer(
+        text, 
+        reply_markup=reply_main_menu_for(message.from_user.id),
         disable_web_page_preview=True, 
         parse_mode=ParseMode.HTML
     )
