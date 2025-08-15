@@ -850,6 +850,10 @@ function showValidationErrors(errorFields, errorMessages) {
                         block: 'center' 
                     });
                 }
+                // Explicitly blur deliveryDate to prevent iOS auto-opening the calendar
+                if (errorField.field === 'deliveryDate' && typeof errorField.element.blur === 'function') {
+                    errorField.element.blur();
+                }
                 console.log('🎯 === FIRST ERROR HANDLED ===');
             }
         }
@@ -923,6 +927,8 @@ function validateDeliveryDateField(value) {
     const selectedDate = new Date(year, month, day);
     const today = new Date();
     const tomorrow = new Date(today);
+    // Ensure 'tomorrow' is actually next day
+    tomorrow.setDate(today.getDate() + 1);
     
     // Reset time for comparison
     today.setHours(0, 0, 0, 0);
@@ -2355,7 +2361,15 @@ function addErrorClearingListeners() {
     if (dateInput) {
         dateInput.addEventListener('focus', () => clearFieldError('deliveryDate'));
         // Also clear error when date is selected via calendar
-        dateInput.addEventListener('change', () => clearFieldError('deliveryDate'));
+        dateInput.addEventListener('change', () => {
+            clearFieldError('deliveryDate');
+            const value = dateInput.value || '';
+            const re = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+            const match = value.trim().match(re);
+            if (!match) {
+                try { dateInput.dataset.valid = 'false'; } catch (e) {}
+            }
+        });
     }
     
     // Delivery method radios
@@ -2925,6 +2939,7 @@ function addErrorClearingListeners() {
             this.dateInput.value = '';
             this.selectedDate = null;
             this.renderCalendar();
+            try { this.dateInput.dataset.valid = 'false'; } catch (e) {}
         }
     }
     
