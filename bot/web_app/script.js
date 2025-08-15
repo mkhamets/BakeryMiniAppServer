@@ -850,10 +850,6 @@ function showValidationErrors(errorFields, errorMessages) {
                         block: 'center' 
                     });
                 }
-                // Explicitly blur deliveryDate to prevent iOS auto-opening the calendar
-                if (errorField.field === 'deliveryDate' && typeof errorField.element.blur === 'function') {
-                    errorField.element.blur();
-                }
                 console.log('🎯 === FIRST ERROR HANDLED ===');
             }
         }
@@ -2768,7 +2764,8 @@ function addErrorClearingListeners() {
             
             // Add event listeners
             this.dateInput.addEventListener('click', () => this.openCalendar());
-            // Do not open calendar on focus to avoid loops with validation focus
+            // Restore original behavior if needed: open on focus as well
+            this.dateInput.addEventListener('focus', () => this.openCalendar());
             this.calendarIcon.addEventListener('click', () => this.openCalendar());
             this.calendarClose.addEventListener('click', () => this.closeCalendar());
             this.calendarOverlay.addEventListener('click', (e) => {
