@@ -1108,6 +1108,59 @@ function collectFormData() {
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
+    // One-time Service Worker unregister (cleanup legacy sw.js caches)
+    async function unregisterServiceWorkersOnce() {
+        try {
+            const flagKey = 'sw_unregistered_once';
+            if (!('serviceWorker' in navigator)) return;
+            if (localStorage.getItem(flagKey) === '1') return;
+            const regs = await navigator.serviceWorker.getRegistrations();
+            regs.forEach(reg => reg.unregister());
+            localStorage.setItem(flagKey, '1');
+            console.log('🧹 Service workers unregistered (one-time)');
+        } catch (e) {
+            console.warn('SW unregister failed:', e);
+        }
+    }
+
+    // iOS-only emergency asset cache bust (adds &_=<timestamp> to CSS/JS)
+    function iosHardBustAssetsOnce() {
+        try {
+            const bustFlag = 'ios_hard_bust_done_v1';
+            // iOS detection (same logic as below but available earlier)
+            const isIOSRuntime = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (!isIOSRuntime) return;
+            if (sessionStorage.getItem(bustFlag) === '1') return;
+
+            const stamp = Date.now();
+            // Bust stylesheets
+            document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                const newHref = href + (href.includes('?') ? '&' : '?') + '_=' + stamp;
+                link.setAttribute('href', newHref);
+            });
+            // Bust any additional script tags (JS already running won't re-execute)
+            document.querySelectorAll('script[src]').forEach(script => {
+                const src = script.getAttribute('src');
+                if (!src) return;
+                // Skip the currently executing main script to avoid double execution
+                if (src.includes('/bot-app/script.js')) return;
+                const newSrc = src + (src.includes('?') ? '&' : '?') + '_=' + stamp;
+                script.setAttribute('src', newSrc);
+            });
+            sessionStorage.setItem(bustFlag, '1');
+            console.log('🧨 iOS hard bust applied');
+        } catch (e) {
+            console.warn('iOS hard bust failed:', e);
+        }
+    }
+
+    // Run early to maximize effect
+    unregisterServiceWorkersOnce();
+    iosHardBustAssetsOnce();
+
     const mainPageContainer = document.getElementById('main-page-container');
     const welcomeContainer = document.getElementById('welcome-container');
     const categoriesContainer = document.getElementById('categories-container');
