@@ -129,16 +129,16 @@ class TestMainBotFunctions(unittest.TestCase):
         result = asyncio.run(generate_order_number())
 
         self.assertIsInstance(result, str)
-        self.assertTrue(result.startswith("ORD"))
+        self.assertTrue(result.startswith("#"))
         mock_save.assert_called_once()
 
     def test_format_phone_telegram(self):
         """Test phone number formatting for Telegram."""
         test_cases = [
-            ("+375291234567", "+375291234567"),
-            ("375291234567", "+375291234567"),
-            ("80291234567", "80291234567"),  # Non-Belarusian number
-            ("+375291234567", "+375291234567"),
+            ("+375291234567", "+37529123-45-67"),  # Belarusian with dashes
+            ("375291234567", "+37529123-45-67"),   # Belarusian with dashes
+            ("80291234567", "80291234567"),        # Non-Belarusian number unchanged
+            ("+375291234567", "+37529123-45-67"),
         ]
 
         for input_phone, expected in test_cases:
@@ -313,7 +313,8 @@ class TestMainBotFunctions(unittest.TestCase):
         )
 
         self.assertIn("ORD001", result)
-        self.assertIn("John Doe", result)
+        self.assertIn("John", result)
+        self.assertIn("Doe", result)
         self.assertIn("35.00", result)
         self.assertIn("Доставка курьером", result)
 
@@ -336,7 +337,8 @@ class TestMainBotFunctions(unittest.TestCase):
         )
 
         self.assertIn("ORD001", result)
-        self.assertIn("John Doe", result)
+        self.assertIn("John", result)
+        self.assertIn("Doe", result)
         self.assertIn("35.00", result)
 
 

@@ -17,7 +17,7 @@ class TestVersionConsistency(unittest.TestCase):
         """Set up test environment."""
         self.project_root = Path(__file__).parent.parent.parent
         self.web_app_dir = self.project_root / "bot" / "web_app"
-        self.expected_version = "1.3.18"
+        self.expected_version = "1.3.30"
         
     def test_html_version_consistency(self):
         """Test that all version references in HTML files are consistent."""
