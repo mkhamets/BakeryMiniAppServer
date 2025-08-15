@@ -400,7 +400,7 @@ async def show_addresses(message: Message):
 
         "🏬 <b>ТЦ \"Замок\"</b>\n"
         "пр‑т Победителей, 65, 1 этаж возле «Ив Роше»\n"
-        "🔗 <a href='hhttps://maps.app.goo.gl/qzEXBGMsrWdS8LQT6'>Google</a> | "
+        "🔗 <a href='https://maps.app.goo.gl/qzEXBGMsrWdS8LQT6'>Google</a> | "
         "<a href='https://yandex.com/maps/-/CHTIEJ3Z'>Yandex</a>\n\n"
 
         "🏠 <b>ул. Л. Беды, 26</b>\n"
