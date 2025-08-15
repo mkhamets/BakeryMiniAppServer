@@ -2409,52 +2409,9 @@ function addErrorClearingListeners() {
     }
 
     function setupDateInput() {
-        const dateInput = document.getElementById('delivery-date');
-        if (dateInput && typeof flatpickr !== 'undefined') {
-            // Get today's date
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            // Format dates for display (DD.MM.YYYY)
-            const todayFormatted = today.toLocaleDateString('ru-RU');
-            const tomorrowFormatted = tomorrow.toLocaleDateString('ru-RU');
-            
-            // Don't set default value - let user select date
-            // dateInput.value = todayFormatted;
-            
-            // Initialize flatpickr with confetti theme
-            const flatpickrInstance = flatpickr(dateInput, {
-                theme: "confetti",
-                dateFormat: "d.m.Y",
-                locale: "ru",
-                minDate: today,
-                maxDate: tomorrow,
-                // Don't set default date - let user select
-                // defaultDate: today,
-                disableMobile: false, // Enable mobile support
-                allowInput: false, // Disable manual input
-                clickOpens: true,
-                closeOnSelect: true,
-                static: true, // Prevent scrolling issues on mobile
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Update the input value with the selected date
-                    dateInput.value = dateStr;
-                    
-                    // Trigger validation
-                    validateDeliveryDate();
-                },
-                onOpen: function(selectedDates, dateStr, instance) {
-                    // Ensure the picker opens properly on mobile
-                    setTimeout(() => {
-                        instance.calendarContainer.style.zIndex = '9999';
-                    }, 100);
-                }
-            });
-            
-            // Store the flatpickr instance for later use
-            dateInput.flatpickrInstance = flatpickrInstance;
-        }
+        // Flatpickr removed; ClassicalCalendar handles date picking.
+        // Keep this function for compatibility with existing calls.
+        return;
     }
 
     const initialCategory = getUrlParameter('category');
