@@ -184,7 +184,7 @@ async function forceMobileResourceReload() {
 function forceTelegramCacheClear() {
     try {
         if (isTelegramWebView && isMobileDevice) {
-            console.log('📱 Telegram WebView detected - implementing aggressive cache clear');
+            if (DEBUG) console.log('📱 Telegram WebView detected - implementing aggressive cache clear');
             
             // Preserve cart data before any operations
             const cartData = localStorage.getItem('cart');
@@ -205,7 +205,7 @@ function forceTelegramCacheClear() {
             // Restore cart data immediately
             if (cartData) {
                 localStorage.setItem('cart', cartData);
-                console.log('🛒 Cart data preserved in Telegram WebView');
+                if (DEBUG) console.log('🛒 Cart data preserved in Telegram WebView');
             }
             if (cartVersion) {
                 localStorage.setItem('cart_version', cartVersion);
@@ -218,7 +218,7 @@ function forceTelegramCacheClear() {
         }
         return false;
     } catch (error) {
-        console.error('❌ Error in Telegram cache clear:', error);
+        if (DEBUG) console.error('❌ Error in Telegram cache clear:', error);
         return false;
     }
 }
@@ -1137,6 +1137,12 @@ function collectFormData() {
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
+    // Debug flag to control noisy logs and debug globals
+    const DEBUG = false;
+    if (!DEBUG && typeof console !== 'undefined' && console.log) {
+        console.log = function(){};
+    }
+
     // One-time Service Worker unregister (cleanup legacy sw.js caches)
     async function unregisterServiceWorkersOnce() {
         try {
@@ -1243,8 +1249,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Only initialize cart rendering after products data is loaded
     renderCart();
     
-    // Initialize icons in the UI (excluding location icons for form fields)
-    initializeIcons();
+    // Initialize icons (no-op placeholder)
+    // initializeIcons(); // removed: icon system disabled
 
     // Helper function to ensure screen scrolls to top
     function scrollToTop() {
@@ -2010,17 +2016,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderCheckoutSummary() {
-        if (checkoutItemsList) checkoutItemsList.innerHTML = '';
+        // Removed checkoutItemsList rendering (element not present in HTML)
         let total = 0;
 
         Object.values(cart).forEach(item => {
             const itemTotal = item.price * item.quantity;
             total += itemTotal;
 
-            const checkoutItemElement = document.createElement('li');
-            checkoutItemElement.className = 'checkout-item-summary';
-            checkoutItemElement.textContent = `${item.name} x ${item.quantity} - ${itemTotal.toFixed(2)} р.`;
-            if (checkoutItemsList) checkoutItemsList.appendChild(checkoutItemElement);
+            // No per-item list in checkout summary; UI shows only total and form
         });
 
         if (checkoutTotalElement) checkoutTotalElement.textContent = `${total.toFixed(2)} р.`;
@@ -3023,52 +3026,7 @@ function addErrorClearingListeners() {
         }
     }
     
-    // Enhanced delivery date validation
-    function validateDeliveryDate() {
-        const dateInput = document.getElementById('delivery-date');
-        const errorElement = document.getElementById('deliveryDate-error');
-        
-        if (!dateInput || !errorElement) return true;
-        
-        const selectedDate = dateInput.value;
-        if (!selectedDate) {
-            errorElement.style.display = 'block';
-            errorElement.textContent = 'Пожалуйста, выберите дату доставки.';
-            return false;
-        }
-        
-        // Validate DD.MM.YYYY format
-        const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
-        const match = selectedDate.match(dateRegex);
-        if (!match) {
-            errorElement.style.display = 'block';
-            errorElement.textContent = 'Неверный формат даты.';
-            return false;
-        }
-        
-        const day = parseInt(match[1]);
-        const month = parseInt(match[2]) - 1;
-        const year = parseInt(match[3]);
-        
-        const selectedDateObj = new Date(year, month, day);
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        // Reset time for comparison
-        today.setHours(0, 0, 0, 0);
-        tomorrow.setHours(0, 0, 0, 0);
-        selectedDateObj.setHours(0, 0, 0, 0);
-        
-        if (selectedDateObj < today || selectedDateObj > tomorrow) {
-            errorElement.style.display = 'block';
-            errorElement.textContent = 'Доступны только сегодня и завтра.';
-            return false;
-        }
-        
-        errorElement.style.display = 'none';
-        return true;
-    }
+    // Legacy validateDeliveryDate removed; unified validateDeliveryDateField is used
     
     // Initialize classical calendar
     let classicalCalendar;
@@ -3083,8 +3041,9 @@ function addErrorClearingListeners() {
     }
     
     // Make calendar globally accessible for debugging
-    window.classicalCalendar = classicalCalendar;
-    window.validateDeliveryDate = validateDeliveryDate;
+    if (DEBUG) {
+        window.classicalCalendar = classicalCalendar;
+    }
     
     // ===== END CUSTOM CALENDAR IMPLEMENTATION =====
 
