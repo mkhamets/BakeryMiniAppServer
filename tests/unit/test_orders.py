@@ -75,7 +75,8 @@ class TestOrderProcessing(unittest.TestCase):
         self.assertTrue(result.startswith("#"))
         # Note: The actual function may not include the exact counter in the format
         # Just verify it's a valid order number format
-        self.assertIn("110825", result)  # Should include current month/date
+        # Accept dynamic day and month, verify overall pattern
+        self.assertRegex(result, r"#\d{6}/\d{3}")
         mock_save.assert_called_once()
 
     @patch('bot.main.load_order_counter')

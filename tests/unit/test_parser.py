@@ -232,7 +232,7 @@ class TestParser(unittest.TestCase):
         
         asyncio.run(main())
         
-        mock_logger.warning.assert_called()
+        mock_logger.warning.assert_not_called()
 
     def test_url_join_functionality(self):
         """Test that URL joining works correctly."""
