@@ -826,18 +826,23 @@ function showValidationErrors(errorFields, errorMessages) {
                 }
             }
             
-            // Focus on the first error field
+            // Focus behavior for the first error field
             if (index === 0) {
-                console.log('🎯 === FOCUSING ON FIRST ERROR FIELD ===');
+                console.log('🎯 === HANDLE FIRST ERROR FIELD ===');
                 console.log('🎯 Field name:', errorField.field);
                 console.log('🎯 Field element:', errorField.element);
                 console.log('🎯 Field element ID:', errorField.element ? errorField.element.id : 'none');
                 console.log('🎯 Field element type:', errorField.element ? errorField.element.type : 'none');
-                
-                errorField.element.focus();
-                console.log('🎯 Focus() called on:', errorField.field);
-                
-                // Scroll to the error field if it's not visible
+
+                // For deliveryDate: do NOT focus to avoid opening calendar; just scroll into view
+                if (errorField.field !== 'deliveryDate') {
+                    errorField.element.focus();
+                    console.log('🎯 Focus() called on:', errorField.field);
+                } else {
+                    console.log('🎯 Skipping focus on deliveryDate to avoid calendar auto-open');
+                }
+
+                // Ensure the field is visible
                 if (errorField.element.scrollIntoView) {
                     console.log('🎯 Scrolling to field:', errorField.field);
                     errorField.element.scrollIntoView({ 
@@ -845,7 +850,7 @@ function showValidationErrors(errorFields, errorMessages) {
                         block: 'center' 
                     });
                 }
-                console.log('🎯 === FOCUS COMPLETED ===');
+                console.log('🎯 === FIRST ERROR HANDLED ===');
             }
         }
     });
@@ -2732,7 +2737,7 @@ function addErrorClearingListeners() {
             
             // Add event listeners
             this.dateInput.addEventListener('click', () => this.openCalendar());
-            this.dateInput.addEventListener('focus', () => this.openCalendar());
+            // Do not open calendar on focus to avoid loops with validation focus
             this.calendarIcon.addEventListener('click', () => this.openCalendar());
             this.calendarClose.addEventListener('click', () => this.closeCalendar());
             this.calendarOverlay.addEventListener('click', (e) => {
