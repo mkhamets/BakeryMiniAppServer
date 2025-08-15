@@ -910,13 +910,30 @@ function validateEmailField(value) {
 function validateDeliveryDateField(value) {
     if (!value || value.trim() === '') return false;
     if (value.trim() === 'Выберите дату') return false;
-    
-    const selectedDate = new Date(value);
+
+    // Expect DD.MM.YYYY, parse safely instead of relying on Date(string)
+    const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+    const match = value.trim().match(dateRegex);
+    if (!match) return false;
+
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1;
+    const year = parseInt(match[3], 10);
+
+    const selectedDate = new Date(year, month, day);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
     
-    // Date must be today or in the future
-    return selectedDate >= today;
+    // Reset time for comparison
+    today.setHours(0, 0, 0, 0);
+    tomorrow.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    // Only today or tomorrow are valid (matches calendar availability)
+    return (
+        selectedDate.getTime() === today.getTime() ||
+        selectedDate.getTime() === tomorrow.getTime()
+    );
 }
 
 function validateDeliveryMethodField(value) {
@@ -2834,6 +2851,8 @@ function addErrorClearingListeners() {
             // Update input field
             const formattedDate = this.formatDate(date);
             this.dateInput.value = formattedDate;
+            // Mark as valid selection for state-based checks
+            try { this.dateInput.dataset.valid = 'true'; } catch (e) {}
             
             // Clear any error
             const errorElement = document.getElementById('deliveryDate-error');
@@ -2851,10 +2870,7 @@ function addErrorClearingListeners() {
             
             console.log('📅 Date selected:', formattedDate);
             
-            // Trigger form validation if needed
-            if (typeof validateDeliveryDate === 'function') {
-                validateDeliveryDate();
-            }
+            // Do not trigger full form validation here to avoid loops
         }
         
         // Month navigation removed - calendar automatically follows current date
