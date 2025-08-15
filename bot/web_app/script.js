@@ -542,6 +542,23 @@ function populateFormWithCustomerData(customerData) {
                 if (element) {
                     element.value = customerData[dataKey];
                     console.log(`👤 Populated ${elementId} with: ${customerData[dataKey]}`);
+                    // Clear any stale validation error for prefilled fields
+                    const errorIdMap = {
+                        firstName: 'first-name-error',
+                        lastName: 'last-name-error',
+                        middleName: 'middle-name-error',
+                        phoneNumber: 'phone-number-error',
+                        email: 'email-error',
+                        city: 'city-error',
+                        addressLine: 'address-line-error'
+                    };
+                    const errEl = document.getElementById(errorIdMap[dataKey]);
+                    if (errEl) {
+                        errEl.classList.remove('show');
+                        errEl.style.display = 'none';
+                        errEl.style.color = '';
+                    }
+                    element.classList.remove('form-field-error');
                 }
             }
         }
@@ -963,8 +980,8 @@ function validateCityField(value) {
 
 function validateAddressField(value) {
     if (!value || value.trim() === '') return false;
-    // Allow letters, numbers, spaces, hyphens, commas, dots for addresses
-    const addressRegex = /^[а-яёa-z0-9\s\-,\.]+$/i;
+    // Allow common address symbols: letters, numbers, spaces, hyphens, commas, dots, slash, #, №, parentheses
+    const addressRegex = /^[а-яёa-z0-9\s\-\.,\/\#№\(\)]+$/i;
     return addressRegex.test(value.trim());
 }
 
