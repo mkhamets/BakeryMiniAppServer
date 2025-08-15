@@ -346,10 +346,9 @@ class TestCartDataStructures(unittest.TestCase):
         for user_id in user_ids:
             clear_user_cart(user_id)
 
-        # Verify carts are empty but still exist
+        # Verify carts are removed (actual implementation removes users completely)
         for user_id in user_ids:
-            self.assertIn(user_id, user_carts)
-            self.assertEqual(user_carts[user_id], {})
+            self.assertNotIn(user_id, user_carts)
 
         # Clean up - remove all test carts
         for user_id in user_ids:

@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.28';
+    const CACHE_VERSION = '1.3.29';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -826,8 +826,8 @@ function showValidationErrors(errorFields, errorMessages) {
                 }
             }
             
-            // Focus on the first error field
-            if (index === 0) {
+            // Focus on the first error field (but skip delivery date to prevent calendar conflicts)
+            if (index === 0 && errorField.field !== 'deliveryDate') {
                 console.log('🎯 === FOCUSING ON FIRST ERROR FIELD ===');
                 console.log('🎯 Field name:', errorField.field);
                 console.log('🎯 Field element:', errorField.element);
@@ -846,6 +846,8 @@ function showValidationErrors(errorFields, errorMessages) {
                     });
                 }
                 console.log('🎯 === FOCUS COMPLETED ===');
+            } else if (index === 0 && errorField.field === 'deliveryDate') {
+                console.log('🎯 === SKIPPING FOCUS ON DELIVERY DATE TO PREVENT CALENDAR CONFLICTS ===');
             }
         }
     });
@@ -906,12 +908,29 @@ function validateDeliveryDateField(value) {
     if (!value || value.trim() === '') return false;
     if (value.trim() === 'Выберите дату') return false;
     
-    const selectedDate = new Date(value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Validate DD.MM.YYYY format first
+    const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+    const match = value.match(dateRegex);
+    if (!match) {
+        return false;
+    }
     
-    // Date must be today or in the future
-    return selectedDate >= today;
+    const day = parseInt(match[1]);
+    const month = parseInt(match[2]) - 1;
+    const year = parseInt(match[3]);
+    
+    const selectedDate = new Date(year, month, day);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Reset time for comparison
+    today.setHours(0, 0, 0, 0);
+    tomorrow.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    // Only allow today and tomorrow
+    return selectedDate.getTime() === today.getTime() || selectedDate.getTime() === tomorrow.getTime();
 }
 
 function validateDeliveryMethodField(value) {
@@ -2441,8 +2460,14 @@ function addErrorClearingListeners() {
                     // Update the input value with the selected date
                     dateInput.value = dateStr;
                     
-                    // Trigger validation
-                    validateDeliveryDate();
+                    // Clear any existing error when date is selected
+                    const errorElement = document.getElementById('deliveryDate-error');
+                    if (errorElement) {
+                        errorElement.style.display = 'none';
+                    }
+                    
+                    // Don't trigger validation here - let form validation handle it
+                    // This prevents the endless error loop
                 },
                 onOpen: function(selectedDates, dateStr, instance) {
                     // Ensure the picker opens properly on mobile
@@ -2997,19 +3022,13 @@ function addErrorClearingListeners() {
         return true;
     }
     
-    // Initialize classical calendar
-    let classicalCalendar;
+    // Initialize classical calendar - DISABLED to prevent conflicts with flatpickr
+    let classicalCalendar = null;
     
-    // Initialize calendar when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            classicalCalendar = new ClassicalCalendar();
-        });
-    } else {
-        classicalCalendar = new ClassicalCalendar();
-    }
+    // Don't initialize classical calendar to prevent conflicts with flatpickr
+    // The flatpickr date picker is the primary calendar system
     
-    // Make calendar globally accessible for debugging
+    // Make calendar globally accessible for debugging (but disabled)
     window.classicalCalendar = classicalCalendar;
     window.validateDeliveryDate = validateDeliveryDate;
     
