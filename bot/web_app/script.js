@@ -2563,37 +2563,45 @@ function addErrorClearingListeners() {
         Telegram.WebApp.BackButton.hide();
     }
 
+    // Helper to proceed to initial view and hide loading overlay
+    function proceedToInitialView() {
+        try { document.body.classList.add('loaded'); } catch {}
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        if (initialView === 'checkout') {
+            displayView('checkout');
+        } else if (initialView === 'cart' || initialCategory === 'cart') {
+            displayView('cart');
+        } else if (initialView === 'categories') {
+            displayView('categories');
+        } else if (initialCategory) {
+            displayView('products', initialCategory);
+        } else {
+            displayView('welcome');
+        }
+    }
+
     // Wait for background image to load
     const img = new Image();
                             img.src = '/bot-app/images/Hleb.jpg?v=1.3.36&t=1755625001';
+    // Safety timeout in case onload never fires
+    const loadingSafetyTimeout = setTimeout(() => {
+        console.warn('Loading safety timeout reached. Proceeding to initial view.');
+        proceedToInitialView();
+    }, 2500);
     img.onload = () => {
+        clearTimeout(loadingSafetyTimeout);
         // Add loaded class to body to show background
         document.body.classList.add('loaded');
-        
         // Hide loading overlay and show appropriate view after a short delay
         setTimeout(() => {
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-            
-            if (initialView === 'checkout') {
-                displayView('checkout');
-            } else if (initialView === 'cart' || initialCategory === 'cart') {
-                displayView('cart');
-            } else if (initialView === 'categories') {
-                displayView('categories');
-            } else if (initialCategory) {
-                displayView('products', initialCategory);
-            } else {
-                // Only show welcome if no specific view is requested
-                displayView('welcome');
-            }
-        }, 1000); // 1 second delay to show the logo
+            proceedToInitialView();
+        }, 800);
     };
     
     // Fallback in case image fails to load
     img.onerror = () => {
-        document.body.classList.add('loaded');
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
-        displayView('welcome');
+        clearTimeout(loadingSafetyTimeout);
+        proceedToInitialView();
     };
 
     if (Telegram.WebApp.MainButton) {
