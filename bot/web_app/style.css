@@ -25,7 +25,7 @@ body {
 
 /* Add background only after loading */
 body.loaded {
-    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.46&t=1755439393');
+    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.47&t=1755445865');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -674,11 +674,13 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* allow button to dock at bottom */
     align-items: center;
     margin: 20px auto; /* Добавляем отступы для лучшего расположения */
     text-align: center; /* Центрируем текст внутри контейнера */
     flex-grow: 1; /* Позволяет welcome-container занимать доступное пространство */
+    min-height: 80vh; /* anchor content to near-full height */
+    padding-bottom: max(env(safe-area-inset-bottom), 20px); /* safe bottom padding */
 }
 
 .welcome-logo {
@@ -718,6 +720,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     transition: background-color 0.3s ease, transform 0.2s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     font-weight: bold;
+    margin-top: auto; /* push to bottom within welcome container */
+    align-self: stretch; /* fill available width within container */
 }
 
 .start-shopping-button:hover {
@@ -2379,6 +2383,14 @@ body * {
         -webkit-backface-visibility: hidden !important;
         backface-visibility: hidden !important;
         will-change: auto !important;
+    }
+    /* Ensure welcome button stays near bottom on short screens */
+    .welcome-container {
+        min-height: 85vh;
+    }
+    .start-shopping-button {
+        font-size: 1.15em;
+        padding: 14px 24px;
     }
 }
 
