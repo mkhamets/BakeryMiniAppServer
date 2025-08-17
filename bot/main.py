@@ -363,8 +363,8 @@ def cart_item_count(user_id: int) -> int:
     return sum(get_user_cart(user_id).values())
 
 
-def reply_main_menu_for(user_id: int) -> ReplyKeyboardMarkup:
-    """Return main menu keyboard configured for a given user's current cart state."""
+def reply_main_menu_for(user_id: int) -> InlineKeyboardMarkup:
+    """Return inline main menu keyboard configured for a given user's current cart state."""
     return generate_main_menu(cart_item_count(user_id))
 
 
@@ -403,8 +403,8 @@ def build_addresses_message() -> str:
         "<a href='https://yandex.com/maps/-/CHTIIYme'>Yandex</a>\n\n"
         "🏠 <b>ул. Лученка, 1</b>\n"
         "в ЖК «Минск Мир»\n"
-        "🔗 <a href='https://maps.app.goo.gl/KD1vp9ijDyiPmYH7A'>Google</a> | "
-        "<a href='https://yandex.com/maps/-/CHTIII6lt'>Yandex</a>\n\n"
+        "🔗 <a href='https://maps.app.goo.gl/TmUrt73oDBWLXbK97'>Google</a> | "
+        "<a href='https://yandex.com/maps/-/CHt1eOjv>Yandex</a>\n\n"
         "🏠 <b>ул. Авиационная, 8</b>\n"
         "Копище, Новая Боровая\n"
         "🔗 <a href='https://maps.app.goo.gl/myWiaKVe5iN8su96A'>Google</a> | "
@@ -412,7 +412,7 @@ def build_addresses_message() -> str:
         "🏠 <b>ул. Нововиленская, 45</b>\n"
         "г. Минск\n"
         "🔗 <a href='https://maps.app.goo.gl/XZpmmiSFnWdpiNsWA'>Google</a> | "
-        "<a href='https://yandex.com/maps/-/CHTIIDl~'>Yandex</a>\n\n"
+        "<a href='https://yandex.com/maps/-/CHt1iZ6v>Yandex</a>\n\n"
         "🏠 <b>ул. Морской риф 1/4</b>\n"
         "а/г Ратомка, ЖК «Пирс»\n"
         "🔗 <a href='https://maps.app.goo.gl/ig3KWvXrmczHP93u5'>Google</a> | "
@@ -445,6 +445,45 @@ def build_delivery_message() -> str:
         "Телефон: +375 (29) 117‑25‑77\n"
         "📧 info@drazhin.by\n"
         "<a href='https://drazhin.by/kontakty'>Подробнее на сайте</a>"
+    )
+
+
+# ===============================
+# Inline keyboard callback handlers
+# ===============================
+
+@dp.callback_query(F.data == "info:about")
+async def cb_about(callback: CallbackQuery):
+    await callback.answer()
+    text = build_about_message()
+    await callback.message.answer(
+        text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=reply_main_menu_for(callback.from_user.id)
+    )
+
+
+@dp.callback_query(F.data == "info:addresses")
+async def cb_addresses(callback: CallbackQuery):
+    await callback.answer()
+    text = build_addresses_message()
+    await callback.message.answer(
+        text,
+        parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True,
+        reply_markup=reply_main_menu_for(callback.from_user.id)
+    )
+
+
+@dp.callback_query(F.data == "info:delivery")
+async def cb_delivery(callback: CallbackQuery):
+    await callback.answer()
+    text = build_delivery_message()
+    await callback.message.answer(
+        text,
+        parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True,
+        reply_markup=reply_main_menu_for(callback.from_user.id)
     )
 
 
