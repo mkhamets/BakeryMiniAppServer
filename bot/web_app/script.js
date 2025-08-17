@@ -981,7 +981,7 @@ function validateCityField(value) {
 function validateAddressField(value) {
     if (!value || value.trim() === '') return false;
     // Allow: Cyrillic/Latin letters, numbers, spaces, hyphens, commas, dots, slash, #, №, parentheses
-    const addressRegex = /^[\p{Script=Latin}\p{Script=Cyrillic}\p{N}\s\-\.,\/\#№\(\)]+$/u;
+    const addressRegex = /^[\p{Script=Latin}\p{Script=Cyrillic}\p{N}\s\-\.,\/#№()]+$/u;
     return addressRegex.test(value.trim());
 }
 
@@ -1228,10 +1228,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226", image: "images/bakery.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226", image: "images/crouasan.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226", image: "images/bread1.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226", image: "images/cookie.svg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226", image: "images/bakery.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226", image: "images/crouasan.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226", image: "images/bread1.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226", image: "images/cookie.svg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226" }
     };
 
     await fetchProductsData();
@@ -2582,7 +2582,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.37?v=1.3.37&t=1755424226t=1755424226';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.37?v=1.3.38?v=1.3.37&t=1755424226t=1755424609t=1755424226';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
