@@ -404,7 +404,7 @@ def build_addresses_message() -> str:
         "🏠 <b>ул. Лученка, 1</b>\n"
         "в ЖК «Минск Мир»\n"
         "🔗 <a href='https://maps.app.goo.gl/TmUrt73oDBWLXbK97'>Google</a> | "
-        "<a href='https://yandex.com/maps/-/CHt1eOjv>Yandex</a>\n\n"
+        "<a href='https://yandex.com/maps/-/CHt1eOjv'>Yandex</a>\n\n"
         "🏠 <b>ул. Авиационная, 8</b>\n"
         "Копище, Новая Боровая\n"
         "🔗 <a href='https://maps.app.goo.gl/myWiaKVe5iN8su96A'>Google</a> | "
@@ -412,7 +412,7 @@ def build_addresses_message() -> str:
         "🏠 <b>ул. Нововиленская, 45</b>\n"
         "г. Минск\n"
         "🔗 <a href='https://maps.app.goo.gl/XZpmmiSFnWdpiNsWA'>Google</a> | "
-        "<a href='https://yandex.com/maps/-/CHt1iZ6v>Yandex</a>\n\n"
+        "<a href='https://yandex.com/maps/-/CHt1iZ6v'>Yandex</a>\n\n"
         "🏠 <b>ул. Морской риф 1/4</b>\n"
         "а/г Ратомка, ЖК «Пирс»\n"
         "🔗 <a href='https://maps.app.goo.gl/ig3KWvXrmczHP93u5'>Google</a> | "
@@ -454,7 +454,10 @@ def build_delivery_message() -> str:
 
 @dp.callback_query(F.data == "info:about")
 async def cb_about(callback: CallbackQuery):
-    await callback.answer()
+    try:
+        await callback.answer("ℹ️ О нас", show_alert=False)
+    except Exception:
+        pass
     text = build_about_message()
     await callback.message.answer(
         text,
@@ -465,19 +468,31 @@ async def cb_about(callback: CallbackQuery):
 
 @dp.callback_query(F.data == "info:addresses")
 async def cb_addresses(callback: CallbackQuery):
-    await callback.answer()
+    try:
+        logger.info(f"Inline callback received: {callback.data} from user {callback.from_user.id}")
+        await callback.answer("📍 Адреса отправлены", show_alert=False)
+    except Exception as e:
+        logger.warning(f"Failed to answer callback: {e}")
+
     text = build_addresses_message()
-    await callback.message.answer(
-        text,
-        parse_mode=ParseMode.HTML,
-        disable_web_page_preview=True,
-        reply_markup=reply_main_menu_for(callback.from_user.id)
-    )
+    try:
+        await callback.message.answer(
+            text,
+            parse_mode=ParseMode.HTML,
+            disable_web_page_preview=True,
+            reply_markup=reply_main_menu_for(callback.from_user.id)
+        )
+        logger.info("Addresses message sent successfully")
+    except Exception as e:
+        logger.error(f"Failed to send addresses message: {e}")
 
 
 @dp.callback_query(F.data == "info:delivery")
 async def cb_delivery(callback: CallbackQuery):
-    await callback.answer()
+    try:
+        await callback.answer("🚚 Условия доставки", show_alert=False)
+    except Exception:
+        pass
     text = build_delivery_message()
     await callback.message.answer(
         text,
