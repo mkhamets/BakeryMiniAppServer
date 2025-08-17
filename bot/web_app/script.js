@@ -287,7 +287,7 @@ async function checkCacheHealth() {
 // ===== PHASE 5: LOCALSTORAGE CACHE MANAGEMENT =====
 // Cart data structure and versioning
 const CART_DATA_VERSION = '1.0.0';
-const CART_EXPIRATION_DAYS = 7; // Cart expires after 7 days
+const CART_EXPIRATION_DAYS = 2; // Cart expires after 2 days
 const CART_EXPIRATION_MS = CART_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
 
 // Enhanced cart data structure with metadata
@@ -1228,10 +1228,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226", image: "images/bakery.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226", image: "images/crouasan.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226", image: "images/bread1.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226", image: "images/cookie.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226", image: "images/bakery.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226", image: "images/crouasan.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226", image: "images/bread1.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226", image: "images/cookie.svg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226" }
     };
 
     await fetchProductsData();
@@ -1632,7 +1632,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          alt="${product.name}" 
                          class="product-image clickable-image" 
                          data-product-id="${product.id}"
-                         loading="lazy"
+                         loading="lazy" decoding="async"
                          onerror="this.onerror=null;this.src='https://placehold.co/300x225/e0e0e0/555?text=Нет+фото';">
                 </div>
                 <div class="product-info">
@@ -2583,7 +2583,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.37&t=1755424226t=1755434476t=1755424609t=1755424226';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.37?v=1.3.38?v=1.3.39?v=1.3.40?v=1.3.37&t=1755424226t=1755435604t=1755434476t=1755424609t=1755424226';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
