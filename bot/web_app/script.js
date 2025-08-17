@@ -913,8 +913,8 @@ function validateField(value, validation) {
 // Custom validation functions for all field types
 function validateNameField(value) {
     if (!value || value.trim() === '') return false;
-    // Allow letters, spaces, hyphens, and apostrophes for names
-    const nameRegex = /^[а-яёa-z\s\-']+$/i;
+    // Allow all Cyrillic and Latin letters, spaces, hyphens, and apostrophes
+    const nameRegex = /^[\p{Script=Latin}\p{Script=Cyrillic}\s\-']+$/u;
     return nameRegex.test(value.trim());
 }
 
@@ -973,15 +973,15 @@ function validateDeliveryMethodField(value) {
 
 function validateCityField(value) {
     if (!value || value.trim() === '') return false;
-    // Allow letters, spaces, hyphens for city names
-    const cityRegex = /^[а-яёa-z\s\-]+$/i;
+    // Allow all Cyrillic and Latin letters, spaces, hyphens for city names
+    const cityRegex = /^[\p{Script=Latin}\p{Script=Cyrillic}\s\-]+$/u;
     return cityRegex.test(value.trim());
 }
 
 function validateAddressField(value) {
     if (!value || value.trim() === '') return false;
-    // Allow common address symbols: letters, numbers, spaces, hyphens, commas, dots, slash, #, №, parentheses
-    const addressRegex = /^[а-яёa-z0-9\s\-\.,\/\#№\(\)]+$/i;
+    // Allow: Cyrillic/Latin letters, numbers, spaces, hyphens, commas, dots, slash, #, №, parentheses
+    const addressRegex = /^[\p{Script=Latin}\p{Script=Cyrillic}\p{N}\s\-\.,\/\#№\(\)]+$/u;
     return addressRegex.test(value.trim());
 }
 
