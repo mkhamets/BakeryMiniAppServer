@@ -25,7 +25,7 @@ body {
 
 /* Add background only after loading */
 body.loaded {
-    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.49&t=1755590472');
+    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.44&t=1755672647');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

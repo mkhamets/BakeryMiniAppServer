@@ -1,0 +1,32 @@
+name: "CodeQL Config"
+
+queries:
+  # Use the default CodeQL query suite for Python
+  - uses: security-and-quality
+  # Use the default CodeQL query suite for JavaScript
+  - uses: security-and-quality
+
+paths:
+  - bot/
+  - bot/web_app/
+  - tests/
+
+paths-ignore:
+  - '**/node_modules'
+  - '**/__pycache__'
+  - '**/*.pyc'
+  - '**/.git'
+  - '**/venv'
+  - '**/env'
+  - '**/.env'
+  - '**/data/'
+  - '**/MagicMock/'
+
+# Disable some queries that are not relevant for this project
+disable-default-queries: false
+
+# Add custom queries if needed
+# queries:
+#   - uses: security-and-quality
+#   - name: custom-query.ql
+#     uses: ./custom-queries

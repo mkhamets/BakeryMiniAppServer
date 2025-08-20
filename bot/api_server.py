@@ -8,6 +8,7 @@ from collections import defaultdict
 
 from bot.config import config
 from bot.security_manager import security_manager
+from bot.security_headers import security_headers_middleware, create_content_hash
 
 # Настраиваем логирование для API сервера
 logger = logging.getLogger(__name__)
@@ -166,6 +167,9 @@ async def setup_api_server():
     """Настраивает и возвращает AioHTTP Web Application Runner."""
     app = web.Application()
 
+    # Add security headers middleware
+    app.middlewares.append(security_headers_middleware)
+
     # Загружаем данные о продуктах при настройке сервера
     await load_products_data_for_api()
 
@@ -218,12 +222,15 @@ async def setup_api_server():
             query_string = request.query_string
             has_version = 'v=' in query_string
             
+            # Create stable content hash for ETag
+            content_hash = create_content_hash(content)
+            
             if has_version:
                 # Versioned files should be cached for a long time
                 headers = {
                     'Content-Type': content_type,
                     'Cache-Control': 'public, max-age=31536000',  # 1 year
-                    'ETag': f'"v{hash(full_path)}"'
+                    'ETag': f'"{content_hash}"'
                 }
             else:
                 # Non-versioned files should not be cached
@@ -246,16 +253,36 @@ async def setup_api_server():
     # 5. Маршрут-заглушка для любых других путей внутри /bot-app/, которые не являются статическими файлами
     app.router.add_get('/bot-app/{tail:.*}', serve_main_app_page)
 
+    # 6. Security.txt endpoint
+    async def serve_security_txt(request):
+        """Serve security.txt file."""
+        security_txt_path = os.path.join(BASE_DIR, '.well-known', 'security.txt')
+        if os.path.exists(security_txt_path):
+            return web.FileResponse(security_txt_path, headers={'Content-Type': 'text/plain'})
+        else:
+            return web.Response(status=404, text="Security policy not found")
 
-    # Настройка CORS для разрешения запросов с вашего домена Web App
+    app.router.add_get('/.well-known/security.txt', serve_security_txt)
+
+
+        # Настройка CORS для разрешения запросов с вашего домена Web App
+    # Restrict CORS to known origins for security
+    allowed_origins = [
+        "https://web.telegram.org",
+        "https://t.me",
+        "https://telegram.org",
+        "https://bakery-mini-app-server-440955f475ad.herokuapp.com"
+    ]
+    
     cors = aiohttp_cors.setup(app, defaults={
-        "*" : aiohttp_cors.ResourceOptions(
-            allow_credentials=True,
-            expose_headers="*",
-            allow_headers="*",
-            allow_methods=["GET", "POST", "PUT", "DELETE"]
-        )
-    })
+            aiohttp_cors.ResourceOptions(
+                allow_credentials=False,  # Disable credentials for security
+                expose_headers=["Content-Type", "Cache-Control", "ETag"],
+                allow_headers=["Content-Type", "Accept", "Origin"],
+                allow_methods=["GET", "POST", "PUT", "DELETE"],
+                allow_origin=allowed_origins
+            )
+        })
 
     # Применяем CORS ко всем маршрутам
     for route in list(app.router.routes()):

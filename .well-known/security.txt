@@ -1,0 +1,5 @@
+Contact: mailto:security@drazhin.by
+Expires: 2026-12-31T23:59:59.000Z
+Preferred-Languages: en, ru, be
+Canonical: https://bakery-mini-app-server-440955f475ad.herokuapp.com/.well-known/security.txt
+Policy: https://github.com/your-username/BakeryMiniAppServer/blob/main/SECURITY.md

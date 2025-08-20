@@ -1,0 +1,112 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [ main, develop, WebApp_Debugging, WebApp_Performance ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for detect-secrets
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-audit bandit detect-secrets
+
+    - name: Run pip-audit (dependency vulnerability scan)
+      run: |
+        echo "🔍 Scanning Python dependencies for known vulnerabilities..."
+        pip-audit --format json --output pip-audit-report.json || true
+        if [ -f pip-audit-report.json ]; then
+          echo "📊 pip-audit results:"
+          cat pip-audit-report.json
+        fi
+
+    - name: Run Bandit (Python security linting)
+      run: |
+        echo "🔍 Running Bandit security analysis..."
+        bandit -r bot/ -f json -o bandit-report.json || true
+        if [ -f bandit-report.json ]; then
+          echo "📊 Bandit results:"
+          cat bandit-report.json
+        fi
+
+    - name: Run detect-secrets (secrets scanning)
+      run: |
+        echo "🔍 Scanning for potential secrets in code..."
+        detect-secrets scan --baseline .secrets.baseline || true
+        detect-secrets audit .secrets.baseline || true
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          pip-audit-report.json
+          bandit-report.json
+        retention-days: 30
+
+    - name: Comment on PR with security findings
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let comment = '## 🔒 Security Audit Results\n\n';
+          
+          // Check pip-audit results
+          if (fs.existsSync('pip-audit-report.json')) {
+            const pipAudit = JSON.parse(fs.readFileSync('pip-audit-report.json', 'utf8'));
+            if (pipAudit.vulnerabilities && pipAudit.vulnerabilities.length > 0) {
+              comment += '### ⚠️ Dependency Vulnerabilities Found\n';
+              comment += 'The following dependencies have known security vulnerabilities:\n\n';
+              pipAudit.vulnerabilities.forEach(vuln => {
+                comment += `- **${vuln.dependency.name}**: ${vuln.description}\n`;
+              });
+              comment += '\n';
+            } else {
+              comment += '✅ No dependency vulnerabilities found\n\n';
+            }
+          }
+          
+          // Check Bandit results
+          if (fs.existsSync('bandit-report.json')) {
+            const bandit = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
+            if (bandit.results && bandit.results.length > 0) {
+              comment += '### ⚠️ Code Security Issues Found\n';
+              comment += 'The following security issues were detected in the code:\n\n';
+              bandit.results.forEach(issue => {
+                comment += `- **${issue.issue_severity}**: ${issue.issue_text} (${issue.filename}:${issue.line_number})\n`;
+              });
+              comment += '\n';
+            } else {
+              comment += '✅ No code security issues found\n\n';
+            }
+          }
+          
+          comment += '---\n*This security audit was performed automatically.*';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
