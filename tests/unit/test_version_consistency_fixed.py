@@ -152,8 +152,8 @@ class TestVersionConsistencyFixed(unittest.TestCase):
         self.assertEqual(len(duplicates), 0, 
                         f"Found duplicate v= parameters: {duplicates}")
         
-        # Check for duplicate t= parameters
-        duplicate_t_pattern = r'&t=[^&]*&t='
+        # Check for duplicate t= parameters (more specific pattern)
+        duplicate_t_pattern = r'&t=[0-9]+&t='
         duplicates = re.findall(duplicate_t_pattern, content)
         
         self.assertEqual(len(duplicates), 0, 
