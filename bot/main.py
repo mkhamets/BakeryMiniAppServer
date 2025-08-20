@@ -456,8 +456,8 @@ def build_delivery_message() -> str:
 async def cb_about(callback: CallbackQuery):
     try:
         await callback.answer("ℹ️ О нас", show_alert=False)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to answer about callback: {e}")
     text = build_about_message()
     await callback.message.answer(
         text,
@@ -491,8 +491,8 @@ async def cb_addresses(callback: CallbackQuery):
 async def cb_delivery(callback: CallbackQuery):
     try:
         await callback.answer("🚚 Условия доставки", show_alert=False)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to answer delivery callback: {e}")
     text = build_delivery_message()
     await callback.message.answer(
         text,
@@ -1363,7 +1363,7 @@ async def main():
     # Настраиваем API сервер
     runner = await setup_api_server()
     port = int(os.environ.get("PORT", 8080))
-    site = web.TCPSite(runner, '0.0.0.0', port)
+    site = web.TCPSite(runner, '0.0.0.0', port)  # nosec B104 - Web server needs to bind to all interfaces
 
     # Запускаем security monitoring если включено
     security_task = None

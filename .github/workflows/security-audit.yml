@@ -22,36 +22,40 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pip-audit bandit detect-secrets
+        pip install pip-audit bandit "detect-secrets[YAML]"
 
     - name: Run pip-audit (dependency vulnerability scan)
       run: |
         echo "🔍 Scanning Python dependencies for known vulnerabilities..."
-        pip-audit --format json --output pip-audit-report.json || true
+        pip-audit --format json --output pip-audit-report.json || echo "pip-audit completed with exit code $?"
         if [ -f pip-audit-report.json ]; then
           echo "📊 pip-audit results:"
           cat pip-audit-report.json
+        else
+          echo "No pip-audit report generated"
         fi
 
     - name: Run Bandit (Python security linting)
       run: |
         echo "🔍 Running Bandit security analysis..."
-        bandit -r bot/ -f json -o bandit-report.json || true
+        bandit -r bot/ -f json -o bandit-report.json || echo "bandit completed with exit code $?"
         if [ -f bandit-report.json ]; then
           echo "📊 Bandit results:"
           cat bandit-report.json
+        else
+          echo "No bandit report generated"
         fi
 
     - name: Run detect-secrets (secrets scanning)
       run: |
         echo "🔍 Scanning for potential secrets in code..."
-        detect-secrets scan --baseline .secrets.baseline || true
-        detect-secrets audit .secrets.baseline || true
+        detect-secrets scan --baseline .secrets.baseline || echo "detect-secrets scan completed with exit code $?"
+        detect-secrets audit .secrets.baseline || echo "detect-secrets audit completed with exit code $?"
 
     - name: Upload security reports
       uses: actions/upload-artifact@v3
@@ -74,32 +78,44 @@ jobs:
           
           // Check pip-audit results
           if (fs.existsSync('pip-audit-report.json')) {
-            const pipAudit = JSON.parse(fs.readFileSync('pip-audit-report.json', 'utf8'));
-            if (pipAudit.vulnerabilities && pipAudit.vulnerabilities.length > 0) {
-              comment += '### ⚠️ Dependency Vulnerabilities Found\n';
-              comment += 'The following dependencies have known security vulnerabilities:\n\n';
-              pipAudit.vulnerabilities.forEach(vuln => {
-                comment += `- **${vuln.dependency.name}**: ${vuln.description}\n`;
-              });
-              comment += '\n';
-            } else {
-              comment += '✅ No dependency vulnerabilities found\n\n';
+            try {
+              const pipAudit = JSON.parse(fs.readFileSync('pip-audit-report.json', 'utf8'));
+              if (pipAudit.vulnerabilities && pipAudit.vulnerabilities.length > 0) {
+                comment += '### ⚠️ Dependency Vulnerabilities Found\n';
+                comment += 'The following dependencies have known security vulnerabilities:\n\n';
+                pipAudit.vulnerabilities.forEach(vuln => {
+                  comment += `- **${vuln.dependency.name}**: ${vuln.description}\n`;
+                });
+                comment += '\n';
+              } else {
+                comment += '✅ No dependency vulnerabilities found\n\n';
+              }
+            } catch (error) {
+              comment += '⚠️ Error parsing pip-audit results\n\n';
             }
+          } else {
+            comment += 'ℹ️ No pip-audit report available\n\n';
           }
           
           // Check Bandit results
           if (fs.existsSync('bandit-report.json')) {
-            const bandit = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
-            if (bandit.results && bandit.results.length > 0) {
-              comment += '### ⚠️ Code Security Issues Found\n';
-              comment += 'The following security issues were detected in the code:\n\n';
-              bandit.results.forEach(issue => {
-                comment += `- **${issue.issue_severity}**: ${issue.issue_text} (${issue.filename}:${issue.line_number})\n`;
-              });
-              comment += '\n';
-            } else {
-              comment += '✅ No code security issues found\n\n';
+            try {
+              const bandit = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
+              if (bandit.results && bandit.results.length > 0) {
+                comment += '### ⚠️ Code Security Issues Found\n';
+                comment += 'The following security issues were detected in the code:\n\n';
+                bandit.results.forEach(issue => {
+                  comment += `- **${issue.issue_severity}**: ${issue.issue_text} (${issue.filename}:${issue.line_number})\n`;
+                });
+                comment += '\n';
+              } else {
+                comment += '✅ No code security issues found\n\n';
+              }
+            } catch (error) {
+              comment += '⚠️ Error parsing bandit results\n\n';
             }
+          } else {
+            comment += 'ℹ️ No bandit report available\n\n';
           }
           
           comment += '---\n*This security audit was performed automatically.*';

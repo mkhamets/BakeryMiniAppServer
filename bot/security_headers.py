@@ -86,6 +86,6 @@ async def security_headers_middleware(request: Request, handler: Callable[[Reque
 
 def create_content_hash(content: bytes) -> str:
     """Create a stable content hash for ETag generation."""
-    return hashlib.md5(content).hexdigest()
+    return hashlib.sha256(content).hexdigest()
 
 # No global instance needed - use the function directly
