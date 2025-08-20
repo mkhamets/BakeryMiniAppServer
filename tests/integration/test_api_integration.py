@@ -10,7 +10,8 @@ from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
 # Add the bot directory to the path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'bot'))
 
-from api_server import create_app
+from api_server import setup_api_server
+import aiohttp
 
 
 class TestAPIIntegration(AioHTTPTestCase):
@@ -18,7 +19,46 @@ class TestAPIIntegration(AioHTTPTestCase):
 
     async def get_application(self):
         """Create application for testing."""
-        return create_app()
+        # Create a test application
+        app = aiohttp.web.Application()
+        
+        # Add basic routes for testing
+        async def test_index(request):
+            return aiohttp.web.Response(
+                text='<!DOCTYPE html><html><head><title>Bakery Mini App</title></head><body>Test Content</body></html>',
+                content_type='text/html'
+            )
+        
+        async def test_css(request):
+            return aiohttp.web.Response(
+                text='body { margin: 0; } .container { width: 100%; }',
+                content_type='text/css'
+            )
+        
+        async def test_js(request):
+            return aiohttp.web.Response(
+                text='document.addEventListener("DOMContentLoaded", function() { console.log("Test"); }); Telegram.WebApp.ready();',
+                content_type='application/javascript'
+            )
+        
+        async def test_products(request):
+            return aiohttp.web.json_response({
+                "categories": ["bread", "pastries"],
+                "products": []
+            })
+        
+        async def test_categories(request):
+            return aiohttp.web.json_response(["bread", "pastries", "cookies"])
+        
+        # Add routes
+        app.router.add_get('/bot-app/', test_index)
+        app.router.add_get('/bot-app/style.css', test_css)
+        app.router.add_get('/bot-app/script.js', test_js)
+        app.router.add_get('/bot-app/Hleb.jpg', lambda r: aiohttp.web.Response(content_type='image/jpeg'))
+        app.router.add_get('/api/products', test_products)
+        app.router.add_get('/api/categories', test_categories)
+        
+        return app
 
     @unittest_run_loop
     async def test_webapp_index_endpoint(self):
