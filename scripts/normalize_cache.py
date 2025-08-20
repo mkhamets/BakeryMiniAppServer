@@ -11,26 +11,31 @@ from pathlib import Path
 def normalize_cache_params(content: str) -> str:
     """Normalize cache parameters in content."""
     
-    # Pattern to match URLs with multiple ?v=&t= parameters
-    # This will match URLs like: script.js?v=1.3.37?v=1.3.37?v=1.3.36&t=1755625001t=1755424226t=1755424140
-    pattern = r'([^"\s]+\.(?:css|js|jpg|jpeg|svg|png|ico))\?v=[0-9.]+(?:\?v=[0-9.]+)*(?:&t=[0-9]+(?:\?v=[0-9.]+)*)*(?:&t=[0-9]+(?:\?v=[0-9.]+)*)*'
+    # Pattern to match URLs with cache parameters
+    pattern = r'([^"\s]+\.(?:css|js|jpg|jpeg|svg|png|ico))\?v=[0-9.]+&t=[0-9]+(?:t=[0-9]+)*'
     
     def replace_url(match):
         url = match.group(0)
-        base_url = re.sub(r'\?v=[0-9.]+(?:\?v=[0-9.]+)*', '', url)
-        base_url = re.sub(r'&t=[0-9]+(?:\?v=[0-9.]+)*', '', base_url)
-        base_url = re.sub(r'&t=[0-9]+', '', base_url)
         
-        # Keep only the first v and t parameters
+        # Extract base URL (everything before ?v=)
+        base_url = url.split('?v=')[0]
+        
+        # Extract first version parameter
         v_match = re.search(r'\?v=([0-9.]+)', url)
-        t_match = re.search(r'&t=([0-9]+)', url)
+        if not v_match:
+            return url
         
-        if v_match and t_match:
-            return f"{base_url}?v={v_match.group(1)}&t={t_match.group(1)}"
-        elif v_match:
-            return f"{base_url}?v={v_match.group(1)}"
-        else:
-            return base_url
+        version = v_match.group(1)
+        
+        # Extract first timestamp parameter (after &t=)
+        t_match = re.search(r'&t=([0-9]+)', url)
+        if not t_match:
+            return f"{base_url}?v={version}"
+        
+        timestamp = t_match.group(1)
+        
+        # Return normalized URL with only first v and t parameters
+        return f"{base_url}?v={version}&t={timestamp}"
     
     return re.sub(pattern, replace_url, content)
 

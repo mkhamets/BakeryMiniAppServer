@@ -173,11 +173,14 @@ class TestVersionConsistencyFixed(unittest.TestCase):
             self.assertTrue(url.startswith('/bot-app/'), 
                           f"CSS URL should start with /bot-app/: {url}")
         
-        # Check JS URLs
+                # Check JS URLs (allow both /bot-app/ and external URLs like Telegram)
         js_urls = re.findall(r'src="([^"]*\.js[^"]*)"', content)
         for url in js_urls:
-            self.assertTrue(url.startswith('/bot-app/'), 
-                          f"JS URL should start with /bot-app/: {url}")
+            if url.startswith('https://telegram.org/'):
+                # External Telegram URLs are allowed
+                continue
+            self.assertTrue(url.startswith('/bot-app/'),
+                          f"JS URL should start with /bot-app/ or be external: {url}")
         
         # Check image URLs
         img_urls = re.findall(r'src="([^"]*\.(?:jpg|jpeg|png|svg)[^"]*)"', content)

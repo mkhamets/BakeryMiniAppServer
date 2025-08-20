@@ -16,8 +16,6 @@ from pathlib import Path
 # Add the bot directory to the path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'bot'))
 
-from main import load_order_counter, save_order_counter, generate_order_number
-
 
 class TestDataManagementFixed(unittest.TestCase):
     """Test data management functionality with fixed async handling."""
@@ -26,10 +24,15 @@ class TestDataManagementFixed(unittest.TestCase):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
         self.test_counter_file = os.path.join(self.temp_dir, 'order_counter.json')
+        
+        # Create a new event loop for each test
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
     def tearDown(self):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir)
+        self.loop.close()
 
     @patch('bot.main.ORDER_COUNTER_FILE')
     def test_load_order_counter_success(self, mock_counter_file):
@@ -37,18 +40,24 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Create test data
-        test_data = {"counter": 42, "last_reset_month": 8}
+        test_data = {"counter": 42, "month": 8}
         
         with open(self.test_counter_file, 'w', encoding='utf-8') as f:
             json.dump(test_data, f)
         
         # Run the async function
-        result = asyncio.run(load_order_counter())
+        result = self.loop.run_until_complete(self._import_and_load_counter())
         
         # Check result
         self.assertIsNotNone(result)
         self.assertEqual(result["counter"], 42)
         self.assertEqual(result["last_reset_month"], 8)
+
+    async def _import_and_load_counter(self):
+        """Import and load counter in a separate function to avoid loop conflicts."""
+        from main import load_order_counter, order_counter, last_reset_month
+        await load_order_counter()
+        return {'counter': order_counter, 'last_reset_month': last_reset_month}
 
     @patch('bot.main.ORDER_COUNTER_FILE')
     def test_load_order_counter_file_not_found(self, mock_counter_file):
@@ -56,7 +65,7 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Run the async function
-        result = asyncio.run(load_order_counter())
+        result = self.loop.run_until_complete(self._import_and_load_counter())
         
         # Should return default values
         self.assertIsNotNone(result)
@@ -73,7 +82,7 @@ class TestDataManagementFixed(unittest.TestCase):
             f.write("invalid json content")
         
         # Run the async function
-        result = asyncio.run(load_order_counter())
+        result = self.loop.run_until_complete(self._import_and_load_counter())
         
         # Should return default values
         self.assertIsNotNone(result)
@@ -88,7 +97,7 @@ class TestDataManagementFixed(unittest.TestCase):
         test_data = {"counter": 100, "last_reset_month": 8}
         
         # Run the async function
-        result = asyncio.run(save_order_counter(test_data))
+        result = self.loop.run_until_complete(self._import_and_save_counter(test_data))
         
         # Check that file was created
         self.assertTrue(os.path.exists(self.test_counter_file))
@@ -100,6 +109,11 @@ class TestDataManagementFixed(unittest.TestCase):
         self.assertEqual(saved_data["counter"], 100)
         self.assertEqual(saved_data["last_reset_month"], 8)
 
+    async def _import_and_save_counter(self, data):
+        """Import and save counter in a separate function to avoid loop conflicts."""
+        from main import save_order_counter
+        return await save_order_counter(data)
+
     @patch('bot.main.ORDER_COUNTER_FILE')
     def test_save_order_counter_file_error(self, mock_counter_file):
         """Test saving order counter with file error."""
@@ -109,7 +123,7 @@ class TestDataManagementFixed(unittest.TestCase):
         
         # Run the async function - should handle error gracefully
         try:
-            result = asyncio.run(save_order_counter(test_data))
+            result = self.loop.run_until_complete(self._import_and_save_counter(test_data))
             # Should not raise exception, but may return False or None
         except Exception as e:
             # If exception is raised, it should be handled gracefully
@@ -121,17 +135,22 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Create initial counter data
-        test_data = {"counter": 1, "last_reset_month": 8}
+        test_data = {"counter": 1, "month": 8}
         with open(self.test_counter_file, 'w', encoding='utf-8') as f:
             json.dump(test_data, f)
         
         # Run the async function
-        result = asyncio.run(generate_order_number())
+        result = self.loop.run_until_complete(self._import_and_generate_order())
         
         # Check result format
         self.assertIsInstance(result, str)
         self.assertTrue(result.startswith('#'))
         self.assertIn('/', result)
+
+    async def _import_and_generate_order(self):
+        """Import and generate order number in a separate function to avoid loop conflicts."""
+        from main import generate_order_number
+        return await generate_order_number()
 
     @patch('bot.main.ORDER_COUNTER_FILE')
     def test_generate_order_number_year_change(self, mock_counter_file):
@@ -139,12 +158,12 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Create counter data from previous year
-        test_data = {"counter": 999, "last_reset_month": 12}
+        test_data = {"counter": 999, "month": 12}
         with open(self.test_counter_file, 'w', encoding='utf-8') as f:
             json.dump(test_data, f)
         
         # Run the async function
-        result = asyncio.run(generate_order_number())
+        result = self.loop.run_until_complete(self._import_and_generate_order())
         
         # Check result format
         self.assertIsInstance(result, str)
@@ -164,12 +183,12 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Create counter data from previous month
-        test_data = {"counter": 50, "last_reset_month": 7}
+        test_data = {"counter": 50, "month": 7}
         with open(self.test_counter_file, 'w', encoding='utf-8') as f:
             json.dump(test_data, f)
         
         # Run the async function
-        result = asyncio.run(generate_order_number())
+        result = self.loop.run_until_complete(self._import_and_generate_order())
         
         # Check result format
         self.assertIsInstance(result, str)
@@ -188,12 +207,12 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Create counter data for current month
-        test_data = {"counter": 5, "last_reset_month": 8}
+        test_data = {"counter": 5, "month": 8}
         with open(self.test_counter_file, 'w', encoding='utf-8') as f:
             json.dump(test_data, f)
         
         # Run the async function
-        result = asyncio.run(generate_order_number())
+        result = self.loop.run_until_complete(self._import_and_generate_order())
         
         # Check result format
         self.assertIsInstance(result, str)
@@ -212,7 +231,7 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Run the async function
-        result = asyncio.run(generate_order_number())
+        result = self.loop.run_until_complete(self._import_and_generate_order())
         
         # Check result format
         self.assertIsInstance(result, str)
@@ -265,16 +284,17 @@ class TestDataManagementFixed(unittest.TestCase):
         mock_counter_file.__str__ = lambda: self.test_counter_file
         
         # Create initial counter data
-        test_data = {"counter": 1, "last_reset_month": 8}
+        test_data = {"counter": 1, "month": 8}
         with open(self.test_counter_file, 'w', encoding='utf-8') as f:
             json.dump(test_data, f)
         
         # Run multiple concurrent generations
         async def generate_multiple():
+            from main import generate_order_number
             tasks = [generate_order_number() for _ in range(5)]
             return await asyncio.gather(*tasks)
         
-        results = asyncio.run(generate_multiple())
+        results = self.loop.run_until_complete(generate_multiple())
         
         # All results should be valid
         for result in results:
