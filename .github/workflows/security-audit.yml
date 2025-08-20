@@ -58,7 +58,7 @@ jobs:
         detect-secrets audit .secrets.baseline || echo "detect-secrets audit completed with exit code $?"
 
     - name: Upload security reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-reports
