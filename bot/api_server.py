@@ -266,21 +266,12 @@ async def setup_api_server():
 
 
         # Настройка CORS для разрешения запросов с вашего домена Web App
-    # Restrict CORS to known origins for security
-    allowed_origins = [
-        "https://web.telegram.org",
-        "https://t.me",
-        "https://telegram.org",
-        "https://bakery-mini-app-server-440955f475ad.herokuapp.com"
-    ]
-    
     cors = aiohttp_cors.setup(app, defaults={
-            aiohttp_cors.ResourceOptions(
-                allow_credentials=False,  # Disable credentials for security
+            "*" : aiohttp_cors.ResourceOptions(
+                allow_credentials=False,  # Disabled for security
                 expose_headers=["Content-Type", "Cache-Control", "ETag"],
                 allow_headers=["Content-Type", "Accept", "Origin"],
-                allow_methods=["GET", "POST", "PUT", "DELETE"],
-                allow_origin=allowed_origins
+                allow_methods=["GET", "POST", "PUT", "DELETE"]
             )
         })
 
