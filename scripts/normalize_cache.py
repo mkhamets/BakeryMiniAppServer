@@ -13,7 +13,7 @@ def normalize_cache_params(content: str) -> str:
     
     # Pattern to match URLs with multiple ?v=&t= parameters
     # This will match URLs like: script.js?v=1.3.37?v=1.3.37?v=1.3.36&t=1755625001t=1755424226t=1755424140
-    pattern = r'([^"\s]+\.(?:css|js|jpg|svg|png|ico))\?v=[0-9.]+(?:\?v=[0-9.]+)*(?:&t=[0-9]+(?:\?v=[0-9.]+)*)*(?:&t=[0-9]+(?:\?v=[0-9.]+)*)*'
+    pattern = r'([^"\s]+\.(?:css|js|jpg|jpeg|svg|png|ico))\?v=[0-9.]+(?:\?v=[0-9.]+)*(?:&t=[0-9]+(?:\?v=[0-9.]+)*)*(?:&t=[0-9]+(?:\?v=[0-9.]+)*)*'
     
     def replace_url(match):
         url = match.group(0)

@@ -246,7 +246,7 @@ async def setup_api_server():
             return web.Response(status=404, text="File not found")
     
     # Маршрут для статических файлов с умным контролем кеширования
-    app.router.add_get('/bot-app/{filename:.+\.(css|js|png|jpg|jpeg|svg|ico)}', serve_static_with_cache_control)
+    app.router.add_get(r'/bot-app/{filename:.+\.(css|js|png|jpg|jpeg|svg|ico)}', serve_static_with_cache_control)
     
 
 
