@@ -16,6 +16,10 @@ INDEX_HTML="$ROOT_DIR/bot/web_app/index.html"
 STYLE_CSS="$ROOT_DIR/bot/web_app/style.css"
 SCRIPT_JS="$ROOT_DIR/bot/web_app/script.js"
 
+# Normalize existing ?v=&t= chains to a single one before applying new version
+echo "🔧 Normalizing cache parameters..."
+python3 "$ROOT_DIR/scripts/normalize_cache.py" "$INDEX_HTML" "$STYLE_CSS" "$SCRIPT_JS"
+
 # index.html: bump all v&t query params
 sed -i '' -E "s/\?v=[0-9.]+&t=[0-9]+/?v=${VER}&t=${TS}/g" "$INDEX_HTML"
 

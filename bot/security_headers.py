@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 async def security_headers_middleware(request: Request, handler: Callable[[Request], Awaitable[Response]]) -> Response:
     """Add security headers to all responses."""
     
-    # Content Security Policy - restrictive but allows Telegram WebApp functionality
+    # Content Security Policy - allows Telegram WebApp functionality and Google Fonts
     csp_policy = (
         "default-src 'self' https://telegram.org; "
-        "script-src 'self' 'unsafe-inline' https://telegram.org; "
-        "style-src 'self' 'unsafe-inline' https://telegram.org; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org; "
+        "style-src 'self' 'unsafe-inline' https://telegram.org https://fonts.googleapis.com; "
+        "font-src 'self' https://telegram.org https://fonts.gstatic.com; "
         "img-src 'self' data: https: http:; "
-        "font-src 'self' https://telegram.org; "
         "connect-src 'self' https://telegram.org; "
         "frame-src 'none'; "
         "object-src 'none'; "
@@ -31,7 +31,7 @@ async def security_headers_middleware(request: Request, handler: Callable[[Reque
         "upgrade-insecure-requests"
     )
     
-    # Permissions Policy - restrict sensitive APIs
+    # Permissions Policy - restrict sensitive APIs (removed unrecognized features)
     permissions_policy = (
         "geolocation=(), "
         "microphone=(), "
@@ -41,7 +41,6 @@ async def security_headers_middleware(request: Request, handler: Callable[[Reque
         "magnetometer=(), "
         "gyroscope=(), "
         "accelerometer=(), "
-        "ambient-light-sensor=(), "
         "autoplay=(), "
         "encrypted-media=(), "
         "picture-in-picture=()"
