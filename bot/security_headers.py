@@ -12,80 +12,81 @@ from aiohttp.web_response import Response
 
 logger = logging.getLogger(__name__)
 
-class SecurityHeadersMiddleware:
-    """Middleware to add security headers to all responses."""
+@web.middleware
+async def security_headers_middleware(request: Request, handler: Callable[[Request], Awaitable[Response]]) -> Response:
+    """Add security headers to all responses."""
     
-    def __init__(self):
-        # Content Security Policy - restrictive but allows Telegram WebApp functionality
-        self.csp_policy = (
-            "default-src 'self' https://telegram.org; "
-            "script-src 'self' 'unsafe-inline' https://telegram.org; "
-            "style-src 'self' 'unsafe-inline' https://telegram.org; "
-            "img-src 'self' data: https: http:; "
-            "font-src 'self' https://telegram.org; "
-            "connect-src 'self' https://telegram.org; "
-            "frame-src 'none'; "
-            "object-src 'none'; "
-            "base-uri 'self'; "
-            "form-action 'self'; "
-            "upgrade-insecure-requests"
-        )
-        
-        # Permissions Policy - restrict sensitive APIs
-        self.permissions_policy = (
-            "geolocation=(), "
-            "microphone=(), "
-            "camera=(), "
-            "payment=(), "
-            "usb=(), "
-            "magnetometer=(), "
-            "gyroscope=(), "
-            "accelerometer=(), "
-            "ambient-light-sensor=(), "
-            "autoplay=(), "
-            "encrypted-media=(), "
-            "picture-in-picture=()"
-        )
+    # Content Security Policy - restrictive but allows Telegram WebApp functionality
+    csp_policy = (
+        "default-src 'self' https://telegram.org; "
+        "script-src 'self' 'unsafe-inline' https://telegram.org; "
+        "style-src 'self' 'unsafe-inline' https://telegram.org; "
+        "img-src 'self' data: https: http:; "
+        "font-src 'self' https://telegram.org; "
+        "connect-src 'self' https://telegram.org; "
+        "frame-src 'none'; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "upgrade-insecure-requests"
+    )
     
-    async def __call__(self, request: Request, handler: Callable[[Request], Awaitable[Response]]) -> Response:
-        """Add security headers to response."""
+    # Permissions Policy - restrict sensitive APIs
+    permissions_policy = (
+        "geolocation=(), "
+        "microphone=(), "
+        "camera=(), "
+        "payment=(), "
+        "usb=(), "
+        "magnetometer=(), "
+        "gyroscope=(), "
+        "accelerometer=(), "
+        "ambient-light-sensor=(), "
+        "autoplay=(), "
+        "encrypted-media=(), "
+        "picture-in-picture=()"
+    )
+    
+    try:
         response = await handler(request)
+    except Exception as e:
+        # If handler fails, create a basic error response with security headers
+        response = web.Response(status=500, text="Internal Server Error")
+    
+    # Security headers
+    response.headers.update({
+        # Prevent clickjacking
+        'X-Frame-Options': 'DENY',
         
-        # Security headers
-        response.headers.update({
-            # Prevent clickjacking
-            'X-Frame-Options': 'DENY',
-            
-            # Prevent MIME type sniffing
-            'X-Content-Type-Options': 'nosniff',
-            
-            # Referrer policy
-            'Referrer-Policy': 'strict-origin-when-cross-origin',
-            
-            # Content Security Policy
-            'Content-Security-Policy': self.csp_policy,
-            
-            # Permissions Policy
-            'Permissions-Policy': self.permissions_policy,
-            
-            # XSS Protection (legacy but still useful)
-            'X-XSS-Protection': '1; mode=block',
-            
-            # Prevent caching of sensitive data
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-        })
+        # Prevent MIME type sniffing
+        'X-Content-Type-Options': 'nosniff',
         
-        # Add HSTS header only for HTTPS requests
-        if request.scheme == 'https':
-            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+        # Referrer policy
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
         
-        return response
+        # Content Security Policy
+        'Content-Security-Policy': csp_policy,
+        
+        # Permissions Policy
+        'Permissions-Policy': permissions_policy,
+        
+        # XSS Protection (legacy but still useful)
+        'X-XSS-Protection': '1; mode=block',
+        
+        # Prevent caching of sensitive data
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    })
+    
+    # Add HSTS header only for HTTPS requests
+    if request.scheme == 'https':
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+    
+    return response
 
 def create_content_hash(content: bytes) -> str:
     """Create a stable content hash for ETag generation."""
     return hashlib.md5(content).hexdigest()
 
-# Global middleware instance
-security_headers_middleware = SecurityHeadersMiddleware()
+# No global instance needed - use the function directly
