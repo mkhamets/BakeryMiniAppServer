@@ -515,6 +515,15 @@ async def command_start_handler(message: Message) -> None:
     )
 
 
+@dp.message(F.text == "/menu")
+async def command_menu_handler(message: Message) -> None:
+    """Обработчик команды /menu."""
+    await message.answer(
+        "🍞 Главное меню пекарни Дражина:",
+        reply_markup=reply_main_menu_for(message.from_user.id)
+    )
+
+
 @dp.message(F.text == "О нас")
 async def about_us(message: Message):
     """Обработчик кнопки 'О нас'."""
@@ -1342,7 +1351,7 @@ def _format_user_email_body(order_number: str, order_details: dict, cart_items: 
 async def block_text_input(message: Message):
     """Блокирует текстовый ввод, если он не является командой или кнопкой."""
     allowed_texts = list(CATEGORY_MAP.keys()) + [
-        "О нас", "Наши адреса", "О доставке", "/start"
+        "О нас", "Наши адреса", "О доставке", "/start", "/menu"
     ]
 
     if (message.text not in allowed_texts and 
