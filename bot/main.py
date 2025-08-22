@@ -1347,7 +1347,10 @@ async def block_text_input(message: Message):
 
     if (message.text not in allowed_texts and 
         not re.match(r"🛒 Проверить корзину(\s\(\d+\))?", message.text)):
-        await message.answer("⚠️ Пожалуйста, используйте кнопки внизу для управления ботом 👇")
+        await message.answer(
+            "⚠️ Пожалуйста, используйте кнопки внизу для управления ботом 👇",
+            reply_markup=reply_main_menu_for(message.from_user.id)
+        )
 
 
 async def main():
