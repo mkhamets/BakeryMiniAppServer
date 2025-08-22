@@ -1228,10 +1228,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.47&t=1755673708", image: "images/bakery.svg?v=1.3.47&t=1755673708" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.47&t=1755673708", image: "images/crouasan.svg?v=1.3.47&t=1755673708" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.47&t=1755673708", image: "images/bread1.svg?v=1.3.47&t=1755673708" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.47&t=1755673708", image: "images/cookie.svg?v=1.3.47&t=1755673708" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.84&t=1755875285", image: "images/bakery.svg?v=1.3.84&t=1755875285" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.84&t=1755875285", image: "images/crouasan.svg?v=1.3.84&t=1755875285" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.84&t=1755875285", image: "images/bread1.svg?v=1.3.84&t=1755875285" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.84&t=1755875285", image: "images/cookie.svg?v=1.3.84&t=1755875285" }
     };
 
     await fetchProductsData();
@@ -2583,7 +2583,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.47&t=1755673708';
+                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.84&t=1755875285';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
