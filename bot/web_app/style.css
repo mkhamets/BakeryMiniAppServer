@@ -426,11 +426,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     transition: color 0.2s ease;
     cursor: pointer;
     font-family: 'Yeseva One', serif;
+    font-weight: normal;
 }
 
 .cart-item-name:hover {
     color: #b76c4b;
-    text-decoration: underline;
 }
 
 .cart-item-name::after {
