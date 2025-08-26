@@ -1361,12 +1361,50 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-size: 1.1em;
 }
 
+/* Even more specific selectors with higher specificity */
+.product-screen .product-screen-info-item .wight .ff-2,
+.product-screen .product-screen-info-item .availability .ff-2,
+.product-screen .product-screen-ingredients .structure .ff-2,
+.product-screen .product-screen-nutrition .calories .ff-2,
+.product-screen .product-screen-nutrition .energy-value .ff-2 {
+    font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;
+    font-size: 1.1em;
+}
+
 /* Alternative approach - direct targeting of span elements */
 .product-screen .wight span,
 .product-screen .availability span,
 .product-screen .structure span,
 .product-screen .calories span,
 .product-screen .energy-value span {
+    font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;
+    font-size: 1.1em;
+}
+
+/* Target the exact HTML structure from JavaScript */
+.product-screen .product-screen-info-item .wight .ff-2,
+.product-screen .product-screen-info-item .availability .ff-2,
+.product-screen .product-screen-ingredients .structure .ff-2,
+.product-screen .product-screen-nutrition .calories .ff-2,
+.product-screen .product-screen-nutrition .energy-value .ff-2 {
+    font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;
+    font-size: 1.1em;
+}
+
+/* Nuclear option - target all spans within product screen info */
+.product-screen .product-screen-info-item span.ff-2,
+.product-screen .product-screen-ingredients span.ff-2,
+.product-screen .product-screen-nutrition span.ff-2 {
+    font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;
+    font-size: 1.1em;
+}
+
+/* Maximum specificity - target the exact text content */
+.product-screen .product-screen-info-item .wight .ff-2:contains("Вес:"),
+.product-screen .product-screen-info-item .availability .ff-2:contains("Доступен для заказа:"),
+.product-screen .product-screen-ingredients .structure .ff-2:contains("Состав:"),
+.product-screen .product-screen-nutrition .calories .ff-2:contains("Калорийность:"),
+.product-screen .product-screen-nutrition .energy-value .ff-2:contains("Энергетическая ценность:") {
     font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;
     font-size: 1.1em;
 }
@@ -2288,6 +2326,7 @@ body * {
     font-size: 1rem;
 }
 
+/* General .ff-2 rule - but product screen overrides this */
 .ff-2 {
     font-family: 'Yeseva One', serif;
 }
