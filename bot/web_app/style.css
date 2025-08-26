@@ -2839,9 +2839,12 @@ h1, .category-title, .category-title-with-icon {
 .disabled-products-error .error-message {
     display: flex !important;
     align-items: center;
+    justify-content: center;
     font-weight: 500;
+    font-size: 14px;
     margin: 0;
     color: #721c24;
+    text-align: center;
 }
 
 .disabled-products-error .error-icon {
