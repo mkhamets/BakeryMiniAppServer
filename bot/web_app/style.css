@@ -2823,33 +2823,31 @@ h1, .category-title, .category-title-with-icon {
     opacity: 0.5;
 }
 
-/* NEW: Error message for disabled products */
+/* NEW: Error message for disabled products - Bootstrap Alert Style */
 .disabled-products-error {
     margin: 20px 0;
-    padding: 16px 20px;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 8px;
-    color: #721c24;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
 }
 
-.disabled-products-error .error-message {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-    font-size: 14px;
+.disabled-products-error .alert {
     margin: 0;
-    color: #721c24;
-    text-align: center;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.disabled-products-error .error-icon {
-    margin-right: 8px;
-    font-size: 16px;
+.disabled-products-error .alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.disabled-products-error .bi {
+    color: #721c24;
+    flex-shrink: 0;
+}
+
+.disabled-products-error .me-2 {
+    margin-right: 0.5rem !important;
 }
 
 /* NEW: Disabled checkout button styles */
