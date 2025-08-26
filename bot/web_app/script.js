@@ -1952,9 +1952,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
-        // Insert error message above the place order button
+        // Insert error message between availability-info-container and cart-actions-bottom
+        const availabilityInfoContainer = document.getElementById('availability-info-container');
         const cartActionsBottom = document.querySelector('.cart-actions-bottom');
-        if (cartActionsBottom) {
+        
+        if (availabilityInfoContainer && cartActionsBottom) {
+            // Insert between availability info and cart actions
+            availabilityInfoContainer.parentNode.insertBefore(errorContainer, cartActionsBottom);
+        } else if (cartActionsBottom) {
+            // Fallback: insert above cart actions if availability info doesn't exist
             cartActionsBottom.parentNode.insertBefore(errorContainer, cartActionsBottom);
         }
     }
