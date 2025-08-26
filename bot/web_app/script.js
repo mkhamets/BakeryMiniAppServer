@@ -2132,6 +2132,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('cart');
         renderCart();
         updateMainButtonCartInfo();
+        
+        // 🔄 Refresh product grid and product screen to update availability
+        const currentView = getCurrentView();
+        if (currentView === 'products') {
+            const currentCategory = localStorage.getItem('lastProductCategory');
+            if (currentCategory) {
+                console.log('🔄 Refreshing product grid after cart clear');
+                loadProducts(currentCategory);
+            }
+        }
+        
         console.log('🗑️ Cart cleared successfully');
     }
 
@@ -2640,16 +2651,26 @@ function addErrorClearingListeners() {
     function updateMainButtonCartInfo() {
         const currentView = getCurrentView();
         
+        // Update page title
+        updatePageTitle();
+        
+        // Debug logging
+        console.log('🔍 updateMainButtonCartInfo called - currentView:', currentView);
+        
         // Hide the main button if we're on cart or checkout screens
         if (currentView === 'cart' || currentView === 'checkout') {
+            console.log('🔍 Hiding cart button - on cart/checkout screen');
             Telegram.WebApp.MainButton.hide();
             return;
         }
         
         const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        console.log('🔍 Cart items:', totalItems, 'Total price:', totalPrice);
 
         if (totalItems > 0) {
+            console.log('🔍 Showing cart button with:', totalItems, 'items');
             Telegram.WebApp.MainButton.setText(`Корзина (${totalItems}) - ${totalPrice.toFixed(2)} р.`);
             // Устанавливаем коричневый цвет как у кнопок + и - и "Начать покупки"
             Telegram.WebApp.MainButton.setParams({
@@ -2657,6 +2678,7 @@ function addErrorClearingListeners() {
             });
             Telegram.WebApp.MainButton.show();
         } else {
+            console.log('🔍 Hiding cart button - no items');
             Telegram.WebApp.MainButton.hide();
         }
     }
@@ -3271,7 +3293,7 @@ function addErrorClearingListeners() {
     }
 
     // Update page title with cart status
-    function updateMainButtonCartInfo() {
+    function updatePageTitle() {
         const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
