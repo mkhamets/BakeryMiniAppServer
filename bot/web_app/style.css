@@ -2796,14 +2796,14 @@ h1, .category-title, .category-title-with-icon {
     width: 100%;
     background-color: #dc3545;
     color: white;
-    padding: 6px 12px;
+    padding: 2px 12px;
     border-radius: 0px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
     z-index: 2;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
-    text-align: center;
+    text-align: left;
     box-sizing: border-box;
 }
 
@@ -2842,6 +2842,7 @@ h1, .category-title, .category-title-with-icon {
     align-items: center;
     font-weight: 500;
     margin: 0;
+    color: #721c24;
 }
 
 .disabled-products-error .error-icon {
