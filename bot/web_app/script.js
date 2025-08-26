@@ -1634,12 +1634,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                          data-product-id="${product.id}"
                          loading="lazy" decoding="async"
                          onerror="this.onerror=null;this.src='https://placehold.co/300x225/e0e0e0/555?text=Нет+фото';">
-                    ${product.for_vegans && product.for_vegans !== 'N/A' ? 
-                        `<div class="product-vegan-icon">
-                            <svg class="svg svg-vegan">
-                                <use xlink:href="sprite.svg#vegan"></use>
-                            </svg>
-                        </div>` : ''}
+                    <div class="product-vegan-icon" style="display: ${product.for_vegans && product.for_vegans !== 'N/A' ? 'block' : 'none'};">
+                        <svg class="svg svg-vegan">
+                            <use xlink:href="sprite.svg#vegan"></use>
+                        </svg>
+                    </div>
                 </div>
                 <div class="product-info">
                     <div class="product-name">

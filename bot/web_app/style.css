@@ -204,8 +204,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .product-price {
     font-size: 1.1rem;
-    color: #000000;
-    font-weight: bold;
+    color: #5a3e2b;
+    font-weight: normal;
     flex-shrink: 0;
     font-family: 'Yeseva One', serif;
 }
