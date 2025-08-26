@@ -137,8 +137,10 @@ async def get_products_from_category_page(session, category_url):
                     'url': product_url,
                     'image_url': image_url,
                     'price': price,
-                    'availability_days': 'N/A', # Временно N/A
+                    'short_description': 'N/A', # Временно N/A
                     'weight': 'N/A', # Здесь временно N/A, будет обновлено
+                    'for_vegans': 'N/A', # Временно N/A
+                    'availability_days': 'N/A', # Временно N/A
                     'ingredients': 'N/A', # Временно N/A
                     'calories': 'N/A', # Временно N/A
                     'energy_value': 'N/A', # Временно N/A
@@ -167,7 +169,9 @@ async def get_product_details(session, product_url):
         'Upgrade-Insecure-Requests': '1',
     }
     details = {
+        'short_description': 'N/A',
         'weight': 'N/A',
+        'for_vegans': 'N/A',
         'availability_days': 'N/A',
         'ingredients': 'N/A',
         'calories': 'N/A',
@@ -254,6 +258,34 @@ async def get_product_details(session, product_url):
                     energy_text = energy_alt_element.get_text(strip=True)
                     details['energy_value'] = energy_text.replace('Энергетическая ценность:', '').strip()
                     logger.debug(f"Найдено детали (ALT): Энергетическая ценность: {details['energy_value']}")
+
+            # Извлечение краткого описания
+            short_desc_element = soup.select_one('div.short-description p')
+            if short_desc_element:
+                details['short_description'] = short_desc_element.get_text(strip=True)
+                logger.debug(f"Найдено детали: Краткое описание: {details['short_description'][:50]}...")
+            else:
+                # Альтернативный селектор
+                short_desc_alt_element = soup.select_one('div.short-description')
+                if short_desc_alt_element:
+                    details['short_description'] = short_desc_alt_element.get_text(strip=True)
+                    logger.debug(f"Найдено детали (ALT): Краткое описание: {details['short_description'][:50]}...")
+
+            # Извлечение информации о веганстве
+            # Ищем элемент с текстом "Подходит веганам"
+            vegan_spans = soup.find_all('span', string=lambda text: text and 'Подходит веганам' in text)
+            if vegan_spans:
+                details['for_vegans'] = 'Y'
+                logger.debug(f"Найдено детали: Подходит веганам: Y")
+            else:
+                # Альтернативный поиск - ищем SVG иконку вегана
+                vegan_svg = soup.select_one('svg.svg-vegan')
+                if vegan_svg:
+                    details['for_vegans'] = 'Y'
+                    logger.debug(f"Найдено детали (ALT): Подходит веганам: Y (найдена SVG иконка)")
+                else:
+                    details['for_vegans'] = 'N/A'
+                    logger.debug(f"Найдено детали: Подходит веганам: N/A")
 
             return details
 

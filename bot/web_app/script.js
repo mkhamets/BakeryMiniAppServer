@@ -2802,17 +2802,6 @@ function addErrorClearingListeners() {
 
             <div class="product-screen-info">`;
 
-                        // Добавляем информацию о весе
-                if (product.weight && product.weight !== 'N/A') {
-                    screenHTML += `
-                        <div class="product-screen-info-item product-screen-info-item-weight">
-                            <div class="wight fz-100">
-                                <span class="weight-label">Вес:</span>
-                                ${product.weight} гр
-                            </div>
-                        </div>`;
-                }
-
                         // Добавляем информацию о доступности
                 if (product.availability_days && product.availability_days !== 'N/A') {
                     screenHTML += `
@@ -2820,6 +2809,17 @@ function addErrorClearingListeners() {
                             <div class="availability fz-100">
                                 <span class="availability-label">Доступен для заказа:</span>
                                 ${product.availability_days}
+                            </div>
+                        </div>`;
+                }
+
+                        // Добавляем информацию о весе
+                if (product.weight && product.weight !== 'N/A') {
+                    screenHTML += `
+                        <div class="product-screen-info-item product-screen-info-item-weight">
+                            <div class="wight fz-100">
+                                <span class="weight-label">Вес:</span>
+                                ${product.weight} гр
                             </div>
                         </div>`;
                 }
