@@ -1416,8 +1416,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-vegan-icon .svg-vegan {
-    width: 40%; /* 2x bigger (was 20%) */
-    height: 40%; /* 2x bigger (was 20%) */
+    width: 60px; /* Fixed width instead of percentage */
+    height: 60px; /* Fixed height instead of percentage */
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
