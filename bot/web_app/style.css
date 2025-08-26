@@ -2151,17 +2151,7 @@ body * {
     box-shadow: 0 0 12px rgba(255, 68, 68, 0.4) !important;
 }
 
-.error-message {
-    color: #ff0202;
-    font-size: 12px;
-    margin-top: 4px;
-    font-weight: 500;
-    display: none;
-}
 
-.error-message.show {
-    display: block;
-}
 
 /* Payment method styles */
 .payment-method-group {
