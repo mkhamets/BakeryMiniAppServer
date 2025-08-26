@@ -1854,11 +1854,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // NEW: Check for disabled products and render error message
         const disabledProducts = getDisabledProducts(cartItems);
-        renderDisabledProductsError(disabledProducts);
-        updateCheckoutButtonState(disabledProducts);
-
+        
         // Добавляем контейнер с информацией об условиях реализации продуктов
         renderAvailabilityInfo(cartItems);
+        
+        // Render error message AFTER availability info
+        renderDisabledProductsError(disabledProducts);
+        updateCheckoutButtonState(disabledProducts);
 
         // Добавляем обработчики для кнопок в корзине
         if (cartItemsList) {
@@ -1932,6 +1934,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // NEW: Function to render disabled product error message
     function renderDisabledProductsError(disabledProducts) {
+        console.log('🔍 Rendering disabled products error for:', disabledProducts.length, 'products');
+        
         // Remove existing error message if it exists
         const existingError = document.getElementById('disabled-products-error');
         if (existingError) {
@@ -1939,6 +1943,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (disabledProducts.length === 0) {
+            console.log('✅ No disabled products, no error message needed');
             return;
         }
 
@@ -1956,12 +1961,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const availabilityInfoContainer = document.getElementById('availability-info-container');
         const cartActionsBottom = document.querySelector('.cart-actions-bottom');
         
+        console.log('🔍 Availability info container:', availabilityInfoContainer);
+        console.log('🔍 Cart actions bottom:', cartActionsBottom);
+        
         if (availabilityInfoContainer && cartActionsBottom) {
             // Insert AFTER availability info (below it) and BEFORE cart actions
             availabilityInfoContainer.after(errorContainer);
+            console.log('✅ Error message inserted after availability info');
         } else if (cartActionsBottom) {
             // Fallback: insert above cart actions if availability info doesn't exist
             cartActionsBottom.parentNode.insertBefore(errorContainer, cartActionsBottom);
+            console.log('✅ Error message inserted above cart actions (fallback)');
+        } else {
+            console.error('❌ Could not find cart-actions-bottom element');
         }
     }
 

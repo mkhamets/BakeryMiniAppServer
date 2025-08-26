@@ -2030,7 +2030,7 @@ body * {
 }
 
 .error-message {
-    color: #ff4444;
+    color: #ff0202;
     font-size: 12px;
     margin-top: 4px;
     font-weight: 500;
@@ -2791,18 +2791,20 @@ h1, .category-title, .category-title-with-icon {
 .unavailable-label {
     position: absolute;
     top: 8px;
-    left: 8px;
-    right: 8px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
     background-color: #dc3545;
     color: white;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 0px;
     font-size: 14px;
     font-weight: bold;
     z-index: 2;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .disabled-product .cart-item-name {
