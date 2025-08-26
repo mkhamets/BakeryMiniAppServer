@@ -1388,6 +1388,16 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: #000000;
 }
 
+/* Short description styling - matches weight and ingredients values */
+.product-screen .short-description {
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
 .product-screen .mr-25 {
     margin-right: 5px;
 }

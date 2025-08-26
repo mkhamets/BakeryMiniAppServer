@@ -2813,6 +2813,16 @@ function addErrorClearingListeners() {
                         </div>`;
                 }
 
+                        // Добавляем краткое описание
+                if (product.short_description && product.short_description !== 'N/A') {
+                    screenHTML += `
+                        <div class="product-screen-info-item product-screen-info-item-short-description">
+                            <div class="short-description fz-100">
+                                ${product.short_description}
+                            </div>
+                        </div>`;
+                }
+
                         // Добавляем информацию о весе
                 if (product.weight && product.weight !== 'N/A') {
                     screenHTML += `
