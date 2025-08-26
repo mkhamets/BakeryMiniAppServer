@@ -1248,11 +1248,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Set up periodic refresh every minute (60000ms)
         autoRefreshInterval = setInterval(async () => {
-            // Only refresh if app is active and cart has items
-            if (!document.hidden && Object.keys(cart).length > 0) {
+            // Only refresh if app is active
+            if (!document.hidden) {
                 try {
-                    console.log('🔄 Auto-refreshing products data for cart availability check...');
+                    console.log('🔄 Auto-refreshing products data...');
                     await fetchProductsData();
+                    
+                    // 🔄 REFRESH PRODUCT GRID IF ON CATEGORY SCREEN
+                    const productsContainer = document.getElementById('products-container');
+                    if (productsContainer && !productsContainer.classList.contains('hidden')) {
+                        // User is on a category screen, refresh the product grid
+                        const currentCategory = localStorage.getItem('lastProductCategory');
+                        if (currentCategory) {
+                            console.log('🔄 Refreshing product grid for category:', currentCategory);
+                            await loadProducts(currentCategory);
+                        }
+                    }
                 } catch (error) {
                     console.warn('Auto-refresh failed:', error);
                 }
