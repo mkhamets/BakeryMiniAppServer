@@ -2807,7 +2807,7 @@ function addErrorClearingListeners() {
                     screenHTML += `
                         <div class="product-screen-info-item product-screen-info-item-weight">
                             <div class="wight fz-100">
-                                <span class="ff-2 fz-100 mr-25" style="font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;">Вес:</span>
+                                <span class="weight-label">Вес:</span>
                                 ${product.weight} гр
                             </div>
                         </div>`;
@@ -2818,7 +2818,7 @@ function addErrorClearingListeners() {
                     screenHTML += `
                         <div class="product-screen-info-item product-screen-info-item-availability">
                             <div class="availability fz-100">
-                                <span class="ff-2 fz-100 mr-25" style="font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;">Доступен для заказа:</span>
+                                <span class="availability-label">Доступен для заказа:</span>
                                 ${product.availability_days}
                             </div>
                         </div>`;
@@ -2831,7 +2831,7 @@ function addErrorClearingListeners() {
                     screenHTML += `
                         <div class="product-screen-ingredients">
                             <div class="structure fz-100">
-                                <span class="ff-2 fz-100 mr-25" style="font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;">Состав:</span>
+                                <span class="ingredients-label">Состав:</span>
                                 ${product.ingredients}
                             </div>
                         </div>`;
@@ -2843,13 +2843,13 @@ function addErrorClearingListeners() {
                         <div class="product-screen-nutrition">
                             <div class="product-screen-nutrition-value">
                                 <div class="calories fz-100">
-                                    <span class="ff-2 fz-100 mr-25" style="font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;">Калорийность:</span>
+                                    <span class="calories-label">Калорийность:</span>
                                     ${product.calories}
                                 </div>`;
 
                     if (product.energy_value && product.energy_value !== 'N/A') {
                         screenHTML += `<div class="energy-value fz-100">
-                                    <span class="ff-2 fz-100 mr-25" style="font-family: YesevaOne-ex, Arial, Helvetica, sans-serif !important;">Энергетическая ценность:</span>
+                                    <span class="energy-label">Энергетическая ценность:</span>
                                     ${product.energy_value}
                                 </div>`;
                     }
