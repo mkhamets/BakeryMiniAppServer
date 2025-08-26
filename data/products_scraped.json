@@ -13,30 +13,6 @@
             "id": "4e177dfd-4c41-4f6d-a2bb-83e318bb0c07"
         },
         {
-            "name": "Детские сладости с клюквой",
-            "url": "https://drazhin.by/vypechka/detskie-sladosti-s-klyukvoy",
-            "image_url": "https://drazhin.by/assets/cache_image/products/70/medium/dv5a4357_400x500_e57.webP",
-            "price": "9.5",
-            "availability_days": "N/A",
-            "weight": "150",
-            "ingredients": "арахис, сахар, белок яйца, клюква сушеная, вишня сушеная, мука пшеничная в/с.",
-            "calories": "375 Ккал / 100 гр",
-            "energy_value": "Белки: 10,83 г. Жиры: 14,3 г. Углеводы: 45,02 г.",
-            "id": "23abb288-9460-4be2-bffe-10a6c63c339f"
-        },
-        {
-            "name": "Гриссини с сыром пармезан",
-            "url": "https://drazhin.by/vypechka/grissini-s-syrom-parmezan",
-            "image_url": "https://drazhin.by/assets/cache_image/products/71/medium/dv5a4406_400x500_e57.webP",
-            "price": "9",
-            "availability_days": "N/A",
-            "weight": "200",
-            "ingredients": "мука пшеничная в/с, оливковое масло, масло сладкосливочное несоленое 84% (сливки пастеризованные), вода питьевая, дрожжи прессованные, сыр пармезан, соль пищевая морская.",
-            "calories": "303 Ккал / 100 гр",
-            "energy_value": "Белки: 8,72 г. Жиры: 13,3 г. Углеводы: 35,88 г.",
-            "id": "e63f8f42-b4dc-4010-a542-b850cc137b41"
-        },
-        {
             "name": "Гриссини с кунжутом",
             "url": "https://drazhin.by/vypechka/grissini-s-kunzhutom",
             "image_url": "https://drazhin.by/assets/cache_image/products/72/medium/dv5a4389_400x500_e57.webP",
