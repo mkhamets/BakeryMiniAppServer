@@ -1700,6 +1700,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     showProductScreen(productId, categoryKey);
                 });
             });
+
+            // Добавляем обработчики событий для названий продуктов
+            productListElement.querySelectorAll('.product-name').forEach(productName => {
+                productName.addEventListener('click', (e) => {
+                    // Не обрабатываем клик если он на availability-info
+                    if (e.target.classList.contains('availability-info')) {
+                        return;
+                    }
+                    const productCard = e.target.closest('.product-card');
+                    if (productCard) {
+                        const productId = productCard.dataset.productId;
+                        showProductScreen(productId, categoryKey);
+                    }
+                });
+            });
             
             // Hide loading logo after products are loaded
             if (loadingLogoContainer) loadingLogoContainer.classList.add('hidden');
