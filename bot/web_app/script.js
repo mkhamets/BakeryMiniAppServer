@@ -2841,7 +2841,7 @@ function addErrorClearingListeners() {
                             <div class="vegan fz-100">
                                 <span class="vegan-label">Подходит веганам</span>
                                 <svg class="svg svg-vegan fz-150 ml-50">
-                                    <use xlink:href="project/build/svg-sprite/sprite.svg#vegan"></use>
+                                    <use xlink:href="sprite.svg#vegan"></use>
                                 </svg>
                             </div>
                         </div>`;
