@@ -7,7 +7,17 @@ import asyncio
 import json
 from urllib.parse import urljoin
 import os
-import uuid # Импортируем модуль uuid для генерации уникальных ID
+import uuid # Импортируем модуль uuid для генерации уникальных ID (альтернативный метод)
+
+# ===== МЕТОДЫ ГЕНЕРАЦИИ ID ПРОДУКТОВ =====
+# ТЕКУЩИЙ МЕТОД: Использование data-id с веб-страницы
+# - Преимущества: Консистентные ID, надежная работа с корзиной
+# - Недостатки: Зависимость от структуры веб-страницы
+#
+# АЛЬТЕРНАТИВНЫЙ МЕТОД: Генерация UUID (закомментирован)
+# - Преимущества: Уникальные ID, независимость от веб-страницы
+# - Недостатки: Новые ID при каждом запуске, проблемы с корзиной
+# ===== КОНЕЦ МЕТОДОВ ГЕНЕРАЦИИ ID =====
 
 # ===== Блок для отладки логирования - НАЧАЛО =====
 # Удаляем все существующие обработчики для корневого логгера,
@@ -287,7 +297,10 @@ async def main():
                 # ИСПОЛЬЗУЕМ data-id из веб-страницы вместо генерации UUID
                 combined_product_info['id'] = combined_product_info['data_id']
                 # Удаляем временное поле data_id, оставляем только id
-                del combined_product_info['data_id'] 
+                del combined_product_info['data_id']
+                
+                # АЛЬТЕРНАТИВНЫЙ ВАРИАНТ: Генерация UUID (закомментирован)
+                # combined_product_info['id'] = str(uuid.uuid4()) 
 
                 detailed_products.append(combined_product_info)
                 logger.info(f"Спарсены детали для: {product_base_info['name']} с ID: {combined_product_info['id']} (data-id с веб-страницы)") # Логируем ID
