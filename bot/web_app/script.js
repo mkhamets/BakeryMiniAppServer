@@ -1236,6 +1236,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await fetchProductsData();
     
+    // 🔄 SETUP AUTOMATIC CART REFRESH EVERY MINUTE
+    let autoRefreshInterval;
+    
+    // Function to check if app is active and refresh cart if needed
+    function setupAutoRefresh() {
+        // Clear existing interval if any
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+        
+        // Set up periodic refresh every minute (60000ms)
+        autoRefreshInterval = setInterval(async () => {
+            // Only refresh if app is active and cart has items
+            if (!document.hidden && Object.keys(cart).length > 0) {
+                try {
+                    console.log('🔄 Auto-refreshing products data for cart availability check...');
+                    await fetchProductsData();
+                } catch (error) {
+                    console.warn('Auto-refresh failed:', error);
+                }
+            }
+        }, 60000); // 1 minute
+        
+        console.log('✅ Auto-refresh setup: Cart will refresh every minute when active');
+    }
+    
+    // Initialize auto-refresh
+    setupAutoRefresh();
+    
+    // Handle page visibility changes to pause/resume auto-refresh
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            console.log('📱 App hidden, pausing auto-refresh');
+        } else {
+            console.log('📱 App visible, resuming auto-refresh');
+            setupAutoRefresh(); // Restart interval when app becomes visible
+        }
+    });
+    
     // Initialize cache management system
     await initializeCacheManagement();
     
@@ -1527,6 +1566,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             productsData = data;
+            
+            // 🔄 AUTO-REFRESH CART WHEN PRODUCTS CHANGE
+            if (Object.keys(cart).length > 0) {
+                renderCart();
+            }
         } catch (error) {
             console.error('Ошибка при загрузке данных о продуктах:', error);
             console.error('Failed to load products data. Please try again later.');
