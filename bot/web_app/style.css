@@ -1412,11 +1412,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     top: 8px;
     left: 8px;
     z-index: 10;
+    pointer-events: none; /* Make icon non-clickable so image clicks work */
 }
 
 .product-vegan-icon .svg-vegan {
-    width: 20%;
-    height: 20%;
+    width: 40%; /* 2x bigger (was 20%) */
+    height: 40%; /* 2x bigger (was 20%) */
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
