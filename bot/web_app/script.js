@@ -2323,14 +2323,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         console.log('💾 Customer data saved for future prepopulation');
                     }
                     
-                    // Order sent successfully - close WebApp after delay to ensure data is sent
+                    // Order sent successfully - clear cart first, then close WebApp
+                    clearCart();
+                    console.log('✅ Cart cleared after successful order completion');
+                    
+                    // Close WebApp after delay to ensure data is sent
                     setTimeout(() => {
                         try {
                             if (Telegram.WebApp.close) {
                                 Telegram.WebApp.close();
-                                // Clear cart ONLY after WebApp closes successfully
-                                clearCart();
-                                console.log('✅ Cart cleared after successful order completion');
                             }
                         } catch (closeError) {
                             console.warn('Could not close WebApp automatically');
