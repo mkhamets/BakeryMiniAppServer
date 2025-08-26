@@ -2790,9 +2790,9 @@ h1, .category-title, .category-title-with-icon {
 
 .unavailable-label {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 8px;
+    left: 8px;
+    right: 8px;
     background-color: #dc3545;
     color: white;
     padding: 6px 12px;
@@ -2802,6 +2802,7 @@ h1, .category-title, .category-title-with-icon {
     z-index: 2;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
+    text-align: center;
 }
 
 .disabled-product .cart-item-name {

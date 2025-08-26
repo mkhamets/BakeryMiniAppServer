@@ -1957,8 +1957,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const cartActionsBottom = document.querySelector('.cart-actions-bottom');
         
         if (availabilityInfoContainer && cartActionsBottom) {
-            // Insert between availability info and cart actions
-            availabilityInfoContainer.parentNode.insertBefore(errorContainer, cartActionsBottom);
+            // Insert AFTER availability info (below it) and BEFORE cart actions
+            availabilityInfoContainer.after(errorContainer);
         } else if (cartActionsBottom) {
             // Fallback: insert above cart actions if availability info doesn't exist
             cartActionsBottom.parentNode.insertBefore(errorContainer, cartActionsBottom);
