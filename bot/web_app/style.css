@@ -553,6 +553,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border-radius: 8px;
     border: 2px solid #e9ecef;
     font-family: 'Yeseva One', serif;
+    font-weight: normal;
 }
 
 
