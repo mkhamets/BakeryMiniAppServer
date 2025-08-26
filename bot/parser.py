@@ -89,6 +89,12 @@ async def get_products_from_category_page(session, category_url):
 
                 product_name = title_link_element.get_text(strip=True)
                 product_relative_url = title_link_element.get('href')
+                
+                # Извлекаем data-id из ссылки продукта
+                product_data_id = title_link_element.get('data-id')
+                if not product_data_id:
+                    logger.debug(f"Пропуск товара {i} на {category_url}: не найден data-id.")
+                    continue
 
                 if not product_name or not product_relative_url:
                     logger.debug(f"Пропуск товара {i} на {category_url}: не удалось извлечь название или URL.")
@@ -125,7 +131,8 @@ async def get_products_from_category_page(session, category_url):
                     'weight': 'N/A', # Здесь временно N/A, будет обновлено
                     'ingredients': 'N/A', # Временно N/A
                     'calories': 'N/A', # Временно N/A
-                    'energy_value': 'N/A' # Временно N/A
+                    'energy_value': 'N/A', # Временно N/A
+                    'data_id': product_data_id # Добавляем data-id из веб-страницы
                 })
                 logger.debug(f"Найдена заготовка товара: {product_name} ({product_url})")
 
@@ -277,11 +284,13 @@ async def main():
                 # Объединяем базовую информацию с детальной
                 combined_product_info = {**product_base_info, **product_details}
 
-                # ДОБАВЛЕНО: Генерируем уникальный ID для каждого продукта
-                combined_product_info['id'] = str(uuid.uuid4()) 
+                # ИСПОЛЬЗУЕМ data-id из веб-страницы вместо генерации UUID
+                combined_product_info['id'] = combined_product_info['data_id']
+                # Удаляем временное поле data_id, оставляем только id
+                del combined_product_info['data_id'] 
 
                 detailed_products.append(combined_product_info)
-                logger.info(f"Спарсены детали для: {product_base_info['name']} с ID: {combined_product_info['id']}") # Логируем ID
+                logger.info(f"Спарсены детали для: {product_base_info['name']} с ID: {combined_product_info['id']} (data-id с веб-страницы)") # Логируем ID
 
             scraped_data[category_name] = detailed_products
             logger.info(f"Завершено парсинг категории {category_name}. Найдено {len(detailed_products)} полных товаров.")
