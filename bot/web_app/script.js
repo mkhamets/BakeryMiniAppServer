@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.88';
+    const CACHE_VERSION = '1.3.89';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -1232,10 +1232,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.88&t=1756208385", image: "images/bakery.svg?v=1.3.88&t=1756208385" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.88&t=1756208385", image: "images/crouasan.svg?v=1.3.88&t=1756208385" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.88&t=1756208385", image: "images/bread1.svg?v=1.3.88&t=1756208385" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.88&t=1756208385", image: "images/cookie.svg?v=1.3.88&t=1756208385" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.89&t=1756240002", image: "images/bakery.svg?v=1.3.89&t=1756240002" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.89&t=1756240002", image: "images/crouasan.svg?v=1.3.89&t=1756240002" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.89&t=1756240002", image: "images/bread1.svg?v=1.3.89&t=1756240002" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.89&t=1756240002", image: "images/cookie.svg?v=1.3.89&t=1756240002" }
     };
 
     await fetchProductsData();
@@ -1303,8 +1303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Only initialize cart rendering after products data is loaded
     renderCart();
     
-    // 🔍 Add visible cart debugging for Telegram app testing
-    addCartStatusDisplay();
+
     
     // Initialize icons (no-op placeholder)
     // initializeIcons(); // removed: icon system disabled
@@ -2762,7 +2761,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/images/Hleb.jpg?v=1.3.88&t=1756208385';
+    img.src = '/bot-app/images/Hleb.jpg?v=1.3.89&t=1756240002';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
@@ -3277,21 +3276,7 @@ function addErrorClearingListeners() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    // 🔍 Add visible cart debugging for Telegram app testing
-    function addCartStatusDisplay() {
-        const statusDiv = document.createElement('div');
-        statusDiv.id = 'cart-status-debug';
-        statusDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #ff4444; color: white; padding: 10px; border-radius: 5px; z-index: 9999; font-size: 12px; max-width: 200px;';
-        statusDiv.innerHTML = 'Загрузка корзины...';
-        document.body.appendChild(statusDiv);
-        
-        setInterval(() => {
-            const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-            const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            statusDiv.innerHTML = `Корзина: ${totalItems} товаров<br>Сумма: ${totalPrice.toFixed(2)} р.<br>Ключи: ${Object.keys(cart).join(', ')}`;
-            statusDiv.style.background = totalItems > 0 ? '#44ff44' : '#ff4444';
-        }, 1000);
-    }
+
 
     // Update page title with cart status
     function updatePageTitle() {
