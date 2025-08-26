@@ -237,8 +237,12 @@ async function initializeCacheManagement() {
             forceTelegramCacheClear();
         }
         
-        // Check if cache invalidation is needed
-        await invalidateCacheOnUpdate();
+        // Check if cache invalidation is needed (but not during form validation)
+        if (!document.querySelector('#checkout-form')) {
+            await invalidateCacheOnUpdate();
+        } else {
+            console.log('🛒 Checkout form detected - skipping cache invalidation to preserve cart');
+        }
         
         // Set up periodic cache health check (less frequent for mobile to save battery)
         const checkInterval = isMobileDevice ? 600000 : 300000; // 10min mobile, 5min desktop
@@ -1299,6 +1303,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Only initialize cart rendering after products data is loaded
     renderCart();
     
+    // 🔍 Add visible cart debugging for Telegram app testing
+    addCartStatusDisplay();
+    
     // Initialize icons (no-op placeholder)
     // initializeIcons(); // removed: icon system disabled
 
@@ -2305,13 +2312,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         console.log('💾 Customer data saved for future prepopulation');
                     }
                     
-                    clearCart();
-                    
                     // Order sent successfully - close WebApp after delay to ensure data is sent
                     setTimeout(() => {
                         try {
                             if (Telegram.WebApp.close) {
                                 Telegram.WebApp.close();
+                                // Clear cart ONLY after WebApp closes successfully
+                                clearCart();
+                                console.log('✅ Cart cleared after successful order completion');
                             }
                         } catch (closeError) {
                             console.warn('Could not close WebApp automatically');
@@ -2327,31 +2335,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('❌ Элемент с ID "checkout-form" не найден. Невозможно прикрепить слушатель отправки.');
         }
         
-        // Add direct click event listener to submit button as backup
+        // Submit button is handled by the form's submit event listener
+        // No need for separate click handler to avoid double execution
         const submitButton = document.querySelector('.submit-order-button');
-        console.log('🔍 submitButton element found:', !!submitButton);
-        console.log('🔍 submitButton element:', submitButton);
-        
         if (submitButton) {
-            console.log('✅ Adding click event listener to submit button as backup');
-            submitButton.addEventListener('click', (event) => {
-                console.log('🚀 === SUBMIT BUTTON CLICKED (BACKUP) ===');
-                console.log('📅 Current timestamp:', new Date().toISOString());
-                
-                // Prevent default and trigger form submission
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // Manually trigger form submission
-                if (checkoutForm) {
-                    console.log('✅ Manually triggering form submission');
-                    checkoutForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-                } else {
-                    console.error('❌ checkoutForm not found for manual submission');
-                }
-            });
+            console.log('✅ Submit button found, form submission handled by form submit event');
         } else {
-            console.error('❌ submit button not found');
+            console.error('❌ Submit button not found');
         }
     }
 
@@ -3263,5 +3253,33 @@ function addErrorClearingListeners() {
     // iOS detection
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // 🔍 Add visible cart debugging for Telegram app testing
+    function addCartStatusDisplay() {
+        const statusDiv = document.createElement('div');
+        statusDiv.id = 'cart-status-debug';
+        statusDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #ff4444; color: white; padding: 10px; border-radius: 5px; z-index: 9999; font-size: 12px; max-width: 200px;';
+        statusDiv.innerHTML = 'Загрузка корзины...';
+        document.body.appendChild(statusDiv);
+        
+        setInterval(() => {
+            const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+            const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            statusDiv.innerHTML = `Корзина: ${totalItems} товаров<br>Сумма: ${totalPrice.toFixed(2)} р.<br>Ключи: ${Object.keys(cart).join(', ')}`;
+            statusDiv.style.background = totalItems > 0 ? '#44ff44' : '#ff4444';
+        }, 1000);
+    }
+
+    // Update page title with cart status
+    function updateMainButtonCartInfo() {
+        const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+        const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        if (totalItems > 0) {
+            document.title = `Корзина: ${totalItems} товаров - ${totalPrice.toFixed(2)} р.`;
+        } else {
+            document.title = 'Пекарня Дражина';
+        }
+    }
 
 });
