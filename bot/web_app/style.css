@@ -1376,12 +1376,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: #000000;
 }
 
-.product-screen .availability-label {
+/* .product-screen .availability-label {
     font-family: 'Yeseva One', serif;
     font-weight: normal;
     font-size: 1.1em;
     color: #000000;
-}
+} */
 
 .product-screen .ingredients-label {
     font-family: 'Yeseva One', serif;

@@ -2826,8 +2826,7 @@ function addErrorClearingListeners() {
                 if (product.availability_days && product.availability_days !== 'N/A') {
                     screenHTML += `
                         <div class="product-screen-info-item product-screen-info-item-availability">
-                            <div class="availability fz-100">
-                                <span class="availability-label">Доступен для заказа:</span>
+                            <div class="availability fz-100" style="color: #b76c4b;">
                                 ${product.availability_days}
                             </div>
                         </div>`;
