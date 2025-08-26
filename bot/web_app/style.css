@@ -1398,6 +1398,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-bottom: 8px;
 }
 
+/* Vegan label styling - matches weight label */
+.product-screen .vegan-label {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+}
+
 .product-screen .mr-25 {
     margin-right: 5px;
 }

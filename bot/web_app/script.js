@@ -2834,6 +2834,19 @@ function addErrorClearingListeners() {
                         </div>`;
                 }
 
+                        // Добавляем информацию о веганстве
+                if (product.for_vegans && product.for_vegans !== 'N/A') {
+                    screenHTML += `
+                        <div class="product-screen-info-item product-screen-info-item-vegan">
+                            <div class="vegan fz-100">
+                                <span class="vegan-label">Подходит веганам</span>
+                                <svg class="svg svg-vegan fz-150 ml-50">
+                                    <use xlink:href="project/build/svg-sprite/sprite.svg#vegan"></use>
+                                </svg>
+                            </div>
+                        </div>`;
+                }
+
         screenHTML += `</div>`;
 
                         // Добавляем состав (ингредиенты)
