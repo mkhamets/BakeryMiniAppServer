@@ -797,7 +797,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .category-title-text {
     margin-top: 0;
     margin-bottom: 5px;
-    font-size: 1.5em; /* Размер заголовка */
+    font-size: 2em; /* Размер заголовка */
     color: white;
     font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
     font-weight: normal;
@@ -806,8 +806,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .category-link-text {
     display: flex;
     align-items: center;
-    font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1em;
+    color: rgba(255, 255, 255, 0.922);
     transition: color 0.2s ease;
 }
 
@@ -1416,8 +1416,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-vegan-icon .svg-vegan {
-    width: 60px; /* Fixed width instead of percentage */
-    height: 60px; /* Fixed height instead of percentage */
+    width: 30px; /* User requested size */
+    height: 30px; /* User requested size */
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
