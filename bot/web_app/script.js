@@ -2806,7 +2806,10 @@ function addErrorClearingListeners() {
         if (product.weight && product.weight !== 'N/A') {
             screenHTML += `
                 <div class="product-screen-info-item product-screen-info-item-weight">
-                    <div class="product-screen-info-label">Вес: ${product.weight} гр.</div>
+                    <div class="wight fz-100">
+                        <span class="ff-2 fz-100 mr-25">Вес:</span>
+                        ${product.weight} гр
+                    </div>
                 </div>`;
         }
 
@@ -2814,7 +2817,10 @@ function addErrorClearingListeners() {
         if (product.availability_days && product.availability_days !== 'N/A') {
             screenHTML += `
                 <div class="product-screen-info-item product-screen-info-item-availability">
-                    <div class="product-screen-info-label">Доступен для заказа: ${product.availability_days}</div>
+                    <div class="availability fz-100">
+                        <span class="ff-2 fz-100 mr-25">Доступен для заказа:</span>
+                        ${product.availability_days}
+                    </div>
                 </div>`;
         }
 
@@ -2824,8 +2830,10 @@ function addErrorClearingListeners() {
         if (product.ingredients && product.ingredients !== 'N/A') {
             screenHTML += `
                 <div class="product-screen-ingredients">
-                    <div class="product-screen-ingredients-label">Состав:</div>
-                    <div class="product-screen-ingredients-value">${product.ingredients}</div>
+                    <div class="structure fz-100">
+                        <span class="ff-2 fz-100 mr-25">Состав:</span>
+                        ${product.ingredients}
+                    </div>
                 </div>`;
         }
 
@@ -2833,12 +2841,17 @@ function addErrorClearingListeners() {
         if (product.calories && product.calories !== 'N/A') {
             screenHTML += `
                 <div class="product-screen-nutrition">
-                    <div class="product-screen-nutrition-label">Пищевая ценность:</div>
                     <div class="product-screen-nutrition-value">
-                        <div><strong>Калорийность:</strong> ${product.calories}</div>`;
+                        <div class="calories fz-100">
+                            <span class="ff-2 fz-100 mr-25">Калорийность:</span>
+                            ${product.calories}
+                        </div>`;
 
             if (product.energy_value && product.energy_value !== 'N/A') {
-                screenHTML += `<div><strong>Энергетическая ценность:</strong> ${product.energy_value}</div>`;
+                screenHTML += `<div class="energy-value fz-100">
+                            <span class="ff-2 fz-100 mr-25">Энергетическая ценность:</span>
+                            ${product.energy_value}
+                        </div>`;
             }
 
             screenHTML += `

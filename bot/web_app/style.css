@@ -1326,6 +1326,28 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-bottom: 3px; /* Reduced from 5px */
 }
 
+/* New product screen styling for labels and values */
+.product-screen .wight,
+.product-screen .availability,
+.product-screen .structure,
+.product-screen .calories,
+.product-screen .energy-value {
+    font-size: 1.1em;
+}
+
+.product-screen .ff-2 {
+    font-family: YesevaOne-ex, Arial, Helvetica, sans-serif;
+    font-size: 1.1em;
+}
+
+.product-screen .mr-25 {
+    margin-right: 25px;
+}
+
+.product-screen .fz-100 {
+    font-size: 1.1em;
+}
+
 /* Адаптивность для экрана продукта */
 @media (max-width: 480px) {
     .product-screen {
