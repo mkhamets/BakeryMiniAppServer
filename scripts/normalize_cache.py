@@ -11,33 +11,37 @@ from pathlib import Path
 def normalize_cache_params(content: str) -> str:
     """Normalize cache parameters in content."""
     
-    # Pattern to match URLs with cache parameters
-    pattern = r'([^"\s]+\.(?:css|js|jpg|jpeg|svg|png|ico))\?v=[0-9.]+&t=[0-9]+(?:t=[0-9]+)*'
+    # More aggressive pattern to match corrupted cache parameters
+    # Matches any file with multiple ?v= or &t= or t= parameters
+    pattern = r'([^"\s]+\.(?:css|js|jpg|jpeg|svg|png|ico))\?[^"\s]*'
     
     def replace_url(match):
         url = match.group(0)
         
-        # Extract base URL (everything before ?v=)
-        base_url = url.split('?v=')[0]
+        # Extract base URL (everything before first ?)
+        base_url = url.split('?')[0]
         
-        # Extract first version parameter
-        v_match = re.search(r'\?v=([0-9.]+)', url)
-        if not v_match:
-            return url
+        # Extract ALL version numbers and take the LAST one (most recent)
+        v_matches = re.findall(r'v=([0-9.]+)', url)
+        if not v_matches:
+            return base_url
         
-        version = v_match.group(1)
+        version = v_matches[-1]  # Take the last (most recent) version
         
-        # Extract first timestamp parameter (after &t=)
-        t_match = re.search(r'&t=([0-9]+)', url)
-        if not t_match:
+        # Extract ALL timestamps and take the LAST one (most recent)  
+        t_matches = re.findall(r't=([0-9]+)', url)
+        if not t_matches:
             return f"{base_url}?v={version}"
         
-        timestamp = t_match.group(1)
+        timestamp = t_matches[-1]  # Take the last (most recent) timestamp
         
-        # Return normalized URL with only first v and t parameters
+        # Return clean normalized URL
         return f"{base_url}?v={version}&t={timestamp}"
     
-    return re.sub(pattern, replace_url, content)
+    # Apply the normalization
+    normalized = re.sub(pattern, replace_url, content)
+    
+    return normalized
 
 def process_file(file_path: Path):
     """Process a single file to normalize cache parameters."""

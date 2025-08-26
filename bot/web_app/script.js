@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.47';
+    const CACHE_VERSION = '1.3.87';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -1228,10 +1228,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.84&t=1755875285", image: "images/bakery.svg?v=1.3.84&t=1755875285" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.84&t=1755875285", image: "images/crouasan.svg?v=1.3.84&t=1755875285" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.84&t=1755875285", image: "images/bread1.svg?v=1.3.84&t=1755875285" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.84&t=1755875285", image: "images/cookie.svg?v=1.3.84&t=1755875285" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.87&t=1756190955", image: "images/bakery.svg?v=1.3.87&t=1756190955" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.87&t=1756190955", image: "images/crouasan.svg?v=1.3.87&t=1756190955" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.87&t=1756190955", image: "images/bread1.svg?v=1.3.87&t=1756190955" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.87&t=1756190955", image: "images/cookie.svg?v=1.3.87&t=1756190955" }
     };
 
     await fetchProductsData();
@@ -1790,6 +1790,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const itemTotal = item.price * item.quantity;
             total += itemTotal;
 
+            // Check if product is still available
+            const isAvailable = isProductAvailable(item.id);
+
             // Find the category for this product to pass to showProductScreen
             let productCategory = null;
             for (const catKey in productsData) {
@@ -1800,32 +1803,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const cartItemElement = document.createElement('div');
-            cartItemElement.className = 'cart-item';
+            cartItemElement.className = `cart-item ${!isAvailable ? 'disabled-product' : ''}`;
             cartItemElement.dataset.productId = item.id;
 
             cartItemElement.innerHTML = `
                 <div class="cart-item-image-container" 
-                     style="cursor: pointer;" 
-                     onclick="showProductScreen('${item.id}', '${productCategory}')">
+                     style="cursor: ${isAvailable ? 'pointer' : 'default'};" 
+                     onclick="${isAvailable ? `showProductScreen('${item.id}', '${productCategory}')` : 'return false;'}">
                     <img src="${item.image_url || 'https://placehold.co/80x80/cccccc/333333?text=No+Image'}" 
                          alt="${item.name}" class="cart-item-image"
                          onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/333333?text=No+Image';">
+                    ${!isAvailable ? '<div class="unavailable-label">Недоступен</div>' : ''}
                 </div>
                 <div class="cart-item-details">
                     <h4 class="cart-item-name" 
-                        style="cursor: pointer;" 
-                        onclick="showProductScreen('${item.id}', '${productCategory}')">${item.name}</h4>
+                        style="cursor: ${isAvailable ? 'pointer' : 'default'};" 
+                        onclick="${isAvailable ? `showProductScreen('${item.id}', '${productCategory}')` : 'return false;'}">${item.name}</h4>
                     <p class="cart-item-price">
                         <span class="price-per-unit">${item.price} р. за шт.</span>
                         <span class="cart-item-total">${itemTotal.toFixed(2)} р.</span>
                     </p>
                     <div class="cart-item-controls">
                         <div class="input-group input-group-sm d-flex align-items-center justify-content-center justify-content-md-start">
-                            <div class="changer count_minus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center decrease-cart-quantity" data-product-id="${item.id}" style="background-color: #d7d7d7;">
+                            <div class="changer count_minus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center decrease-cart-quantity" 
+                                 data-product-id="${item.id}" 
+                                 style="background-color: #d7d7d7; ${!isAvailable ? 'opacity: 0.5; pointer-events: none;' : ''}">
                                 <span class="fz-150 fw-400 fc-1 mb-25">-</span>
                             </div>
-                            <input type="number" name="count" value="${item.quantity}" min="1" readonly="" class="count mssaleprice-count cur-p form-control ptb-25 fz-175 mlr-50 text-center mx-w-300 cart-item-quantity" style="border: none !important; background-color:transparent !important;">
-                            <div class="changer count_plus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center increase-cart-quantity" data-product-id="${item.id}" style="background-color: #d7d7d7;">
+                            <input type="number" name="count" value="${item.quantity}" min="1" readonly="" 
+                                   class="count mssaleprice-count cur-p form-control ptb-25 fz-175 mlr-50 text-center mx-w-300 cart-item-quantity" 
+                                   style="border: none !important; background-color:transparent !important; ${!isAvailable ? 'opacity: 0.5;' : ''}">
+                            <div class="changer count_plus cur-p pos-r w-200 w-xs-300 h-200 h-xs-300 br-50p d-flex align-items-center justify-content-center increase-cart-quantity" 
+                                 data-product-id="${item.id}" 
+                                 style="background-color: #d7d7d7; ${!isAvailable ? 'opacity: 0.5; pointer-events: none;' : ''}">
                                 <span class="fz-150 fw-400 fc-1">+</span>
                             </div>
                         </div>
@@ -1841,6 +1851,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (cartTotalElement) cartTotalElement.textContent = `Общая сумма: ${total.toFixed(2)} р.`;
+
+        // NEW: Check for disabled products and render error message
+        const disabledProducts = getDisabledProducts(cartItems);
+        renderDisabledProductsError(disabledProducts);
+        updateCheckoutButtonState(disabledProducts);
 
         // Добавляем контейнер с информацией об условиях реализации продуктов
         renderAvailabilityInfo(cartItems);
@@ -1902,6 +1917,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         return null;
+    }
+
+    // NEW: Function to check if a product is still available in the catalog
+    function isProductAvailable(productId) {
+        const product = getProductById(productId);
+        return product !== null;
+    }
+
+    // NEW: Function to get disabled products from cart
+    function getDisabledProducts(cartItems) {
+        return cartItems.filter(item => !isProductAvailable(item.id));
+    }
+
+    // NEW: Function to render disabled product error message
+    function renderDisabledProductsError(disabledProducts) {
+        // Remove existing error message if it exists
+        const existingError = document.getElementById('disabled-products-error');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        if (disabledProducts.length === 0) {
+            return;
+        }
+
+        const errorContainer = document.createElement('div');
+        errorContainer.id = 'disabled-products-error';
+        errorContainer.className = 'disabled-products-error';
+        errorContainer.innerHTML = `
+            <div class="error-message">
+                <span class="error-icon">⚠️</span>
+                Удалите недоступные товары из корзины
+            </div>
+        `;
+
+        // Insert error message above the place order button
+        const cartActionsBottom = document.querySelector('.cart-actions-bottom');
+        if (cartActionsBottom) {
+            cartActionsBottom.parentNode.insertBefore(errorContainer, cartActionsBottom);
+        }
+    }
+
+    // NEW: Function to update checkout button state
+    function updateCheckoutButtonState(disabledProducts) {
+        const checkoutButton = document.getElementById('checkout-button');
+        if (checkoutButton) {
+            if (disabledProducts.length > 0) {
+                checkoutButton.disabled = true;
+                checkoutButton.classList.add('disabled');
+            } else {
+                checkoutButton.disabled = false;
+                checkoutButton.classList.remove('disabled');
+            }
+        }
     }
 
     function renderAvailabilityInfo(cartItems) {
@@ -2583,7 +2652,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-                            img.src = '/bot-app/images/Hleb.jpg?v=1.3.84&t=1755875285';
+    img.src = '/bot-app/images/Hleb.jpg?v=1.3.87&t=1756190955
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');

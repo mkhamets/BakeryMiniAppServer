@@ -16,27 +16,56 @@ INDEX_HTML="$ROOT_DIR/bot/web_app/index.html"
 STYLE_CSS="$ROOT_DIR/bot/web_app/style.css"
 SCRIPT_JS="$ROOT_DIR/bot/web_app/script.js"
 
-# Normalize existing ?v=&t= chains to a single one before applying new version
 echo "🔧 Normalizing cache parameters..."
 python3 "$ROOT_DIR/scripts/normalize_cache.py" "$INDEX_HTML" "$STYLE_CSS" "$SCRIPT_JS"
 
-# index.html: bump all v&t query params
-sed -i '' -E "s/\?v=[0-9.]+&t=[0-9]+/?v=${VER}&t=${TS}/g" "$INDEX_HTML"
+echo "🔄 Applying new version ${VER}..."
 
-# style.css: background image
-sed -i '' -E "s/(Hleb\.jpg\?v=)[0-9.]+(&t=)[0-9]+/\1${VER}\2${TS}/g" "$STYLE_CSS"
+# Use Python for reliable cache version updates
+python3 << EOF
+import re
+from pathlib import Path
 
-# script.js: category icons (use character classes instead of groups for BSD sed)
-# Replace bakery.svg, crouasan.svg, bread1.svg, cookie.svg version params
-sed -i '' -E "s|(images/bakery\.svg\?v=)[0-9.]+(&t=)[0-9]+|\1${VER}\2${TS}|g" "$SCRIPT_JS"
-sed -i '' -E "s|(images/crouasan\.svg\?v=)[0-9.]+(&t=)[0-9]+|\1${VER}\2${TS}|g" "$SCRIPT_JS"
-sed -i '' -E "s|(images/bread1\.svg\?v=)[0-9.]+(&t=)[0-9]+|\1${VER}\2${TS}|g" "$SCRIPT_JS"
-sed -i '' -E "s|(images/cookie\.svg\?v=)[0-9.]+(&t=)[0-9]+|\1${VER}\2${TS}|g" "$SCRIPT_JS"
+def update_cache_version(file_path, version, timestamp):
+    """Update cache version in a file using robust regex."""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Pattern to match any resource with cache parameters
+        # This will match and replace ALL cache parameters consistently
+        pattern = r'([^"\s]+\.(?:css|js|jpg|jpeg|svg|png|ico))\?[^"\s;)]*'
+        
+        def replace_cache(match):
+            base_url = match.group(0).split('?')[0]
+            return f'{base_url}?v={version}&t={timestamp}'
+        
+        # Apply the replacement
+        updated_content = re.sub(pattern, replace_cache, content)
+        
+        # Also update CACHE_VERSION constant in JavaScript files
+        if file_path.endswith('.js'):
+            updated_content = re.sub(
+                r"const CACHE_VERSION = '[^']*';",
+                f"const CACHE_VERSION = '{version}';",
+                updated_content
+            )
+        
+        # Write the updated content back
+        if content != updated_content:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(updated_content)
+            print(f"✅ Updated cache version in {file_path}")
+        else:
+            print(f"ℹ️  No updates needed in {file_path}")
+            
+    except Exception as e:
+        print(f"❌ Error updating {file_path}: {e}")
 
-# script.js: background image
-sed -i '' -E "s|(Hleb\.jpg\?v=)[0-9.]+(&t=)[0-9]+|\1${VER}\2${TS}|g" "$SCRIPT_JS"
-
-# script.js: any other v&t occurrences
-sed -i '' -E "s/\?v=[0-9.]+&t=[0-9]+/?v=${VER}&t=${TS}/g" "$SCRIPT_JS"
+# Update all files
+update_cache_version('$INDEX_HTML', '$VER', '$TS')
+update_cache_version('$STYLE_CSS', '$VER', '$TS') 
+update_cache_version('$SCRIPT_JS', '$VER', '$TS')
+EOF
 
 echo "Bumped cache versions to ${VER} (t=${TS})."
