@@ -1406,6 +1406,20 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: #000000;
 }
 
+/* Product grid vegan icon styling */
+.product-vegan-icon {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+}
+
+.product-vegan-icon .svg-vegan {
+    width: 20%;
+    height: 20%;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
 .product-screen .mr-25 {
     margin-right: 5px;
 }
