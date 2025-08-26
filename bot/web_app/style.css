@@ -1181,12 +1181,13 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     background-color: #fff;
     width: 100%;
     padding: 15px; /* Reduced from 20px */
+    padding-top: 0px;
     box-sizing: border-box;
     /* Removed fixed positioning since it's now inside main container */
 }
 
 #product-screen-body {
-    padding: 15px 0; /* Reduced from 20px */
+    padding: 0px 0; /* Reduced from 20px */
 }
 
 .product-screen-image {
@@ -1448,6 +1449,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 @media (max-width: 480px) {
     .product-screen {
         padding: 15px;
+        padding-top: 0px;
     }
     
     .product-screen-name {
