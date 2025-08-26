@@ -481,6 +481,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin: 0;
     text-align: right;
     font-family: 'Yeseva One', serif;
+    font-weight: normal;
 }
 
 .price-per-unit {
