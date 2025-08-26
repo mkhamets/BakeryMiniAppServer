@@ -2652,7 +2652,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/images/Hleb.jpg?v=1.3.87&t=1756190955
+    img.src = '/bot-app/images/Hleb.jpg?v=1.3.87&t=1756190955';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
