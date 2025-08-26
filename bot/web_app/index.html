@@ -4,24 +4,16 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
         <title>Меню пекарни Дражина</title>
-        <!-- Cache control meta tags for iOS -->
+        <!-- Cache control meta tags -->
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
         <meta http-equiv="Pragma" content="no-cache">
         <meta http-equiv="Expires" content="0">
-
-        <!-- Mobile-specific cache control meta tags -->
-        <meta http-equiv="Last-Modified" content="0">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        
         <!-- Подключение стилей с версионированием для предотвращения кеширования -->
-        <link rel="stylesheet" href="/bot-app/main.min.css?v=1.3.89&t=1756240002">
+        <link rel="stylesheet" href="/bot-app/main.min.css?v=1.0.7">
         <!-- Подключение вашего кастомного CSS файла (для переопределений, если нужно) -->
-        <link rel="stylesheet" href="/bot-app/style.css?v=1.3.89&t=1756240002">
+        <link rel="stylesheet" href="/bot-app/style.css?v=1.0.7">
         <!-- Подключение Telegram Web App SDK -->
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        <!-- Service Worker removed to fix iOS twitching issues -->
         <!-- SVG Sprite for Icons -->
         <div style="display: none;">
             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -34,17 +26,6 @@
                 <symbol id="money" viewBox="0 0 40 40" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><style>.best1{fill:#b76c4b}</style><defs><path id="beSVGID_1_" d="M0 0h40v39.4H0z"/></defs><clipPath id="beSVGID_2_"><use xlink:href="#beSVGID_1_" overflow="visible"/></clipPath><g clip-path="url(#beSVGID_2_)"><path class="best1" d="M6.6 35c-.1-.1-.3-.2-.6-.2-.2 0-.4.1-.6.2-.1.1-.2.3-.2.5s.1.4.2.5c.1.1.3.2.6.2.2 0 .4-.1.6-.2.1-.1.2-.3.2-.5s0-.3-.2-.5zm30.1-20.9c-.1-.1-.3-.2-.6-.2-.2 0-.4.1-.6.2-.1.1-.2.3-.2.5s.1.4.2.5c.1.1.3.2.6.2.2 0 .4-.1.6-.2.1-.1.2-.3.2-.5s-.1-.4-.2-.5z"/><path class="best1" d="M39.8.2c-.2-.1-.4-.2-.6-.2H20c-.4 0-.8.3-.8.8V3l-7.4 2c-.4.1-.7.5-.6.9L15.1 20l-3.3 3.3c-.4-.6-1.1-1-1.9-1H2.3c-1.3 0-2.3 1-2.3 2.3v12.6c0 1.3 1.1 2.3 2.3 2.3h7.5c1.1 0 2-.7 2.3-1.8l.9.8c.7.6 1.6 1 2.6 1h23.6c.4 0 .8-.3.8-.8V.8c0-.2-.1-.4-.2-.6z"/></g></symbol>
                 <symbol id="takeaway" viewBox="0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><style>.bkst0{fill:#b76c4b}</style><path class="bkst0" d="M2 24c-.1 0-.2 0-.3.1s-.2.2-.2.3l-.5 2v.2c0 .1 0 .1.1.2 0 .1.1.1.2.1 0 .1.1.1.2.1h1.1l.9 3.6c0 .1.1.2.2.3s.2.1.3.1h24c.1 0 .2 0 .3-.1.1-.1.2-.2.2-.3l.9-3.6h1.1c.1 0 .2 0 .2-.1.1 0 .1-.1.2-.1 0-.1.1-.1.1-.2v-.2l-.5-2c0-.1-.1-.2-.2-.3s-.2-.1-.3-.1h-1.6l-.8-3h.4c.1 0 .2 0 .3-.1.1-.1.2-.2.2-.3l.9-3.6h1.1c.1 0 .2 0 .2-.1.1 0 .1-.1.2-.1 0-.1.1-.1.1-.2v-.2l-.5-2c0-.1-.1-.2-.2-.3-.1-.1-.2-.1-.3-.1h-1.6l-.9-3.6c0-.1-.1-.2-.2-.3-.1-.1-.2-.1-.3-.1h-3.5V4.5c0-.9-.4-1.8-1-2.5-.7-.7-1.5-1-2.5-1h-8c-.9 0-1.8.4-2.5 1-.7.7-1 1.5-1 2.5V10H5c-.1 0-.2 0-.3.1-.1.1-.2.2-.2.3L3.6 14H2c-.1 0-.2 0-.3.1-.1.1-.2.2-.2.3l-.5 2v.2c0 .1 0 .1.1.2 0 .1.1.1.2.1 0 .1.1.1.2.1h1.1l.9 3.6c0 .1.1.2.2.3s.2.1.3.1h.4l-.8 3H2z"/></symbol>
                 <symbol viewBox="0 0 32 32" id="as_close" xmlns="http://www.w3.org/2000/svg"><path d="M30.87 1.77l-.64-.64a1 1 0 00-1.41 0L16 13.94 3.18 1.13a1 1 0 00-1.41 0l-.64.64a1 1 0 000 1.41L13.94 16 1.13 28.82a1 1 0 000 1.41l.64.64a1 1 0 001.41 0L16 18.06l12.82 12.82a1 1 0 001.41 0l.65-.65a1 1 0 000-1.41L18.06 16 30.88 3.18a1 1 0 00-.01-1.41z"/></symbol>
-                
-                <!-- Bootstrap Icons for Alerts -->
-                <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                </symbol>
-                <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                </symbol>
-                <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                </symbol>
             </svg>
         </div>
     </head>
@@ -52,23 +33,19 @@
         <!-- Loading Overlay -->
         <div class="loading-overlay" id="loading-overlay">
             <div class="loading-logo-container" id="loading-logo-container">
-                <img src="images/logo-dark.svg?v=1.3.89&t=1756240002" alt="Drazhin Logo" class="loading-logo" id="loading-logo">
+                <img src="logo-dark.svg" alt="Drazhin Logo" class="loading-logo" id="loading-logo">
             </div>
         </div>
         <!-- Welcome Container - теперь находится вне основного контейнера приложения -->
         <div id="welcome-container" class="welcome-container hidden">
-            <img src="images/logo.svg?v=1.3.89&t=1756240002" alt="Drazhin Logo" class="welcome-logo">
+            <img src="logo.svg" alt="Drazhin Logo" class="welcome-logo">
             <h1 class="welcome-title">Всегда с теплотой и заботой</h1>
             <p class="welcome-text">
             Свежий хлеб на закваске, круассаны и другая выпечка с доставкой по Минску, а также в фирменных точках продаж и в ресторанах наших партнеров. </p>
             <button class="start-shopping-button" id="start-shopping-button">Заказать с доставкой</button>
         </div>
         <!-- Основной контейнер приложения, который будет скрыт на welcome screen -->
-        <div class="container hidden" id="main-page-container">
-            <!-- Логотип для всех экранов (кроме welcome и product) -->
-            <div class="main-page-logo-container">
-                <img src="images/logo-dark.svg?v=1.3.89&t=1756240002" alt="Логотип" class="main-page-logo">
-            </div>
+        <div class="container" id="main-page-container">
             <!-- Заголовок для продуктов, корзины, оформления заказа (управляется script.js) -->
             <h2 class="category-title hidden" id="main-category-title">Загрузка...</h2>
             <!-- div с id="app-content" будет содержать все динамические контейнеры -->
@@ -138,41 +115,8 @@
                         </div>
                         <div class="form-group">
                             <label for="delivery-date">Дата доставки/самовывоза: <span class="required-star">*</span></label>
-                            <div class="date-input-container">
-                                <input type="text" id="delivery-date" name="deliveryDate" placeholder="Выберите дату" readonly required>
-                                <div class="calendar-icon" id="calendar-icon">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                                    </svg>
-                                </div>
-                            </div>
+                            <input type="date" id="delivery-date" name="deliveryDate" required>
                             <div class="error-message" id="deliveryDate-error">Пожалуйста, выберите дату.</div>
-                            <!-- Classical Monthly Calendar Popup -->
-                            <div class="calendar-overlay" id="calendar-overlay">
-                                <div class="calendar-popup">
-                                    <div class="calendar-header">
-                                        <h3 class="calendar-month-year" id="calendar-month-year">Декабрь 2024</h3>
-                                        <button type="button" class="calendar-close" id="calendar-close">&times;</button>
-                                    </div>
-                                    <div class="calendar-body">
-                                        <div class="calendar-weekdays">
-                                            <div class="calendar-weekday workday">Пн</div>
-                                            <div class="calendar-weekday workday">Вт</div>
-                                            <div class="calendar-weekday workday">Ср</div>
-                                            <div class="calendar-weekday workday">Чт</div>
-                                            <div class="calendar-weekday workday">Пт</div>
-                                            <div class="calendar-weekday weekend">Сб</div>
-                                            <div class="calendar-weekday weekend">Вс</div>
-                                        </div>
-                                        <div class="calendar-dates" id="calendar-dates">
-                                            <!-- Calendar dates will be populated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         <div class="form-group">
                             <label>Способ получения: <span class="required-star">*</span></label>
@@ -186,10 +130,9 @@
                                     <label for="delivery-pickup-radio">Самовывоз</label>
                                 </div>
                             </div>
-                            <div class="error-message" id="deliveryMethod-error">Пожалуйста, выберите способ получения.</div>
                         </div>
                         <div id="courier-delivery-fields" class="delivery-address-fields">
-                            <div class="form-group city-form-group">
+                            <div class="form-group">
                                 <label for="city">Город <span class="required-star">*</span></label>
                                 <select id="city" name="city"> 
                                     <!-- required будет управляться JS -->
@@ -202,47 +145,14 @@
                                 <div class="error-message" id="city-error">Пожалуйста, выберите город.</div>
                             </div>
                             <div class="form-group">
-                                <label for="address-line" style="
-                                    margin-top: 15px;
-                                ">Адрес (улица, дом, квартира): <span class="required-star">*</span></label>
+                                <label for="address-line">Адрес (улица, дом, квартира): <span class="required-star">*</span></label>
                                 <input type="text" id="address-line" name="addressLine" maxlength="50" required>
                                 <div class="error-message" id="addressLine-error">Пожалуйста, введите адрес.</div>
                             </div>
                             <div class="form-group">
-                                <label for="comment-delivery" style="
-                                    margin-top: 15px;
-                                ">Комментарий к доставке:</label>
+                                <label for="comment-delivery">Комментарий к доставке:</label>
                                 <textarea id="comment-delivery" name="commentDelivery" rows="3" maxlength="250"></textarea>
                             </div>
-                        </div>
-                        
-                        <!-- Payment Method Section -->
-                        <div class="form-group" id="payment-method-section">
-                            <label>Способ оплаты: <span class="required-star">*</span></label>
-                            <div class="payment-method-group">
-                                <div class="payment-method-item" id="payment-cash">
-                                    <div class="payment-method-header">
-                                        <input type="radio" id="payment-cash-radio" name="paymentMethod" value="cash">
-                                        <label for="payment-cash-radio">Оплата наличными</label>
-                                    </div>
-                                    <p class="payment-description">Оплата наличными при получении товара</p>
-                                </div>
-                                <div class="payment-method-item" id="payment-card">
-                                    <div class="payment-method-header">
-                                        <input type="radio" id="payment-card-radio" name="paymentMethod" value="card">
-                                        <label for="payment-card-radio">Оплата картой</label>
-                                    </div>
-                                    <p class="payment-description">Оплата карточкой при получении товара</p>
-                                </div>
-                                <div class="payment-method-item" id="payment-erip">
-                                    <div class="payment-method-header">
-                                        <input type="radio" id="payment-erip-radio" name="paymentMethod" value="erip">
-                                        <label for="payment-erip-radio">Онлайн оплата ЕРИП</label>
-                                    </div>
-                                    <p class="payment-description">Оплата заказа онлайн через систему ЕРИП</p>
-                                </div>
-                            </div>
-                            <div class="error-message" id="paymentMethod-error">Пожалуйста, выберите способ оплаты.</div>
                         </div>
                         <div id="pickup-addresses" class="hidden">
                             <div class="form-group">
@@ -355,21 +265,6 @@
                                 <label for="comment-pickup">Комментарий к самовывозу:</label>
                                 <textarea id="comment-pickup" name="commentPickup" rows="3" maxlength="250"></textarea>
                             </div>
-                            
-                            <!-- Payment Method Section for Pickup -->
-                            <div class="form-group" id="payment-method-section-pickup">
-                                <label>Способ оплаты: <span class="required-star">*</span></label>
-                                                            <div class="payment-method-group">
-                                <div class="payment-method-item" id="payment-erip-pickup">
-                                    <div class="payment-method-header">
-                                        <input type="radio" id="payment-erip-radio-pickup" name="paymentMethodPickup" value="erip" checked>
-                                        <label for="payment-erip-radio-pickup">Онлайн оплата ЕРИП</label>
-                                    </div>
-                                    <p class="payment-description">Оплата заказа онлайн через систему ЕРИП</p>
-                                </div>
-                            </div>
-                            <div class="error-message" id="paymentMethodPickup-error">Пожалуйста, выберите способ оплаты.</div>
-                            </div>
                         </div>
                         <!-- Новые текстовые блоки для условий доставки -->
                         <div id="courier-text" class="delivery-info-text hidden">
@@ -382,28 +277,23 @@
                         </div>
                         <button type="submit" class="submit-order-button">Сделать заказ</button>
                     </form>
-                    <div class="cart-actions-checkout">
-                        <a href="#" class="btn-arrow--left btn--noborder bgc-t h-fc h-fc-acc-1 fc-1 fz-75 fz-sm-875 pb-25 fw-500 tt-u ls-5 d-inline-block dec-line dec-line-bottom-full dec-color-1" id="back-from-checkout-to-cart">
-                            <svg class="svg svg-arrow-back mb-50">
-                                <use xlink:href="#arrow-back"></use>
-                            </svg>
-                            <span class="ml-50">Назад к корзине</span>
-                        </a>
+                    <div class="cart-actions-checkout" style="margin-top: 20px;">
+                        <button class="back-from-checkout-button" id="back-from-checkout-to-cart">Назад к корзине</button>
                     </div>
                 </div>
             </div>
-            
-            <!-- Product Screen - moved inside main container to appear within border/frame -->
-            <div class="product-screen hidden" id="product-screen">
+        </div>
+        
+        <!-- Новый экран продукта (заменяет поп-ап) -->
+        <div class="product-screen hidden" id="product-screen">
+            <div class="product-screen-content">
                 <div id="product-screen-body">
                     <!-- Содержимое экрана продукта будет заполняться динамически -->
                 </div>
             </div>
         </div>
-        
-        <!-- Removed product screen from outside container -->
 
     <!-- Подключение внешнего JavaScript файла -->
-            <script src="/bot-app/script.js?v=1.3.89&t=1756240002"></script>
+    <script src="/bot-app/script.js?v=1.0.7"></script>
 </body>
 </html>

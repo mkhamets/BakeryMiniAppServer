@@ -25,7 +25,7 @@ body {
 
 /* Add background only after loading */
 body.loaded {
-    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.89&t=1756240002');
+    background-image: url('/bot-app/Hleb.jpg?v=1.0.18');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -43,32 +43,12 @@ body.loaded {
     box-sizing: border-box; /* Учитываем padding в общей высоте */
     flex-grow: 1; /* Позволяет контейнеру занимать доступное пространство в flex-контейнере body */
     overflow-y: auto; /* Добавляем прокрутку для содержимого контейнера, если оно превышает высоту */
-    -webkit-overflow-scrolling: touch; /* Плавная прокрутка для iOS */
-}
-
-/* Main page logo container */
-.main-page-logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 25px;
-    width: 100%;
-}
-
-.main-page-logo {
-    width: 33.333%;
-    height: auto;
-    max-width: 200px;
-    object-fit: contain;
 }
 
 h1 {
     text-align: center;
     color: #5a2d00;
     margin-bottom: 20px;
-    font-size: 1.8em;
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
 }
 
 .category-title {
@@ -76,23 +56,7 @@ h1 {
     color: #5a2d00;
     margin-bottom: 20px;
     font-size: 1.8em;
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-}
-
-/* Category title with icon styling for category screens */
-.category-title-with-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.category-icon {
-    width: 1.5em;
-    height: 1.5em;
-    object-fit: contain;
-    flex-shrink: 0;
+    font-weight: bold;
 }
 
 /* Скрытие элементов */
@@ -184,7 +148,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-weight: normal;
     font-size: 1rem;
     margin-bottom: 3px;
-    color: #000000;
+    color: #5a3e2b;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -192,29 +156,20 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     line-height: 1.2;
     flex-shrink: 0; /* Не сжимается */
     min-height: 2.4em; /* Минимальная высота для 2 строк */
-    font-family: 'Yeseva One', serif;
-    transition: color 0.2s ease;
-    cursor: pointer;
-}
-
-.product-name:hover {
-    color: #b76c4b;
 }
 
 /* Стиль для информации о доступности в скобках */
 .product-name .availability-info {
-    font-size: 0.9rem;
+    font-size: 0.9rem; 
     color: #bc5757;
     font-weight: normal;
-    font-family: 'Arial', sans-serif;
 }
 
 .product-price {
     font-size: 1.1rem;
-    color: #b76c4b;
-    font-weight: normal;
+    color: #000000;
+    font-weight: bold;
     flex-shrink: 0;
-    font-family: 'Yeseva One', serif;
 }
 
 .product-details {
@@ -310,7 +265,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Стили для кликабельного текста "Подробнее" */
 .details-text {
-    display: block;
+    display: inline-block;
     color: #007bff;
     text-decoration: underline;
     cursor: pointer;
@@ -318,10 +273,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-top: 6px;
     margin-bottom: 4px;
     transition: color 0.2s;
-    white-space: nowrap;
-    width: fit-content;
-    margin-left: 0;
-    margin-right: 0;
 }
 
 .details-text:hover {
@@ -343,7 +294,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     display: flex;
     align-items: flex-start;
     margin-bottom: 15px;
-    padding-bottom: 0px;
+    padding-bottom: 15px;
     border-bottom: 1px solid #eee;
 }
 
@@ -353,63 +304,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     padding-bottom: 0;
 }
 
-.cart-item-image-container {
-    position: relative;
-    margin-right: 15px;
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.cart-item-image-container:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(183, 108, 75, 0.3);
-}
-
-.cart-item-image-container::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(183, 108, 75, 0.1);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-}
-
-.cart-item-image-container:hover::after {
-    opacity: 1;
-}
-
-/* Mobile-specific improvements */
-@media (max-width: 768px) {
-    .cart-item-image-container {
-        min-width: 80px;
-        min-height: 80px;
-    }
-    
-    .cart-item-name {
-        padding: 8px 0;
-        min-height: 44px; /* iOS recommended touch target size */
-        display: flex;
-        align-items: center;
-    }
-    
-    .cart-item-name::after {
-        margin-left: 8px;
-    }
-}
-
-
-
 .cart-item-image {
     width: 80px;
     height: 80px;
     object-fit: cover;
     border-radius: 8px;
+    margin-right: 15px;
     flex-shrink: 0; /* Изображение не сжимается */
 }
 
@@ -423,26 +323,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin: 0 0 5px 0;
     font-size: 1.1em;
     color: #5a3e2b;
-    transition: color 0.2s ease;
-    cursor: pointer;
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-}
-
-.cart-item-name:hover {
-    color: #b76c4b;
-}
-
-.cart-item-name::after {
-    content: ' →';
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    color: #b76c4b;
-    font-weight: normal;
-}
-
-.cart-item-name:hover::after {
-    opacity: 1;
 }
 
 .cart-item-price {
@@ -480,8 +360,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: #000000;
     margin: 0;
     text-align: right;
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
 }
 
 .price-per-unit {
@@ -552,8 +430,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     background-color: #f8f9fa;
     border-radius: 8px;
     border: 2px solid #e9ecef;
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
 }
 
 
@@ -599,7 +475,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     padding: 0;
     background: none;
     border: none;
-    font-family: 'Yeseva One', serif;
 }
 
 .clear-cart-button {
@@ -689,13 +564,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* allow button to dock at bottom */
+    justify-content: center;
     align-items: center;
     margin: 20px auto; /* Добавляем отступы для лучшего расположения */
     text-align: center; /* Центрируем текст внутри контейнера */
     flex-grow: 1; /* Позволяет welcome-container занимать доступное пространство */
-    min-height: 80vh; /* anchor content to near-full height */
-    padding-bottom: max(env(safe-area-inset-bottom), 20px); /* safe bottom padding */
 }
 
 .welcome-logo {
@@ -703,7 +576,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     height: auto;
     margin: 0 auto 30px auto;
     display: block;
-    margin-top: auto; /* center upper content by adding flexible top space */
 }
 
 .welcome-title {
@@ -723,7 +595,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: white; /* Белый цвет для текста */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Тень для текста */
     font-weight: bold;
-    margin-bottom: auto; /* center block between logo and bottom button */
 }
 
 .start-shopping-button {
@@ -737,8 +608,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     transition: background-color 0.3s ease, transform 0.2s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     font-weight: bold;
-    margin-top: auto; /* push to bottom within welcome container */
-    align-self: stretch; /* fill available width within container */
 }
 
 .start-shopping-button:hover {
@@ -812,32 +681,22 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .category-title-text {
     margin-top: 0;
     margin-bottom: 5px;
-    font-size: 1.8em; /* Размер заголовка */
+    font-size: 1.5em; /* Размер заголовка */
     color: white;
     font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
     font-weight: normal;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for better visibility */
 }
 
 .category-link-text {
     display: flex;
     align-items: center;
-    font-size: 1.1em;
-    color: rgba(255, 255, 255, 0.922);
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
     transition: color 0.2s ease;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15); /* Subtle shadow for better visibility */
 }
 
 .category-card-item:hover .category-link-text {
     color: white;
-}
-
-/* Category icon styling - only for category titles, not main menu */
-.category-title-with-icon .category-icon {
-    width: 1.5em;
-    height: 1.5em;
-    object-fit: contain;
-    flex-shrink: 0;
 }
 
 .category-arrow-svg {
@@ -860,13 +719,13 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .form-group {
-    margin-bottom: 2px;
+    margin-bottom: 7.5px;
 }
 
 .form-group label {
     display: block;
     margin-bottom: 5px;
-    font-size: 1.2rem;
+    font-size: 16px;
     font-weight: normal;
     color: #5a3e2b;
     text-align: left;
@@ -959,85 +818,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
 }
 
-/* City form group - label and select on same line */
-.city-form-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.city-form-group label {
-    display: inline-block;
-    margin-bottom: 0;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.city-form-group select {
-    flex: 1;
-    min-width: 200px;
-    /* Match standard form input styling */
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 1em;
-    font-family: Arial, sans-serif !important;
-    font-weight: normal !important;
-    background-color: white;
-    color: #333;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    /* Maintain current height */
-    height: auto;
-    line-height: 1.4;
-}
-
-.city-form-group select:focus {
-    border-color: #b76c4b;
-    outline: none;
-    box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
-}
-
-.city-form-group select:hover {
-    border-color: #b76c4b;
-}
-
-/* Style select options */
-.city-form-group select option {
-    padding: 8px 12px;
-    font-family: Arial, sans-serif !important;
-    font-weight: normal !important;
-    color: #333;
-    background-color: white;
-}
-
-.city-form-group select option:hover {
-    background-color: #faf5f3;
-    color: #b76c4b;
-}
-
-.city-form-group select option[value=""] {
-    color: #999;
-    font-style: italic;
-}
-
-/* Flatpickr removed - styles deleted */
-
-/* Ensure the date input is properly styled */
-#delivery-date {
-    cursor: pointer;
-    background-color: white;
-}
-
-#delivery-date:focus {
-    border-color: #b76c4b;
-    outline: none;
-    box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
-}
-
 .radio-group {
     display: flex;
     flex-wrap: wrap; /* Для переноса на новую строку на маленьких экранах */
@@ -1082,8 +862,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border: 1px solid #ffeeba; /* Желтая рамка */
     border-radius: 8px;
     padding: 15px;
-    margin-top: 0px;
-    font-size: 1.1em;
+    margin-top: 15px;
+    font-size: 0.95em;
     line-height: 1.5;
     color: #856404; /* Темно-желтый текст */
 }
@@ -1110,11 +890,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-weight: bold;
+    font-weight: normal;
     background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
     color: white;
     min-width: 200px;
-    margin-top: 5px;
+    margin-top: 20px;
 }
 
 .submit-order-button:hover {
@@ -1130,28 +910,25 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .cart-actions-checkout {
-    text-align: left;
-    margin-top: 20px;
+    text-align: center;
 }
 
 .back-from-checkout-button {
-    background-color: white; /* Match clear-cart-button */
-    color: #666; /* Match clear-cart-button */
-    border: 2px solid #ccc; /* Match clear-cart-button */
+    background-color: #6c757d; /* Серый цвет */
+    color: white;
+    border: none;
     border-radius: 8px;
-    padding: 6px 8px; /* Match clear-cart-button */
-    font-size: 0.9em; /* Match clear-cart-button */
+    padding: 12px 20px;
+    font-size: 1em;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s ease; /* Match clear-cart-button */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Match clear-cart-button */
+    transition: background-color 0.3s ease, transform 0.1s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .back-from-checkout-button:hover {
-    background-color: #f8f9fa; /* Match clear-cart-button */
-    border-color: #000; /* Match clear-cart-button */
-    transform: translateY(-1px); /* Match clear-cart-button */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Match clear-cart-button */
+    background-color: #5a6268;
+    transform: translateY(-2px);
 }
 
 .checkout-item-summary {
@@ -1178,18 +955,30 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border-color: red;
 }
 
-/* Стили для экрана продукта (теперь внутри основного контейнера) */
+/* Стили для экрана продукта (заменяет поп-ап) */
 .product-screen {
-    background-color: #fff;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    padding: 15px; /* Reduced from 20px */
-    padding-top: 0px;
+    height: 100%;
+    background-color: #fff;
+    z-index: 10000;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.product-screen-content {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    min-height: 100vh;
     box-sizing: border-box;
-    /* Removed fixed positioning since it's now inside main container */
 }
 
 #product-screen-body {
-    padding: 0px 0; /* Reduced from 20px */
+    padding: 20px 0;
 }
 
 .product-screen-image {
@@ -1197,28 +986,26 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     max-width: 400px;
     height: auto;
     border-radius: 12px;
-    margin: 0 auto 10px; /* Reduced bottom margin from 0px to 10px */
+    margin: 0 auto 20px;
     display: block;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .product-screen-name {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-    font-size: 1.9em;
+    font-size: 1.8em;
+    font-weight: bold;
     color: #333;
     text-align: center;
-    margin-bottom: 10px; /* Reduced from 15px */
+    margin-bottom: 15px;
     line-height: 1.3;
 }
 
 .product-screen-price {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
     font-size: 1.6em;
-    color: #000000;
+    font-weight: bold;
+    color: #b76c4b;
     text-align: center;
-    margin-bottom: 0px;
+    margin-bottom: 25px;
 }
 
 .product-screen-quantity-controls {
@@ -1226,8 +1013,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    margin-bottom: 20px; /* Reduced from 30px */
-    padding: 12px; /* Reduced from 15px */
+    margin-bottom: 30px;
+    padding: 15px;
     background-color: #f8f8f8;
     border-radius: 12px;
 }
@@ -1237,11 +1024,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 10px 16px; /* Reduced from 12px 20px */
+    padding: 12px 20px;
     font-size: 1.8rem;
     cursor: pointer;
-    min-width: 55px; /* Reduced from 60px */
-    height: 55px; /* Reduced from 60px */
+    min-width: 60px;
+    height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1264,23 +1051,15 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-screen-info {
-    margin-bottom: 10px; /* Reduced from 15px */
+    margin-bottom: 25px;
 }
 
 .product-screen-info-item {
-    margin-bottom: 10px; /* Reduced from 15px */
-    padding: 15px; /* Reduced from 20px */
-    border-radius: 12px;
-}
-
-.product-screen-info-item-weight {
-    background-color: #f8f8f8;
-}
-
-.product-screen-info-item-availability {
-    background-color: #fff;
-    border: 2px solid #b76c4b;
-    border-bottom: 2px solid #b76c4b !important; /* Ensure bottom border is always visible */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
 }
 
 .product-screen-info-item:last-child {
@@ -1288,170 +1067,66 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .product-screen-info-label {
-    font-weight: normal;
-    color: #000000;
-    font-size: 1.1em;
+    font-weight: bold;
+    color: #666;
+    font-size: 0.95em;
 }
 
 .product-screen-info-value {
-    color: #000000;
-    font-size: 1.1em;
+    color: #333;
+    font-size: 0.95em;
     text-align: right;
     max-width: 60%;
 }
 
 .product-screen-ingredients {
-    margin-bottom: 10px; /* Reduced from 15px */
-    padding: 15px; /* Reduced from 20px */
+    margin-bottom: 25px;
+    padding: 20px;
     background-color: #f8f8f8;
     border-radius: 12px;
 }
 
 .product-screen-ingredients-label {
-    font-weight: normal;
-    color: #000000;
-    margin-bottom: 8px; /* Reduced from 10px */
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
     font-size: 1.1em;
 }
 
 .product-screen-ingredients-value {
-    color: #000000;
+    color: #666;
     line-height: 1.5;
-    font-size: 1.1em;
+    font-size: 0.95em;
 }
 
 .product-screen-nutrition {
-    margin-bottom: 10px; /* Reduced from 15px */
-    padding: 15px; /* Reduced from 20px */
+    margin-bottom: 25px;
+    padding: 20px;
     background-color: #f0f8ff;
     border-radius: 12px;
 }
 
 .product-screen-nutrition-label {
-    font-weight: normal;
-    color: #000000;
-    margin-bottom: 8px; /* Reduced from 10px */
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
     font-size: 1.1em;
 }
 
 .product-screen-nutrition-value {
-    color: #000000;
+    color: #666;
     line-height: 1.5;
     font-size: 0.95em;
 }
 
 .product-screen-nutrition-value div {
-    margin-bottom: 3px; /* Reduced from 5px */
-}
-
-/* Ensure YesevaOne-ex font is available */
-@font-face {
-    font-family: 'YesevaOne-ex';
-    font-weight: 600;
-    font-style: normal;
-    font-display: swap;
-    src: url('../fonts/YesevaOne/YesevaOne-Regular.eot');
-    src: url('../fonts/YesevaOne/YesevaOne-Regular.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/YesevaOne/YesevaOne-Regular.woff2') format('woff2');
-}
-
-/* New product screen styling for labels and values */
-.product-screen .wight,
-.product-screen .availability,
-.product-screen .structure,
-.product-screen .calories,
-.product-screen .energy-value {
-    font-size: 1.1em;
-}
-
-
-
-/* Clean and simple approach - specific styles for each label */
-
-
-
-/* Simple approach - specific styles for each label */
-.product-screen .weight-label {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-    font-size: 1.1em;
-    color: #000000;
-}
-
-/* .product-screen .availability-label {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-    font-size: 1.1em;
-    color: #000000;
-} */
-
-.product-screen .ingredients-label {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-    font-size: 1.1em;
-    color: #000000;
-}
-
-.product-screen .calories-label {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-    font-size: 1.1em;
-    color: #000000;
-}
-
-.product-screen .energy-label {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-    font-size: 1.1em;
-    color: #000000;
-}
-
-/* Short description styling - matches weight and ingredients values */
-.product-screen .short-description {
-    font-family: Arial, sans-serif;
-    font-weight: normal;
-    font-size: 1.1em;
-    color: #000000;
-    line-height: 1.5;
-    margin-bottom: 8px;
-}
-
-/* Vegan label styling - matches weight label */
-.product-screen .vegan-label {
-    font-family: 'Yeseva One', serif;
-    font-weight: normal;
-    font-size: 1.1em;
-    color: #000000;
-}
-
-/* Product grid vegan icon styling */
-.product-vegan-icon {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    z-index: 10;
-    pointer-events: none; /* Make icon non-clickable so image clicks work */
-}
-
-.product-vegan-icon .svg-vegan {
-    width: 30px; /* User requested size */
-    height: 30px; /* User requested size */
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.product-screen .mr-25 {
-    margin-right: 5px;
-}
-
-.product-screen .fz-100 {
-    font-size: 1.1em;
+    margin-bottom: 5px;
 }
 
 /* Адаптивность для экрана продукта */
 @media (max-width: 480px) {
-    .product-screen {
+    .product-screen-content {
         padding: 15px;
-        padding-top: 0px;
     }
     
     .product-screen-name {
@@ -1761,23 +1436,23 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 /* Product screen quantity controls - medium size */
-.product-screen .w-200 {
+.product-screen-content .w-200 {
     width: 2.5rem;
 }
 
-.product-screen .h-200 {
+.product-screen-content .h-200 {
     height: 2.5rem;
 }
 
-.product-screen .fz-150 {
+.product-screen-content .fz-150 {
     font-size: 1.8rem;
 }
 
-.product-screen .fz-175 {
+.product-screen-content .fz-175 {
     font-size: 2rem;
 }
 
-.product-screen .mx-w-300 {
+.product-screen-content .mx-w-300 {
     max-width: 3.5rem;
 }
 
@@ -1971,10 +1646,10 @@ body a {
 }
 
 .loading-logo {
-    width: 45vw; /* slightly smaller to reduce layout cost */
+    width: 50vw; /* 2/4 of screen width = 50% */
     height: auto;
-    max-width: 280px;
-    max-height: 72px;
+    max-width: 300px;
+    max-height: 80px;
     object-fit: contain;
 }
 
@@ -2041,7 +1716,7 @@ body * {
 
 .pickup-details p {
     margin: 8px 0;
-    font-size: 17px;
+    font-size: 14px;
     line-height: 1.4;
     color: #333;
 }
@@ -2139,130 +1814,6 @@ body * {
     margin: 0 -12px;
 }
 
-/* Form validation error styles */
-.form-field-error {
-    border: 2px solid #ff4444 !important;
-    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
-    background-color: #fff5f5 !important;
-}
-
-.form-field-error:focus {
-    border-color: #ff4444 !important;
-    box-shadow: 0 0 12px rgba(255, 68, 68, 0.4) !important;
-}
-
-.error-message {
-    color: #ff0202;
-    font-size: 12px;
-    margin-top: 4px;
-    font-weight: 500;
-    display: none;
-}
-
-.error-message.show {
-    display: block;
-}
-
-/* Payment method styles */
-.payment-method-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.payment-method-item {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    cursor: pointer;
-    padding: 8px 0;
-    background-color: transparent;
-    border: none;
-    border-radius: 0;
-    transition: all 0.2s ease;
-    width: 100%;
-}
-
-.payment-method-item:hover {
-    background-color: #ffffff;
-}
-
-
-
-.payment-method-item input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    margin: 0 12px 0 0;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    border: 2px solid #b76c4b;
-    border-radius: 50%;
-    background-color: #b76c4b;
-    position: relative;
-    flex-shrink: 0;
-    align-self: flex-start;
-}
-
-.payment-method-item input[type="radio"]:checked {
-    background-color: #b76c4b;
-    border-color: #b76c4b;
-}
-
-.payment-method-item input[type="radio"]:checked::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    background-color: white;
-    border-radius: 50%;
-}
-
-.payment-method-item label {
-    margin: 0;
-    padding: 0;
-    font-family: 'Yeseva One', serif;
-    font-size: 16px;
-    font-weight: normal;
-    color: #333;
-    cursor: pointer;
-    line-height: 1.4;
-    background-color: transparent;
-    border: none;
-    border-radius: 0;
-    flex: 1;
-}
-
-.payment-method-item label:hover {
-    color: #b76c4b;
-}
-
-.payment-method-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.payment-description {
-    margin: 0 0 0 32px;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    font-weight: normal;
-    color: #000;
-    line-height: 1.4;
-}
-
-.payment-method-item.selected {
-    background-color: white;
-    border-radius: 4px;
-    padding: 8px 12px;
-    margin: 0 -12px;
-}
-
 /* Pickup addresses list styles */
 .pickup-addresses-list {
     display: flex;
@@ -2284,7 +1835,7 @@ body * {
 }
 
 .pickup-address-item:hover {
-    background-color: white; /* Keep white background consistent across all platforms */
+    background-color: #f8f8f8;
 }
 
 .pickup-address-item input[type="radio"] {
@@ -2357,7 +1908,6 @@ body * {
     font-size: 1rem;
 }
 
-/* General .ff-2 rule - but product screen overrides this */
 .ff-2 {
     font-family: 'Yeseva One', serif;
 }
@@ -2411,585 +1961,4 @@ body * {
     .pickup-details p {
         font-size: 13px;
     }
-}
-
-/* ==================== AVAILABILITY INFO CONTAINER ==================== */
-.availability-info-container {
-    background-color: white;
-    border: 2px solid #ff0000;
-    border-radius: 8px;
-    padding: 16px;
-    margin: 16px auto; /* Центрируем контейнер */
-    max-width: 600px; /* Стандартизируем максимальную ширину */
-    width: calc(100% - 32px); /* Учитываем отступы */
-    box-sizing: border-box;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.availability-info-content {
-    margin: 0;
-}
-
-.availability-info-title {
-    margin: 0 0 12px 0;
-    font-weight: 600;
-    color: #333;
-    font-size: 17px;
-    line-height: 1.4;
-}
-
-.availability-info-list {
-    margin: 0;
-    padding-left: 20px;
-    list-style-type: disc;
-}
-
-.availability-info-list li {
-    margin: 8px 0;
-    color: #555;
-    font-size: 17px;
-    line-height: 1.4;
-}
-
-.availability-info-list li strong {
-    color: #333;
-    font-weight: 600;
-}
-
-/* Mobile-specific animation disabling to prevent iOS twitching */
-@media (max-width: 768px) {
-    /* Disable all transitions and transforms on mobile devices */
-    .product-card,
-    .category-card-item,
-    .category-image,
-    .category-text-wrapper,
-    .category-title-text,
-    .category-link-text,
-    .category-arrow-svg,
-    .clickable-image,
-    .details-text,
-    .checkout-button,
-    .menu-button,
-    .start-shopping-button,
-    .clear-cart-button,
-    .submit-order-button {
-        transition: none !important;
-        -webkit-transition: none !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-    }
-    
-    /* Disable hover effects on mobile */
-    .product-card:hover,
-    .category-card-item:hover,
-    .clickable-image:hover,
-    .checkout-button:hover,
-    .menu-button:hover,
-    .start-shopping-button:hover,
-    .clear-cart-button:hover,
-    .submit-order-button:hover {
-        transform: none !important;
-        -webkit-transform: none !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    }
-    
-    /* Disable hover effects on child elements */
-    .category-card-item:hover .category-image,
-    .category-card-item:hover .category-arrow-svg {
-        transform: none !important;
-        -webkit-transform: none !important;
-    }
-    
-    /* Force hardware acceleration on mobile without animations */
-    .category-card-item,
-    .product-card {
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-        will-change: auto !important;
-    }
-    /* Ensure welcome button stays near bottom on short screens */
-    .welcome-container {
-        min-height: 85vh;
-    }
-    .start-shopping-button {
-        font-size: 1.15em;
-        padding: 14px 24px;
-    }
-}
-
-/* Keep animations on desktop devices */
-@media (min-width: 769px) {
-    .product-card {
-        transition: transform 0.2s ease-in-out;
-    }
-    
-    .product-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .clickable-image {
-        transition: transform 0.2s ease, filter 0.2s ease;
-    }
-    
-    .checkout-button,
-    .menu-button,
-    .start-shopping-button,
-    .clear-cart-button,
-    .submit-order-button {
-        transition: background-color 0.2s, transform 0.1s;
-    }
-    
-    .checkout-button:hover,
-    .menu-button:hover,
-    .start-shopping-button:hover,
-    .clear-cart-button:hover,
-    .submit-order-button:hover {
-        transform: translateY(-2px);
-    }
-}
-
-/* ===== CLASSICAL CALENDAR STYLES ===== */
-
-/* Date input with calendar icon */
-.date-input-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.date-input-container input {
-    flex: 1;
-    padding-right: 45px;
-}
-
-.calendar-icon {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #b76c4b;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-}
-
-.calendar-icon:hover {
-    background-color: rgba(183, 108, 75, 0.1);
-}
-
-.calendar-icon svg {
-    display: block;
-}
-
-/* Calendar overlay */
-.calendar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 10000;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.calendar-overlay.active {
-    display: flex;
-}
-
-/* Calendar popup */
-.calendar-popup {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    max-width: 350px;
-    width: 100%;
-    max-height: 90vh;
-    overflow: hidden;
-    animation: calendarSlideIn 0.3s ease-out;
-    border: 2px solid #b76c4b;
-}
-
-@keyframes calendarSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-/* Calendar header */
-.calendar-header {
-    background: #b76c4b;
-    color: white;
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-}
-
-.calendar-month-year {
-    margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
-    flex: 1;
-    text-align: center;
-}
-
-.calendar-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-    flex-shrink: 0;
-}
-
-.calendar-close:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Calendar body */
-.calendar-body {
-    padding: 20px;
-    background: white;
-}
-
-/* Weekdays header */
-.calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-bottom: 12px;
-}
-
-.calendar-weekday {
-    padding: 8px 4px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-/* Working days (Monday-Friday) */
-.calendar-weekday.workday {
-    color: #b76c4b;
-    background-color: #faf5f3;
-    border: 1px solid rgba(183, 108, 75, 0.2);
-}
-
-/* Weekend days (Saturday-Sunday) */
-.calendar-weekday.weekend {
-    color: #d32f2f;
-    background-color: #ffebee;
-    border: 1px solid rgba(211, 47, 47, 0.2);
-    font-weight: 700;
-}
-
-/* Calendar dates grid */
-.calendar-dates {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, 1fr);
-    gap: 4px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.calendar-date {
-    width: 100%;
-    height: 40px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    border: 2px solid transparent;
-    background: white;
-    color: #333;
-    box-sizing: border-box;
-}
-
-.calendar-date:hover {
-    background-color: #faf5f3;
-    border-color: #b76c4b;
-    transform: scale(1.05);
-}
-
-.calendar-date.disabled {
-    color: #ccc;
-    cursor: not-allowed;
-    background-color: #f5f5f5;
-}
-
-.calendar-date.disabled:hover {
-    background-color: #f5f5f5;
-    border-color: transparent;
-    transform: none;
-}
-
-.calendar-date.enabled {
-    background-color: #e8f4e8;
-    color: #2d5a2d;
-    font-weight: 600;
-    border-color: #4caf50;
-}
-
-.calendar-date.enabled:hover {
-    background-color: #d4e8d4;
-    border-color: #388e3c;
-    transform: scale(1.1);
-}
-
-.calendar-date.selected {
-    background-color: #b76c4b;
-    color: white;
-    border-color: #a0522d;
-    font-weight: bold;
-    transform: scale(1.05);
-}
-
-.calendar-date.selected:hover {
-    background-color: #a0522d;
-    transform: scale(1.1);
-}
-
-.calendar-date.other-month {
-    color: #ddd;
-    font-weight: normal;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-    .calendar-popup {
-        margin: 10px;
-        max-width: none;
-        width: calc(100% - 20px);
-        max-width: 340px;
-    }
-    
-    .calendar-header {
-        padding: 14px 16px;
-    }
-    
-    .calendar-month-year {
-        font-size: 1.05em;
-    }
-    
-    .calendar-body {
-        padding: 16px;
-    }
-    
-    .calendar-date {
-        font-size: 16px;
-        min-height: 40px;
-    }
-    
-    .calendar-weekday {
-        padding: 10px 4px;
-        font-size: 13px;
-    }
-    
-    .date-input-container input {
-        padding-right: 50px;
-    }
-    
-    .calendar-icon {
-        right: 15px;
-    }
-}
-
-/* iOS specific fixes */
-@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
-    .calendar-overlay {
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .calendar-date {
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-    }
-}
-
-/* ===== END CLASSICAL CALENDAR STYLES ===== */
-
-/* Telegram WebApp Main Button (Cart Button) Styles */
-.tgme_widget_login_button,
-.tgme_widget_login_button *,
-.tgme_widget_login_button::before,
-.tgme_widget_login_button::after {
-    font-family: Arial, sans-serif !important;
-    font-weight: normal !important;
-}
-
-/* Target the main button specifically */
-.tgme_widget_login_button {
-    font-family: Arial, sans-serif !important;
-    font-weight: normal !important;
-}
-
-/* Additional WebApp button targeting */
-[data-webapp-button],
-[class*="webapp"],
-[class*="tgme"] {
-    font-family: Arial, sans-serif !important;
-    font-weight: normal !important;
-}
-
-/* Target Telegram WebApp MainButton specifically */
-.tgme_widget_login_button,
-.tgme_widget_login_button *,
-.tgme_widget_login_button::before,
-.tgme_widget_login_button::after,
-.tgme_widget_login_button span,
-.tgme_widget_login_button div {
-    font-family: Arial, sans-serif !important;
-    font-weight: normal !important;
-}
-
-/* Target any element that might contain the cart button text */
-[class*="tgme"],
-[class*="webapp"],
-[class*="main-button"],
-[class*="cart-button"] {
-    font-family: Arial, sans-serif !important;
-    font-weight: normal !important;
-}
-
-/* But preserve Yeseva One for specific elements */
-h1, .category-title, .category-title-with-icon {
-    font-family: 'Yeseva One', serif !important;
-}
-
-/* NEW: Styles for disabled products in cart */
-.disabled-product {
-    opacity: 0.6;
-    background-color: rgba(128, 128, 128, 0.1);
-    position: relative;
-    border-radius: 12px;
-}
-
-.disabled-product::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(128, 128, 128, 0.1);
-    pointer-events: none;
-    z-index: 1;
-    border-radius: 12px;
-}
-
-.disabled-product .cart-item-image-container {
-    position: relative;
-}
-
-.unavailable-label {
-    position: absolute;
-    top: 8px;
-    left: 0px;
-    right: 0px;
-    width: 100%;
-    background-color: #dc3545;
-    color: white;
-    border-radius: 0px;
-    font-size: 12px;
-    font-weight: bold;
-    z-index: 2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    white-space: nowrap;
-    text-align: center;
-    box-sizing: border-box;
-}
-
-.disabled-product .cart-item-name {
-    color: #666;
-}
-
-.disabled-product .cart-item-price {
-    color: #888;
-}
-
-.disabled-product .cart-item-controls .changer {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.disabled-product .cart-item-controls input {
-    opacity: 0.5;
-}
-
-/* NEW: Error message for disabled products - Bootstrap Alert Style */
-.disabled-products-error {
-    margin: 20px 0;
-}
-
-.disabled-products-error .alert {
-    margin: 0;
-    border-radius: 8px;
-    font-size: 17px;
-    font-weight: 500;
-}
-
-.disabled-products-error .alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-}
-
-.disabled-products-error .bi {
-    color: #721c24;
-    flex-shrink: 0;
-    padding-left: 10px;
-    width: 34px;
-}
-
-.disabled-products-error .me-2 {
-    margin-right: 0.5rem !important;
-}
-
-.disabled-products-error .alert > div {
-    padding-top: 8px;
-    padding-bottom: 8px;
-}
-
-/* NEW: Disabled checkout button styles */
-.checkout-button.disabled {
-    background-color: #ccc !important;
-    color: #666 !important;
-    cursor: not-allowed !important;
-    opacity: 0.6;
-}
-
-.checkout-button.disabled:hover {
-    background-color: #ccc !important;
-    transform: none !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
 }
