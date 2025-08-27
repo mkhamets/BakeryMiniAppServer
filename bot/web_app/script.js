@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.92';
+    const CACHE_VERSION = '1.3.93';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -838,9 +838,9 @@ function showValidationErrors(errorFields, errorMessages) {
             if (errorMessageElement) {
                 errorMessageElement.classList.add('show');
                 console.log(`Error message shown for: ${errorField.field}`);
-                // Force display in case CSS is not working
-                errorMessageElement.style.display = 'block';
-                errorMessageElement.style.color = '#ff4444';
+                // Remove any conflicting inline styles to let CSS work
+                errorMessageElement.style.removeProperty('display');
+                errorMessageElement.style.removeProperty('color');
             } else {
                 console.error(`Error message element not found for: ${errorField.field}`);
                 // Try alternative selectors
@@ -1232,10 +1232,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.92&t=1756279999", image: "images/bakery.svg?v=1.3.92&t=1756279999" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.92&t=1756279999", image: "images/crouasan.svg?v=1.3.92&t=1756279999" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.92&t=1756279999", image: "images/bread1.svg?v=1.3.92&t=1756279999" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.92&t=1756279999", image: "images/cookie.svg?v=1.3.92&t=1756279999" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.93&t=1756279402", image: "images/bakery.svg?v=1.3.93&t=1756279402" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.93&t=1756279402", image: "images/crouasan.svg?v=1.3.93&t=1756279402" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.93&t=1756279402", image: "images/bread1.svg?v=1.3.93&t=1756279402" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.93&t=1756279402", image: "images/cookie.svg?v=1.3.93&t=1756279402" }
     };
 
     await fetchProductsData();
@@ -2760,7 +2760,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/images/Hleb.jpg?v=1.3.92&t=1756279999';
+    img.src = '/bot-app/images/Hleb.jpg?v=1.3.93&t=1756279402';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
