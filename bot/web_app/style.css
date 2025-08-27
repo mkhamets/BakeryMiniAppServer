@@ -2174,6 +2174,8 @@ body * {
 /* Individual items in error state containers */
 .pickup-addresses-list.form-field-error .pickup-address-item {
     background-color: #fff5f5 !important;
+    padding: 8px 12px !important;
+    margin: 0 -2px !important;
 }
 
 .pickup-addresses-list.form-field-error .pickup-address-item label {
@@ -2182,9 +2184,21 @@ body * {
 
 .payment-method-group.form-field-error .payment-method-item {
     background-color: #fff5f5 !important;
+    padding: 4px 12px !important;
+    margin: 0 -2px !important;
 }
 
 .payment-method-group.form-field-error .payment-method-item label {
+    background-color: #fff5f5 !important;
+}
+
+.delivery-method-group.form-field-error .delivery-method-item {
+    background-color: #fff5f5 !important;
+    padding: 8px 12px !important;
+    margin: 0 -2px !important;
+}
+
+.delivery-method-group.form-field-error .delivery-method-item label {
     background-color: #fff5f5 !important;
 }
 
