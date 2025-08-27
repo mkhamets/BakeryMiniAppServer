@@ -4,7 +4,7 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.90';
+    const CACHE_VERSION = '1.3.91';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -1232,10 +1232,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.90&t=1756271805", image: "images/bakery.svg?v=1.3.90&t=1756271805" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.90&t=1756271805", image: "images/crouasan.svg?v=1.3.90&t=1756271805" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.90&t=1756271805", image: "images/bread1.svg?v=1.3.90&t=1756271805" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.90&t=1756271805", image: "images/cookie.svg?v=1.3.90&t=1756271805" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.91&t=1756278101", image: "images/bakery.svg?v=1.3.91&t=1756278101" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.91&t=1756278101", image: "images/crouasan.svg?v=1.3.91&t=1756278101" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.91&t=1756278101", image: "images/bread1.svg?v=1.3.91&t=1756278101" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.91&t=1756278101", image: "images/cookie.svg?v=1.3.91&t=1756278101" }
     };
 
     await fetchProductsData();
@@ -2760,7 +2760,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/images/Hleb.jpg?v=1.3.90&t=1756271805';
+    img.src = '/bot-app/images/Hleb.jpg?v=1.3.91&t=1756278101';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
