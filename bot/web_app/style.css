@@ -1173,6 +1173,10 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     display: none; /* Скрываем по умолчанию, будет показано JS при ошибке */
 }
 
+.error-message.show {
+    display: block;
+}
+
 .form-group.error input,
 .form-group.error textarea {
     border-color: red;
