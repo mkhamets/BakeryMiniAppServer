@@ -2216,7 +2216,7 @@ body * {
 }
 
 .payment-method-item:hover {
-    background-color: #fff5f5; /* Match error state background color */
+    background-color: transparent;
 }
 
 
@@ -2270,7 +2270,7 @@ body * {
 
 .payment-method-item label:hover {
     color: #b76c4b;
-    background-color: #fff5f5; /* Match error state background color */
+    background-color: transparent;
 }
 
 .payment-method-header {
@@ -2289,7 +2289,7 @@ body * {
 }
 
 .payment-method-item.selected {
-    background-color: transparent;
+    background-color: #fff5f5;
     border-radius: 4px;
     padding: 8px 12px;
     margin: 0;
@@ -2316,7 +2316,7 @@ body * {
 }
 
 .pickup-address-item:hover {
-    background-color: #fff5f5; /* Match error state background color */
+    background-color: transparent;
 }
 
 .pickup-address-item input[type="radio"] {
@@ -2351,7 +2351,7 @@ body * {
 }
 
 .pickup-address-item.selected {
-    background-color: transparent;
+    background-color: #fff5f5;
     border-radius: 4px;
     padding: 8px 12px;
     margin: 0;
@@ -2374,7 +2374,7 @@ body * {
 
 .pickup-address-item label:hover {
     color: #b76c4b;
-    background-color: #fff5f5; /* Match error state background color */
+    background-color: transparent;
 }
 
 /* Utility classes for pickup addresses */
