@@ -2289,10 +2289,10 @@ body * {
 }
 
 .payment-method-item.selected {
-    background-color: white;
+    background-color: transparent;
     border-radius: 4px;
     padding: 8px 12px;
-    margin: 0 -12px;
+    margin: 0;
 }
 
 /* Pickup addresses list styles */
@@ -2351,10 +2351,10 @@ body * {
 }
 
 .pickup-address-item.selected {
-    background-color: white;
+    background-color: transparent;
     border-radius: 4px;
     padding: 8px 12px;
-    margin: 0 -12px;
+    margin: 0;
 }
 
 .pickup-address-item label {

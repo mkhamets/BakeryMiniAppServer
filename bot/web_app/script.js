@@ -781,6 +781,24 @@ function clearFieldError(fieldName) {
         fieldElement.classList.remove('form-field-error');
     }
     
+    // Clear container errors for radio groups
+    if (fieldName === 'pickupAddress') {
+        const pickupContainer = document.getElementById('pickup-radio-group');
+        if (pickupContainer) {
+            pickupContainer.classList.remove('form-field-error');
+        }
+    } else if (fieldName === 'paymentMethod') {
+        const paymentContainer = document.getElementById('payment-method-section');
+        if (paymentContainer) {
+            paymentContainer.classList.remove('form-field-error');
+        }
+    } else if (fieldName === 'paymentMethodPickup') {
+        const paymentPickupContainer = document.getElementById('payment-method-section-pickup');
+        if (paymentPickupContainer) {
+            paymentPickupContainer.classList.remove('form-field-error');
+        }
+    }
+    
     // Hide corresponding error message - handle camelCase and kebab-case IDs
     const toKebab = (s) => s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
     let errorMessageElement = document.getElementById(fieldName + '-error');
