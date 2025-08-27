@@ -1142,7 +1142,7 @@ function collectFormData() {
 document.addEventListener('DOMContentLoaded', async () => {
 
     // Debug flag to control noisy logs and debug globals
-    const DEBUG = false;
+    const DEBUG = true;
     if (!DEBUG && typeof console !== 'undefined' && console.log) {
         console.log = function(){};
     }
@@ -2760,7 +2760,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/images/Hleb.jpg?v=1.3.90&t=1756271805
+    img.src = '/bot-app/images/Hleb.jpg?v=1.3.90&t=1756271805';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
