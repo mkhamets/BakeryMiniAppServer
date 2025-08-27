@@ -63,6 +63,38 @@ class TestOrderProcessing(unittest.TestCase):
         if self.test_user_id in user_carts:
             del user_carts[self.test_user_id]
 
+    def test_cart_clearing_before_order_processing(self):
+        """Test that cart is cleared before order processing starts."""
+        from bot.main import user_carts, clear_user_cart
+        
+        # Add some test items to cart
+        user_carts[self.test_user_id] = {
+            "test_item_1": {"id": "test_1", "name": "Test Item 1", "price": 10, "quantity": 2},
+            "test_item_2": {"id": "test_2", "name": "Test Item 2", "price": 15, "quantity": 1}
+        }
+        
+        # Verify cart has items
+        self.assertIn(self.test_user_id, user_carts)
+        self.assertGreater(len(user_carts[self.test_user_id]), 0)
+        
+        # Clear cart
+        clear_user_cart(self.test_user_id)
+        
+        # Verify cart is cleared
+        self.assertNotIn(self.test_user_id, user_carts)
+
+    def test_cart_clearing_function_exists(self):
+        """Test that clear_user_cart function exists and works properly."""
+        from bot.main import clear_user_cart, user_carts
+        
+        # Test with non-existent user (should not raise error)
+        clear_user_cart(999999)
+        
+        # Test with existing user
+        user_carts[self.test_user_id] = {"test": {"id": "test", "name": "Test", "price": 10, "quantity": 1}}
+        clear_user_cart(self.test_user_id)
+        self.assertNotIn(self.test_user_id, user_carts)
+
     @patch('bot.main.load_order_counter')
     @patch('bot.main.save_order_counter')
     def test_generate_order_number_success(self, mock_save, mock_load):
@@ -92,6 +124,31 @@ class TestOrderProcessing(unittest.TestCase):
         self.assertTrue(result.startswith("#"))
         # Counter should reset to 1 for new month
         self.assertIn("1", result)
+
+    def test_total_amount_validation_none_value(self):
+        """Test that total_amount None validation works properly."""
+        from bot.main import _handle_checkout_order
+        
+        # Create test data with None total_amount
+        test_data = {
+            "order_details": self.test_order_details,
+            "cart_items": self.test_cart_items,
+            "total_amount": None
+        }
+        
+        # Create mock message
+        mock_message = MagicMock()
+        mock_message.answer = AsyncMock()
+        
+        # Test the validation
+        with patch('bot.main.generate_main_menu') as mock_menu:
+            mock_menu.return_value = MagicMock()
+            asyncio.run(_handle_checkout_order(mock_message, test_data, self.test_user_id))
+            
+            # Verify error message was sent
+            mock_message.answer.assert_called()
+            call_args = mock_message.answer.call_args[0][0]
+            self.assertIn("total_amount must be number, got NoneType", call_args)
 
     @patch('bot.main.smtplib.SMTP')
     def test_send_email_notification_success(self, mock_smtp):
