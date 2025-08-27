@@ -2186,6 +2186,12 @@ body * {
     background-color: #fff5f5 !important;
 }
 
+/* Specific error message styling */
+#pickupAddress-error {
+    font-family: 'Arial', sans-serif;
+    font-weight: normal;
+}
+
 
 
 /* Payment method styles */
