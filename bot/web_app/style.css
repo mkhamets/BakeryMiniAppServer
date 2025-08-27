@@ -2075,7 +2075,7 @@ body * {
     gap: 12px;
     cursor: pointer;
     padding: 8px 12px;
-    margin: 0 -12px;
+    margin: 0 -12px 0 -22px;
     background-color: transparent;
     border: none;
     border-radius: 0;
@@ -2141,7 +2141,7 @@ body * {
     background-color: white;
     border-radius: 4px;
     padding: 8px 12px;
-    margin: 0 -12px;
+    margin: 0 -12px 0 -22px;
 }
 
 /* Form validation error styles */
@@ -2210,7 +2210,7 @@ body * {
     gap: 4px;
     cursor: pointer;
     padding: 4px 12px;
-    margin: 0 -12px;
+    margin: 0 -12px 0 -22px;
     background-color: transparent;
     border: none;
     border-radius: 0;
@@ -2294,7 +2294,7 @@ body * {
     background-color: transparent;
     border-radius: 4px;
     padding: 4px 12px;
-    margin: 0 -12px;
+    margin: 0 -12px 0 -22px;
 }
 
 /* Pickup addresses list styles */
@@ -2311,7 +2311,7 @@ body * {
     gap: 12px;
     cursor: pointer;
     padding: 8px 12px;
-    margin: 0 -12px;
+    margin: 0 -12px 0 -22px;
     background-color: white;
     border: none;
     border-radius: 0;
@@ -2357,7 +2357,7 @@ body * {
     background-color: transparent;
     border-radius: 4px;
     padding: 8px 12px;
-    margin: 0 -12px;
+    margin: 0 -12px 0 -22px;
 }
 
 .pickup-address-item label {
