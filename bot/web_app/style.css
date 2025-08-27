@@ -2169,6 +2169,23 @@ body * {
     box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
 }
 
+/* Individual items in error state containers */
+.pickup-addresses-list.form-field-error .pickup-address-item {
+    background-color: #fff5f5 !important;
+}
+
+.pickup-addresses-list.form-field-error .pickup-address-item label {
+    background-color: #fff5f5 !important;
+}
+
+.payment-method-group.form-field-error .payment-method-item {
+    background-color: #fff5f5 !important;
+}
+
+.payment-method-group.form-field-error .payment-method-item label {
+    background-color: #fff5f5 !important;
+}
+
 
 
 /* Payment method styles */
