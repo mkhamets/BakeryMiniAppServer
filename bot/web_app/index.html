@@ -217,32 +217,35 @@
                         </div>
                         
                         <!-- Payment Method Section -->
-                        <div class="form-group">
-                            <label>Способ оплаты: <span class="required-star">*</span></label>
-                            <div class="payment-method-group" id="payment-method-section">
-                                <div class="payment-method-item" id="payment-cash">
-                                    <div class="payment-method-header">
-                                        <input type="radio" id="payment-cash-radio" name="paymentMethod" value="cash">
-                                        <label for="payment-cash-radio">Оплата наличными</label>
+                        <!-- Courier Payment Method Section -->
+                        <div id="courier-payment" class="hidden">
+                            <div class="form-group">
+                                <label>Способ оплаты: <span class="required-star">*</span></label>
+                                <div class="payment-method-group" id="payment-method-section">
+                                    <div class="payment-method-item" id="payment-cash">
+                                        <div class="payment-method-header">
+                                            <input type="radio" id="payment-cash-radio" name="paymentMethod" value="cash">
+                                            <label for="payment-cash-radio">Оплата наличными</label>
+                                        </div>
+                                        <p class="payment-description">Оплата наличными при получении товара</p>
                                     </div>
-                                    <p class="payment-description">Оплата наличными при получении товара</p>
-                                </div>
-                                <div class="payment-method-item" id="payment-card">
-                                    <div class="payment-method-header">
-                                        <input type="radio" id="payment-card-radio" name="paymentMethod" value="card">
-                                        <label for="payment-card-radio">Оплата картой</label>
+                                    <div class="payment-method-item" id="payment-card">
+                                        <div class="payment-method-header">
+                                            <input type="radio" id="payment-card-radio" name="paymentMethod" value="card">
+                                            <label for="payment-card-radio">Оплата картой</label>
+                                        </div>
+                                        <p class="payment-description">Оплата карточкой при получении товара</p>
                                     </div>
-                                    <p class="payment-description">Оплата карточкой при получении товара</p>
-                                </div>
-                                <div class="payment-method-item" id="payment-erip">
-                                    <div class="payment-method-header">
-                                        <input type="radio" id="payment-erip-radio" name="paymentMethod" value="erip">
-                                        <label for="payment-erip-radio">Онлайн оплата ЕРИП</label>
+                                    <div class="payment-method-item" id="payment-erip">
+                                        <div class="payment-method-header">
+                                            <input type="radio" id="payment-erip-radio" name="paymentMethod" value="erip">
+                                            <label for="payment-erip-radio">Онлайн оплата ЕРИП</label>
+                                        </div>
+                                        <p class="payment-description">Оплата заказа онлайн через систему ЕРИП</p>
                                     </div>
-                                    <p class="payment-description">Оплата заказа онлайн через систему ЕРИП</p>
                                 </div>
+                                <div class="error-message" id="paymentMethod-error">Пожалуйста, выберите способ оплаты.</div>
                             </div>
-                            <div class="error-message" id="paymentMethod-error">Пожалуйста, выберите способ оплаты.</div>
                         </div>
                         <div id="pickup-addresses" class="hidden">
                             <div class="form-group">

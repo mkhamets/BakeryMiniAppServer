@@ -2490,11 +2490,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.checked = false);
                 document.getElementById('comment-pickup').value = '';
                 
-                // Show courier payment methods, hide pickup payment methods
-                const courierPaymentSection = document.getElementById('payment-method-section');
-                const pickupPaymentSection = document.getElementById('payment-method-section-pickup');
-                if (courierPaymentSection) courierPaymentSection.classList.remove('hidden');
-                if (pickupPaymentSection) pickupPaymentSection.classList.add('hidden');
+                // Show courier payment container, hide pickup addresses
+                const courierPaymentContainer = document.getElementById('courier-payment');
+                if (courierPaymentContainer) courierPaymentContainer.classList.remove('hidden');
             } else if (method === 'pickup') {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.remove('hidden');
@@ -2513,11 +2511,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('address-line').value = '';
                 document.getElementById('comment-delivery').value = '';
                 
-                // Hide courier payment methods, show pickup payment methods
-                const courierPaymentSection = document.getElementById('payment-method-section');
-                const pickupPaymentSection = document.getElementById('payment-method-section-pickup');
-                if (courierPaymentSection) courierPaymentSection.classList.add('hidden');
-                if (pickupPaymentSection) pickupPaymentSection.classList.remove('hidden');
+                // Hide courier payment container, pickup addresses are already visible
+                const courierPaymentContainer = document.getElementById('courier-payment');
+                if (courierPaymentContainer) courierPaymentContainer.classList.add('hidden');
             } else {
                 courierDeliveryFields.classList.add('hidden');
                 pickupAddresses.classList.add('hidden');
@@ -2530,6 +2526,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('city').required = false;
                 document.getElementById('address-line').required = false;
                 document.querySelectorAll('input[name="pickupAddress"]').forEach(input => input.required = false);
+                
+                // Hide both payment containers when no delivery method is selected
+                const courierPaymentContainer = document.getElementById('courier-payment');
+                if (courierPaymentContainer) courierPaymentContainer.classList.add('hidden');
             }
         }
 
