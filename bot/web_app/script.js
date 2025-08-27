@@ -1305,12 +1305,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let cart = loadCartWithExpiration();
     
-    // Force clear any stale cart data on page load to ensure clean state
-    if (Object.keys(cart).length > 0) {
-        console.log('🧹 Clearing stale cart data on page load...');
-        clearCart();
-    }
-    
     let productsData = {};
     let isSubmitting = false; // Флаг для предотвращения двойной отправки
     let currentProductCategory = null; // Для отслеживания категории продукта
@@ -2214,17 +2208,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         cart = {};
         // Clear cart from localStorage using the new metadata format
         localStorage.removeItem('cart');
-        localStorage.removeItem('cart_version');
         
-        // Also clear any legacy cart data
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('cart')) {
-                keysToRemove.push(key);
-            }
-        }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+        // Note: We don't remove cart_version as it's part of the expiration system
+        // The cart will be recreated with fresh metadata when items are added
         
         renderCart();
         updateMainButtonCartInfo();
@@ -2239,7 +2225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        console.log('🗑️ Cart cleared successfully from both memory and localStorage');
+        console.log('🗑️ Cart cleared successfully - 2-day persistence system preserved');
     }
 
     // Manual cache clearing function for debugging/development
