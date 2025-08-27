@@ -1304,6 +1304,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const startShoppingButton = document.getElementById('start-shopping-button');
 
     let cart = loadCartWithExpiration();
+    
+    // Force clear any stale cart data on page load to ensure clean state
+    if (Object.keys(cart).length > 0) {
+        console.log('🧹 Clearing stale cart data on page load...');
+        clearCart();
+    }
+    
     let productsData = {};
     let isSubmitting = false; // Флаг для предотвращения двойной отправки
     let currentProductCategory = null; // Для отслеживания категории продукта
@@ -2205,7 +2212,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function clearCart() {
         cart = {};
+        // Clear cart from localStorage using the new metadata format
         localStorage.removeItem('cart');
+        localStorage.removeItem('cart_version');
+        
+        // Also clear any legacy cart data
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('cart')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
         renderCart();
         updateMainButtonCartInfo();
         
@@ -2219,7 +2239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        console.log('🗑️ Cart cleared successfully');
+        console.log('🗑️ Cart cleared successfully from both memory and localStorage');
     }
 
     // Manual cache clearing function for debugging/development
