@@ -2193,7 +2193,7 @@ body * {
 }
 
 .payment-method-item:hover {
-    background-color: #ffffff;
+    background-color: #fff5f5; /* Match error state background color */
 }
 
 
