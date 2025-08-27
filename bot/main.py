@@ -103,97 +103,47 @@ async def load_products_data():
         products_data = {}
 
 
-# ИЗМЕНЕНИЕ: Новая функция для загрузки счетчика заказов из файла
+# ИЗМЕНЕНИЕ: Упрощенная функция для инициализации счетчика заказов
 async def load_order_counter():
-    """Загружает счетчик заказов из файла."""
+    """Инициализирует счетчик заказов с начальными значениями."""
     global order_counter, last_reset_month
     async with order_counter_lock:
-        if os.path.exists(ORDER_COUNTER_FILE):
-            try:
-                with open(ORDER_COUNTER_FILE, 'r', encoding='utf-8') as f:
-                    content = f.read().strip()
-                    if not content:  # Проверяем, не пустой ли файл
-                        logger.warning(f"Файл счетчика заказов {ORDER_COUNTER_FILE} пустой. "
-                                      f"Создаем новый с начальными значениями.")
-                        order_counter = 0
-                        last_reset_month = datetime.datetime.now().month
-                        # Создаем новый файл с правильной структурой
-                        await save_order_counter({'counter': order_counter, 'month': last_reset_month})
-                    else:
-                        data = json.loads(content)
-                        order_counter = data.get('counter', 0)
-                        last_reset_month = data.get('month', datetime.datetime.now().month)
-
-                        # Проверяем, если месяц в файле отличается от текущего
-                        current_month = datetime.datetime.now().month
-                        if last_reset_month != current_month:
-                            logger.info(f"Месяц в файле ({last_reset_month}) отличается от текущего ({current_month}). "
-                                      f"Сбрасываем счетчик.")
-                            order_counter = 0
-                            last_reset_month = current_month
-                            # Обновляем файл с новым месяцем
-                            await save_order_counter({'counter': order_counter, 'month': last_reset_month})
-
-                        logger.info(f"Счетчик заказов успешно загружен из {ORDER_COUNTER_FILE}: "
-                                   f"{order_counter}, Месяц: {last_reset_month}")
-            except (json.JSONDecodeError, FileNotFoundError) as e:
-                logger.warning(f"Файл счетчика заказов не найден или поврежден: {e}. "
-                              f"Начинаем с 0.")
-                order_counter = 0
-                last_reset_month = datetime.datetime.now().month
-                # Создаем новый файл с правильной структурой
-                await save_order_counter({'counter': order_counter, 'month': last_reset_month})
-            except Exception as e:
-                logger.error(f"Неизвестная ошибка при загрузке счетчика заказов: {e}")
-                order_counter = 0
-                last_reset_month = datetime.datetime.now().month
-                # Создаем новый файл с правильной структурой
-                await save_order_counter({'counter': order_counter, 'month': last_reset_month})
-        else:
-            logger.warning(f"Файл счетчика {ORDER_COUNTER_FILE} не найден. Создаем новый.")
-            order_counter = 0
-            last_reset_month = datetime.datetime.now().month
-            # Создаем новый файл с правильной структурой
-            await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+        order_counter = 0
+        last_reset_month = datetime.datetime.now().month
+        logger.info(f"Счетчик заказов инициализирован: {order_counter}, Месяц: {last_reset_month}")
 
 
-# ИЗМЕНЕНИЕ: Новая функция для сохранения счетчика заказов в файл
+# ИЗМЕНЕНИЕ: Упрощенная функция для сохранения счетчика (заглушка)
 async def save_order_counter(counter_data):
-    """Сохраняет счетчик заказов в файл."""
-    async with order_counter_lock:
-        try:
-            logger.info(f"Начинаем сохранение счетчика: {counter_data}")
-            # Создаем директорию, если она не существует
-            os.makedirs(os.path.dirname(ORDER_COUNTER_FILE), exist_ok=True)
-            logger.info(f"Директория создана/проверена: {os.path.dirname(ORDER_COUNTER_FILE)}")
-
-            # Используем синхронную операцию записи в файл
-            with open(ORDER_COUNTER_FILE, 'w', encoding='utf-8') as f:
-                json.dump(counter_data, f, ensure_ascii=False, indent=4)
-            logger.info(f"Счетчик заказов успешно сохранен: {counter_data}")
-        except Exception as e:
-            logger.error(f"Ошибка при сохранении счетчика заказов: {e}")
-            logger.error(f"Тип ошибки: {type(e).__name__}")
-            raise  # Перебрасываем ошибку, чтобы вызывающий код мог ее обработать
+    """Заглушка для сохранения счетчика заказов (не используется)."""
+    logger.info(f"Счетчик заказов не сохраняется в файл: {counter_data}")
+    # Функция оставлена для совместимости, но не выполняет никаких действий
 
 
-# ИЗМЕНЕНИЕ: Функция generate_order_number теперь асинхронная и работает с файлом
+# ИЗМЕНЕНИЕ: Функция generate_order_number теперь использует простую логику без файлового хранения
 async def generate_order_number():
     """
-    Генерирует уникальный номер заказа, сохраняя счетчик в файле.
+    Генерирует уникальный номер заказа с автоматическим сбросом каждый месяц.
+    Счетчик сбрасывается при каждом запуске приложения для простоты.
     """
     global order_counter, last_reset_month
 
     try:
         now = datetime.datetime.now()
         current_month = now.month
-        logger.info(f"Начинаем генерацию номера заказа. Текущий месяц: {current_month}, "
-                   f"последний сброс: {last_reset_month}, счетчик: {order_counter}")
+        current_day = now.day
+        
+        logger.info(f"Начинаем генерацию номера заказа. Текущий месяц: {current_month}, день: {current_day}")
 
         # Защита от одновременной записи
         async with order_counter_lock:
-            # Проверяем, если месяц сменился
-            if current_month != last_reset_month:
+            # Сбрасываем счетчик каждый месяц в первый день
+            if current_day == 1 and current_month != last_reset_month:
+                logger.info(f"Первый день месяца. Сбрасываем счетчик заказов с {order_counter} на 0.")
+                order_counter = 0
+                last_reset_month = current_month
+            # Также сбрасываем при смене месяца
+            elif current_month != last_reset_month:
                 logger.info(f"Сменился месяц. Сбрасываем счетчик заказов с {order_counter} на 0.")
                 order_counter = 0
                 last_reset_month = current_month
@@ -201,25 +151,6 @@ async def generate_order_number():
             # Увеличиваем счетчик для нового заказа
             order_counter += 1
             logger.info(f"Счетчик увеличен до: {order_counter}")
-
-            # Сохраняем обновленный счетчик в файл
-            try:
-                logger.info("Начинаем сохранение счетчика в файл...")
-                # Добавляем таймаут в 5 секунд для операции сохранения
-                await asyncio.wait_for(
-                    save_order_counter({'counter': order_counter, 'month': last_reset_month}),
-                    timeout=5.0
-                )
-                logger.info(f"Счетчик успешно сохранен в файл: {order_counter}")
-            except asyncio.TimeoutError:
-                logger.error("Таймаут при сохранении счетчика заказов")
-                logger.warning("Продолжаем выполнение без сохранения счетчика")
-            except Exception as save_error:
-                logger.error(f"Ошибка при сохранении счетчика: {save_error}")
-                logger.error(f"Тип ошибки: {type(save_error).__name__}")
-                # Продолжаем выполнение даже если не удалось сохранить
-                # Но логируем предупреждение
-                logger.warning("Продолжаем выполнение без сохранения счетчика")
 
         # Форматируем дату и счетчик
         day = now.strftime("%d")
