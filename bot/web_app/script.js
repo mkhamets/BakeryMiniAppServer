@@ -2350,7 +2350,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 // Check minimum order amount (70.00) only for courier delivery
-                const totalAmount = parseFloat(checkoutTotalElement.textContent.replace(' р.', ''));
+                let totalAmount;
+                try {
+                    totalAmount = parseFloat(checkoutTotalElement.textContent.replace(' р.', ''));
+                    if (isNaN(totalAmount)) {
+                        // Fallback: calculate from cart items
+                        totalAmount = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        console.log('🔄 Using fallback total amount calculation:', totalAmount);
+                    }
+                } catch (error) {
+                    // Fallback: calculate from cart items
+                    totalAmount = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    console.log('🔄 Using fallback total amount calculation due to error:', totalAmount);
+                }
+                
                 const courierRadio = document.getElementById('delivery-courier-radio');
                 const isCourierSelected = courierRadio && courierRadio.checked;
                 
@@ -2369,6 +2382,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
+
+                
                 const orderPayload = {
                     action: 'checkout_order',
                     order_details: {
@@ -2392,11 +2407,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         quantity: item.quantity,
                         price: item.price
                     })),
-                    total_amount: parseFloat(checkoutTotalElement.textContent.replace(' р.', ''))
+                    total_amount: totalAmount
                 };
 
                 try {
                     console.log('Отправка заказа:', orderPayload);
+                    
                     Telegram.WebApp.sendData(JSON.stringify(orderPayload));
                     
                     // Save customer data for future prepopulation

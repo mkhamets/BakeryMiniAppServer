@@ -632,12 +632,21 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
         total_amount = data.get('total_amount')
 
         # ИЗМЕНЕНИЕ: Более детальная проверка данных заказа
-        if not order_details or not cart_items or total_amount is None:
+        if not order_details or not cart_items:
             logger.error(f"Неполные данные заказа от пользователя {user_id}. "
-                        f"order_details: {order_details}, cart_items: {cart_items}, "
-                        f"total_amount: {total_amount}")
+                        f"order_details: {order_details}, cart_items: {cart_items}")
             await message.answer(
                 "Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.", 
+                reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
+            )
+            return
+            
+        # Проверяем total_amount отдельно с более детальным логированием
+        if total_amount is None:
+            logger.error(f"total_amount is None для пользователя {user_id}. "
+                        f"order_details: {order_details}, cart_items: {cart_items}")
+            await message.answer(
+                "❌ Ошибка валидации данных:\n• Field total_amount must be number, got NoneType", 
                 reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
             )
             return
@@ -660,7 +669,15 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
             )
             return
 
-        logger.info(f"Данные заказа валидны. Генерируем номер заказа...")
+        logger.info(f"Данные заказа валидны. Очищаем корзину пользователя {user_id} перед обработкой...")
+        
+        # Очищаем корзину ПЕРЕД обработкой заказа, чтобы избежать дублирования
+        try:
+            clear_user_cart(user_id)
+            logger.info(f"Корзина пользователя {user_id} очищена перед обработкой заказа.")
+        except Exception as e:
+            logger.error(f"Ошибка при очистке корзины: {e}")
+        
         logger.info(f"Количество товаров в заказе: {len(cart_items)}")
         logger.info(f"Сумма заказа: {total_amount}")
         logger.info(f"Способ доставки: {order_details.get('deliveryMethod')}")
@@ -685,14 +702,6 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
             logger.error(f"Тип ошибки: {type(notification_error).__name__}")
             # Продолжаем выполнение даже если уведомления не отправились
             logger.info("Продолжаем обработку заказа без уведомлений")
-
-        # Очищаем корзину после успешного заказа
-        logger.info(f"Очищаем корзину пользователя {user_id}")
-        try:
-            clear_user_cart(user_id)
-            logger.info(f"Корзина пользователя {user_id} очищена после оформления заказа {order_number}.")
-        except Exception as e:
-            logger.error(f"Ошибка при очистке корзины: {e}")
 
         # Отправляем краткое подтверждение пользователю
         try:
