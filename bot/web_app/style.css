@@ -2247,6 +2247,7 @@ body * {
 
 .payment-method-item label:hover {
     color: #b76c4b;
+    background-color: #fff5f5; /* Match error state background color */
 }
 
 .payment-method-header {
@@ -2350,6 +2351,7 @@ body * {
 
 .pickup-address-item label:hover {
     color: #b76c4b;
+    background-color: #fff5f5; /* Match error state background color */
 }
 
 /* Utility classes for pickup addresses */
