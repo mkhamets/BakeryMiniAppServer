@@ -825,9 +825,15 @@ function showValidationErrors(errorFields, errorMessages) {
     
     // Show error messages and highlight error fields
     errorFields.forEach((errorField, index) => {
-        if (errorField.element) {
-            // Add error styling to the field (but not for payment methods and pickup addresses)
-            if (!['paymentMethod', 'paymentMethodPickup', 'pickupAddress'].includes(errorField.field)) {
+        if (errorField.element || errorField.errorContainer) {
+            // Add error styling to the field
+            // For radio groups, style the container instead of individual radio
+            if (errorField.elementType === 'radio' && errorField.errorContainer) {
+                // Add visual indicator to radio group container
+                errorField.errorContainer.classList.add('form-field-error');
+                console.log(`Added error styling to radio container for: ${errorField.field}`);
+            } else if (errorField.element && !['paymentMethod', 'paymentMethodPickup', 'pickupAddress', 'deliveryMethod'].includes(errorField.field)) {
+                // For regular inputs, add error class
                 errorField.element.classList.add('form-field-error');
             }
             
@@ -837,10 +843,9 @@ function showValidationErrors(errorFields, errorMessages) {
             console.log(`Looking for error message with ID: ${errorMessageId}`, errorMessageElement);
             if (errorMessageElement) {
                 errorMessageElement.classList.add('show');
+                errorMessageElement.style.display = 'block';  // Force display
+                errorMessageElement.style.color = '#ff4444';  // Force red color
                 console.log(`Error message shown for: ${errorField.field}`);
-                // Remove any conflicting inline styles to let CSS work
-                errorMessageElement.style.removeProperty('display');
-                errorMessageElement.style.removeProperty('color');
             } else {
                 console.error(`Error message element not found for: ${errorField.field}`);
                 // Try alternative selectors
@@ -854,7 +859,7 @@ function showValidationErrors(errorFields, errorMessages) {
             }
             
             // Focus behavior for the first error field
-            if (index === 0) {
+            if (index === 0 && errorField.element) {
                 console.log('🎯 === HANDLE FIRST ERROR FIELD ===');
                 console.log('🎯 Field name:', errorField.field);
                 console.log('🎯 Field element:', errorField.element);
@@ -862,17 +867,22 @@ function showValidationErrors(errorFields, errorMessages) {
                 console.log('🎯 Field element type:', errorField.element ? errorField.element.type : 'none');
 
                 // For deliveryDate: do NOT focus to avoid opening calendar; just scroll into view
-                if (errorField.field !== 'deliveryDate') {
-                    errorField.element.focus();
-                    console.log('🎯 Focus() called on:', errorField.field);
+                if (errorField.field !== 'deliveryDate' && errorField.element.focus) {
+                    try {
+                        errorField.element.focus();
+                        console.log('🎯 Focus() called on:', errorField.field);
+                    } catch (e) {
+                        console.log('🎯 Could not focus on:', errorField.field, e);
+                    }
                 } else {
-                    console.log('🎯 Skipping focus on deliveryDate to avoid calendar auto-open');
+                    console.log('🎯 Skipping focus on:', errorField.field);
                 }
 
-                // Ensure the field is visible
-                if (errorField.element.scrollIntoView) {
-                    console.log('🎯 Scrolling to field:', errorField.field);
-                    errorField.element.scrollIntoView({ 
+                // Ensure the field is visible - scroll to container for radio groups
+                const scrollTarget = errorField.errorContainer || errorField.element;
+                if (scrollTarget && scrollTarget.scrollIntoView) {
+                    console.log('🎯 Scrolling to:', errorField.field);
+                    scrollTarget.scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'center' 
                     });
@@ -990,7 +1000,12 @@ function validateAddressField(value) {
 }
 
 function validatePickupAddressField(value) {
-    return value && value.trim() !== '';
+    // Fix: Ensure proper validation for pickup address
+    if (!value || value.trim() === '') {
+        console.log('❌ pickupAddress validation FAILED - empty value');
+        return false;
+    }
+    return true;
 }
 
 function validatePaymentMethodField(value) {
@@ -1039,7 +1054,8 @@ function validateOrderForm(orderDetails) {
         { 
             field: 'deliveryMethod', 
             label: 'способ получения', 
-            element: 'delivery-courier-radio',
+            element: 'delivery-courier-radio',  // This will be handled specially for radio groups
+            elementType: 'radio',  // Add type to handle radio buttons specially
             customValidation: validateDeliveryMethodField
         },
         // Conditional fields based on delivery method
@@ -1060,21 +1076,27 @@ function validateOrderForm(orderDetails) {
         { 
             field: 'paymentMethod', 
             label: 'способ оплаты', 
-            element: 'payment-method-section', 
+            element: 'payment-cash-radio',  // Use first radio button ID for focus
+            elementType: 'radio',  // Mark as radio group
+            errorElement: 'payment-method-section',  // Container for error styling
             condition: () => orderDetails.deliveryMethod === 'courier',
             customValidation: validatePaymentMethodField
         },
         { 
             field: 'pickupAddress', 
             label: 'адрес самовывоза', 
-            element: 'pickup-radio-group', 
+            element: 'pickup_1',  // Use first radio button ID for focus
+            elementType: 'radio',  // Mark as radio group
+            errorElement: 'pickup-radio-group',  // Container for error styling
             condition: () => orderDetails.deliveryMethod === 'pickup',
             customValidation: validatePickupAddressField
         },
         { 
             field: 'paymentMethodPickup', 
             label: 'способ оплаты', 
-            element: 'payment-method-section-pickup', 
+            element: 'payment-erip-radio-pickup',  // Use first radio button ID for focus
+            elementType: 'radio',  // Mark as radio group
+            errorElement: 'payment-method-section-pickup',  // Container for error styling
             condition: () => orderDetails.deliveryMethod === 'pickup',
             customValidation: validatePaymentMethodField
         }
@@ -1083,8 +1105,12 @@ function validateOrderForm(orderDetails) {
     const errors = [];
     const errorFields = [];
 
+    console.log('🔍 === VALIDATION STARTING ===');
+    console.log('OrderDetails received:', orderDetails);
+
     for (const validation of validationOrder) {
         const value = orderDetails[validation.field];
+        console.log(`🔍 Validating field '${validation.field}' with value: '${value}'`);
         
         // Check if field should be validated based on condition
         if (validation.condition && !validation.condition()) {
@@ -1096,10 +1122,43 @@ function validateOrderForm(orderDetails) {
         const isValid = validateField(value, validation);
         
         if (!isValid) {
+            // For radio groups, handle element reference specially
+            let elementRef = document.getElementById(validation.element);
+            let errorContainer = null;
+            
+            if (validation.elementType === 'radio' && validation.errorElement) {
+                // For radio groups, get the container for error styling
+                errorContainer = document.getElementById(validation.errorElement);
+                // But use the first radio for focus
+                if (!elementRef) {
+                    // Fallback: find first radio in group if specified element not found
+                    const radioName = validation.field === 'deliveryMethod' ? 'deliveryMethod' :
+                                     validation.field === 'paymentMethod' ? 'paymentMethod' :
+                                     validation.field === 'pickupAddress' ? 'pickupAddress' :
+                                     validation.field === 'paymentMethodPickup' ? 'paymentMethodPickup' : null;
+                    if (radioName) {
+                        elementRef = document.querySelector(`input[name="${radioName}"]`);
+                    }
+                }
+            }
+            
+            console.log(`❌ Validation failed for ${validation.field}`);
+            console.log(`   - Looking for element with ID: '${validation.element}'`);
+            console.log(`   - Element found: ${elementRef ? 'YES' : 'NO'}`);
+            if (elementRef) {
+                console.log(`   - Element type: ${elementRef.tagName}`);
+                console.log(`   - Element value: ${elementRef.value || 'N/A'}`);
+            }
+            if (errorContainer) {
+                console.log(`   - Error container found: ${errorContainer ? 'YES' : 'NO'}`);
+            }
+            
             errors.push(`Пожалуйста, введите ${validation.label}.`);
             errorFields.push({ 
                 field: validation.field, 
-                element: document.getElementById(validation.element) 
+                element: elementRef,
+                errorContainer: errorContainer,  // Add container for error styling
+                elementType: validation.elementType  // Pass type for special handling
             });
         }
     }
@@ -1232,10 +1291,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.95&t=1756281000", image: "images/bakery.svg?v=1.3.95&t=1756281000" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.95&t=1756281000", image: "images/crouasan.svg?v=1.3.95&t=1756281000" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.95&t=1756281000", image: "images/bread1.svg?v=1.3.95&t=1756281000" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.95&t=1756281000", image: "images/cookie.svg?v=1.3.95&t=1756281000" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.96&t=1756283401", image: "images/bakery.svg?v=1.3.96&t=1756283401" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.96&t=1756283401", image: "images/crouasan.svg?v=1.3.96&t=1756283401" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.96&t=1756283401", image: "images/bread1.svg?v=1.3.96&t=1756283401" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.96&t=1756283401", image: "images/cookie.svg?v=1.3.96&t=1756283401" }
     };
 
     await fetchProductsData();
@@ -2245,6 +2304,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Use unified form data collection
                 const orderDetails = collectFormData();
+                console.log('📋 === COLLECTED FORM DATA ===');
+                console.log('orderDetails:', JSON.stringify(orderDetails, null, 2));
+                console.log('firstName value:', orderDetails.firstName);
+                console.log('lastName value:', orderDetails.lastName);
+                console.log('middleName value:', orderDetails.middleName);
+                console.log('phoneNumber value:', orderDetails.phoneNumber);
+                console.log('email value:', orderDetails.email);
                 
                 // Keep pickup address ID as-is for backend processing
                 // The backend _get_pickup_details function expects the numeric ID
@@ -2760,7 +2826,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-    img.src = '/bot-app/images/Hleb.jpg?v=1.3.95&t=1756281000';
+    img.src = '/bot-app/images/Hleb.jpg?v=1.3.96&t=1756283401';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
