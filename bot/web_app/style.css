@@ -2291,7 +2291,7 @@ body * {
 .payment-method-item.selected {
     background-color: transparent;
     border-radius: 4px;
-    padding: 8px 12px;
+    padding: 4px 12px;
     margin: 0 -12px;
 }
 
