@@ -2045,7 +2045,7 @@ body * {
 
 .pickup-details p {
     margin: 8px 0;
-    font-size: 17px;
+    font-size: 1.1em;
     line-height: 1.4;
     color: #333;
 }
@@ -2074,7 +2074,8 @@ body * {
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    padding: 8px 0;
+    padding: 8px 12px;
+    margin: 0 -12px;
     background-color: transparent;
     border: none;
     border-radius: 0;
@@ -2208,7 +2209,8 @@ body * {
     flex-wrap: wrap;
     gap: 4px;
     cursor: pointer;
-    padding: 4px 0;
+    padding: 4px 12px;
+    margin: 0 -12px;
     background-color: transparent;
     border: none;
     border-radius: 0;
@@ -2308,7 +2310,8 @@ body * {
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    padding: 8px 0;
+    padding: 8px 12px;
+    margin: 0 -12px;
     background-color: white;
     border: none;
     border-radius: 0;
