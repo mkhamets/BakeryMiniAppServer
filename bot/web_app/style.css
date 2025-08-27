@@ -2292,7 +2292,7 @@ body * {
 }
 
 .pickup-address-item:hover {
-    background-color: white; /* Keep white background consistent across all platforms */
+    background-color: #fff5f5; /* Match error state background color */
 }
 
 .pickup-address-item input[type="radio"] {
