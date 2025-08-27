@@ -2205,9 +2205,10 @@ body * {
 .payment-method-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 4px;
     cursor: pointer;
-    padding: 8px 0;
+    padding: 4px 0;
     background-color: transparent;
     border: none;
     border-radius: 0;
