@@ -2157,40 +2157,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderAvailabilityInfo(cartItems) {
-        // Удаляем существующий контейнер если он есть
-        const existingContainer = document.getElementById('availability-info-container');
-        if (existingContainer) {
-            existingContainer.remove();
-        }
-
         // Находим продукты с особыми условиями реализации (availability_days не равно "N/A")
         const productsWithAvailability = cartItems.filter(item => {
             const product = getProductById(item.id);
             return product && product.availability_days && product.availability_days !== 'N/A' && product.availability_days.trim() !== '';
         });
 
-        // Если есть продукты с особыми условиями, показываем контейнер
-        if (productsWithAvailability.length > 0) {
+        // Проверяем существующий контейнер
+        const existingContainer = document.getElementById('availability-info-container');
+        
+        // Если нет продуктов с особыми условиями, удаляем контейнер и выходим
+        if (productsWithAvailability.length === 0) {
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+            return;
+        }
+
+        // Создаем новый HTML для контейнера
+        let productsListHTML = '';
+        productsWithAvailability.forEach(item => {
+            const product = getProductById(item.id);
+            if (product && product.availability_days) {
+                productsListHTML += `<li><strong>${product.name}:</strong> ${product.availability_days}</li>`;
+            }
+        });
+
+        const newHTML = `
+            <div class="availability-info-content">
+                <p class="availability-info-title">Обратите внимание, что некоторые из продуктов имеют особые условия реализации:</p>
+                <ul class="availability-info-list">
+                    ${productsListHTML}
+                </ul>
+            </div>
+        `;
+
+        // Если контейнер существует и содержимое не изменилось, не обновляем
+        if (existingContainer && existingContainer.innerHTML === newHTML) {
+            return;
+        }
+
+        // Если контейнер не существует, создаем новый
+        if (!existingContainer) {
             const container = document.createElement('div');
             container.id = 'availability-info-container';
             container.className = 'availability-info-container';
-            
-            let productsListHTML = '';
-            productsWithAvailability.forEach(item => {
-                const product = getProductById(item.id);
-                if (product && product.availability_days) {
-                    productsListHTML += `<li><strong>${product.name}:</strong> ${product.availability_days}</li>`;
-                }
-            });
-
-            container.innerHTML = `
-                <div class="availability-info-content">
-                    <p class="availability-info-title">Обратите внимание, что некоторые из продуктов имеют особые условия реализации:</p>
-                    <ul class="availability-info-list">
-                        ${productsListHTML}
-                    </ul>
-                </div>
-            `;
+            container.innerHTML = newHTML;
 
             // Вставляем контейнер после итоговой суммы, но перед кнопками действий (place order button)
             const cartActionsBottom = document.querySelector('.cart-actions-bottom');
@@ -2198,11 +2210,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cartActionsBottom.parentNode.insertBefore(container, cartActionsBottom);
             }
         } else {
-            // Явно удаляем контейнер если нет продуктов с особыми условиями
-            const existingContainer = document.getElementById('availability-info-container');
-            if (existingContainer) {
-                existingContainer.remove();
-            }
+            // Если контейнер существует, просто обновляем содержимое
+            existingContainer.innerHTML = newHTML;
         }
     }
 
