@@ -1787,7 +1787,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <span class="details-text" data-product-id="${product.id}">
                         Подробнее
-                        <svg class="svg svg-arrow-right" style="margin-left: 0.5rem; font-size: 0.75rem; width: 1.5em;">
+                        <svg class="svg svg-arrow-right" style="margin-left: 0.5rem; font-size: 1.125rem; width: 1.5em;">
                             <use xlink:href="#arrow-right"></use>
                         </svg>
                     </span>
