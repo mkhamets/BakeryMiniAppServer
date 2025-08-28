@@ -1328,23 +1328,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearInterval(autoRefreshInterval);
         }
         
+        // Store previous products data for comparison
+        let previousProductsData = null;
+        
         // Set up periodic refresh every minute (60000ms)
         autoRefreshInterval = setInterval(async () => {
             // Only refresh if app is active
             if (!document.hidden) {
                 try {
                     console.log('🔄 Auto-refreshing products data...');
-                    await fetchProductsData();
+                    const newProductsData = await fetchProductsData();
                     
-                    // 🔄 REFRESH PRODUCT GRID IF ON CATEGORY SCREEN
-                    const productsContainer = document.getElementById('products-container');
-                    if (productsContainer && !productsContainer.classList.contains('hidden')) {
-                        // User is on a category screen, refresh the product grid
-                        const currentCategory = localStorage.getItem('lastProductCategory');
-                        if (currentCategory) {
-                            console.log('🔄 Refreshing product grid for category:', currentCategory);
-                            await loadProducts(currentCategory);
+                    // Check if products data has actually changed
+                    const hasChanges = checkProductsDataChanges(previousProductsData, newProductsData);
+                    
+                    if (hasChanges) {
+                        console.log('🔄 Products data changed, refreshing product grid...');
+                        
+                        // 🔄 REFRESH PRODUCT GRID IF ON CATEGORY SCREEN
+                        const productsContainer = document.getElementById('products-container');
+                        if (productsContainer && !productsContainer.classList.contains('hidden')) {
+                            // User is on a category screen, refresh the product grid
+                            const currentCategory = localStorage.getItem('lastProductCategory');
+                            if (currentCategory) {
+                                console.log('🔄 Refreshing product grid for category:', currentCategory);
+                                await loadProducts(currentCategory);
+                            }
                         }
+                        
+                        // Update previous data
+                        previousProductsData = JSON.parse(JSON.stringify(newProductsData));
+                    } else {
+                        console.log('✅ No changes in products data, skipping grid refresh');
                     }
                 } catch (error) {
                     console.warn('Auto-refresh failed:', error);
@@ -1352,7 +1367,63 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 60000); // 1 minute
         
-        console.log('✅ Auto-refresh setup: Cart will refresh every minute when active');
+        console.log('✅ Auto-refresh setup: Cart will refresh every minute when active, grid only when changes detected');
+    }
+    
+    // Function to check if products data has changed
+    function checkProductsDataChanges(previousData, newData) {
+        if (!previousData || !newData) {
+            return true; // First run or missing data, consider as changed
+        }
+        
+        try {
+            // Compare basic structure
+            if (Object.keys(previousData).length !== Object.keys(newData).length) {
+                return true;
+            }
+            
+            // Compare each category
+            for (const categoryKey in newData) {
+                if (!previousData[categoryKey]) {
+                    return true; // New category added
+                }
+                
+                const previousCategory = previousData[categoryKey];
+                const newCategory = newData[categoryKey];
+                
+                if (!Array.isArray(previousCategory) || !Array.isArray(newCategory)) {
+                    continue;
+                }
+                
+                if (previousCategory.length !== newCategory.length) {
+                    return true; // Different number of products in category
+                }
+                
+                // Compare products in category
+                for (let i = 0; i < newCategory.length; i++) {
+                    const previousProduct = previousCategory[i];
+                    const newProduct = newCategory[i];
+                    
+                    if (!previousProduct || !newProduct) {
+                        return true;
+                    }
+                    
+                    // Compare key product properties
+                    if (previousProduct.id !== newProduct.id ||
+                        previousProduct.name !== newProduct.name ||
+                        previousProduct.price !== newProduct.price ||
+                        previousProduct.availability_days !== newProduct.availability_days ||
+                        previousProduct.weight !== newProduct.weight) {
+                        return true; // Product changed
+                    }
+                }
+            }
+            
+            return false; // No changes detected
+        } catch (error) {
+            console.warn('Error comparing products data:', error);
+            return true; // On error, consider as changed for safety
+        }
     }
     
     // Initialize auto-refresh
@@ -1666,9 +1737,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (Object.keys(cart).length > 0) {
                 renderCart();
             }
+            
+            // Return data for comparison
+            return data;
         } catch (error) {
             console.error('Ошибка при загрузке данных о продуктах:', error);
             console.error('Failed to load products data. Please try again later.');
+            return null;
         }
     }
 
