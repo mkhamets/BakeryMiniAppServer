@@ -1786,10 +1786,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             `<span class="availability-info"> (${product.availability_days})</span>` : ''}
                     </div>
                     <span class="details-text" data-product-id="${product.id}">
-                        Подробнее
-                        <svg class="svg svg-arrow-right">
-                            <use xlink:href="#arrow-right"></use>
-                        </svg>
+                        Подробнее →
                     </span>
                     <div class="product-bottom-row">
                         <div class="product-weight">
