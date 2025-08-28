@@ -349,6 +349,15 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     background-color: #b76c4b;
 }
 
+/* Override arrow styles for Подробнее button */
+.details-text .svg-arrow-right {
+    font-size: 1.125rem !important;
+    width: 1.5em !important;
+    margin-left: 0.5rem !important;
+    display: inline-block !important;
+    fill: currentColor !important;
+}
+
 /* Стили для корзины */
 .cart-container, .checkout-container {
     background-color: #fff;
