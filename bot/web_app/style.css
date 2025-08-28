@@ -351,8 +351,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Override arrow styles for Подробнее button */
 .details-text .svg-arrow-right {
-    font-size: 1.125rem !important;
-    width: 1.5em !important;
+    font-size: 1rem !important;
+    width: 2.25em !important;
     margin-left: 0.5rem !important;
     display: inline-block !important;
     fill: currentColor !important;
@@ -1835,6 +1835,11 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 .svg-arrow-back {
+    font-size: 1rem;
+    width: 2.25em;
+}
+
+.svg-arrow-right {
     font-size: 1rem;
     width: 2.25em;
 }
