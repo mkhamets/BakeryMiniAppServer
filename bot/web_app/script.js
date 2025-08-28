@@ -1785,7 +1785,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${product.availability_days && product.availability_days !== 'N/A' ? 
                             `<span class="availability-info"> (${product.availability_days})</span>` : ''}
                     </div>
-                    <span class="details-text" data-product-id="${product.id}">Подробнее</span>
+                    <span class="details-text" data-product-id="${product.id}">
+                        Подробнее
+                        <svg class="svg svg-arrow-right" style="margin-left: 0.5rem; font-size: 0.5rem; width: 2.25em;">
+                            <use xlink:href="#arrow-right"></use>
+                        </svg>
+                    </span>
                     <div class="product-bottom-row">
                         <div class="product-weight">
                             ${product.weight && product.weight !== 'N/A' ? `${product.weight} гр.` : ''}

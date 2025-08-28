@@ -310,22 +310,43 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 /* Стили для кликабельного текста "Подробнее" */
 .details-text {
-    display: block;
-    color: #007bff;
-    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    color: #303030;
+    text-decoration: none;
     cursor: pointer;
-    font-size: 0.8em;
-    margin-top: 6px;
-    margin-bottom: 4px;
-    transition: color 0.2s;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
     white-space: nowrap;
     width: fit-content;
+    margin-top: 6px;
+    margin-bottom: 4px;
     margin-left: 0;
     margin-right: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.details-text:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #303030;
+    transition: all 0.3s ease;
 }
 
 .details-text:hover {
-    color: #0056b3;
+    color: #b76c4b;
+}
+
+.details-text:hover:before {
+    background-color: #b76c4b;
 }
 
 /* Стили для корзины */
@@ -433,17 +454,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     color: #b76c4b;
 }
 
-.cart-item-name::after {
-    content: ' →';
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    color: #b76c4b;
-    font-weight: normal;
-}
-
-.cart-item-name:hover::after {
-    opacity: 1;
-}
+/* Arrow removed from cart item names */
 
 .cart-item-price {
     margin: 0 0 10px 0;
@@ -1220,7 +1231,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-family: 'Yeseva One', serif;
     font-weight: normal;
     font-size: 1.6em;
-    color: #000000;
+    color: #b76c4b;
     text-align: center;
     margin-bottom: 0px;
 }
