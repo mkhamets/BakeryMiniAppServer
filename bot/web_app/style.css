@@ -204,7 +204,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 /* Стиль для информации о доступности в скобках */
 .product-name .availability-info {
     font-size: 0.9rem;
-    color: #bc5757;
+    color: #fdfdfd;
+    background-color: #b76c4b;
     font-weight: normal;
     font-family: 'Arial', sans-serif;
 }
