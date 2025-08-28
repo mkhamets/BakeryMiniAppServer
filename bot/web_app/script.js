@@ -1783,7 +1783,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="product-name">
                         ${product.name}
                         ${product.availability_days && product.availability_days !== 'N/A' ? 
-                            `<span class="availability-info"> (${product.availability_days})</span>` : ''}
+                            `<span class="availability-info">${product.availability_days}</span>` : ''}
                     </div>
                     <span class="details-text" data-product-id="${product.id}">
                         Подробнее →
