@@ -193,6 +193,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     cursor: pointer;
     position: relative; /* Позиционирование относительно этого элемента */
     max-height: 2.4em; /* Ограничиваем высоту двумя строками (line-height * 2) */
+    word-break: break-all; /* Обеспечивает непрерывное обрезание текста, а не по словам */
 }
   
 .product-name::after {
@@ -203,7 +204,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     width: 20px; /* Ширина градиента */
     height: 1.2em; /* Высота, равная одной строке текста */
     /* Используем цвет фона карточки */
-    background: linear-gradient(to left, #f8f8f8, transparent);
+    background: linear-gradient(to left, #ffffff, transparent);
     pointer-events: none; /* Гарантирует, что градиент не будет блокировать события мыши */
 }
 
