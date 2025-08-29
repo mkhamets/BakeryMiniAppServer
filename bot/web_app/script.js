@@ -2,6 +2,69 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
+// Функция для сокращения текстов в availability-info
+function shortenAvailabilityText(text) {
+    if (!text || text === 'N/A') return text;
+    
+    // Словарь сокращений для часто встречающихся фраз
+    const abbreviations = {
+        'десерт украшен сезонными ягодами': 'украшен сезонными ягодами',
+        'изготовление по предварительному заказу': 'по предзаказу',
+        'изготовление по предзаказу': 'по предзаказу',
+        'доступен по предварительному заказу': 'по предзаказу',
+        'требует предварительного заказа': 'по предзаказу',
+        'заказ за день до получения': 'за день до получения',
+        'заказ за 2 дня до получения': 'за 2 дня до получения',
+        'заказ за 3 дня до получения': 'за 3 дня до получения',
+        'заказ за неделю до получения': 'за неделю до получения',
+        'доступен в ограниченном количестве': 'ограниченное количество',
+        'сезонный продукт': 'сезонный',
+        'только в сезон': 'сезонный',
+        'свежий продукт': 'свежий',
+        'готовится на заказ': 'на заказ',
+        'готовится по заказу': 'на заказ',
+        'требует предварительного заказа минимум за день': 'по предзаказу за день',
+        'требует предварительного заказа минимум за 2 дня': 'по предзаказу за 2 дня',
+        'требует предварительного заказа минимум за 3 дня': 'по предзаказу за 3 дня',
+        'требует предварительного заказа минимум за неделю': 'по предзаказу за неделю',
+        'доступен только по предварительному заказу': 'по предзаказу',
+        'изготавливается по предварительному заказу': 'по предзаказу',
+        'готовится по предварительному заказу': 'по предзаказу'
+    };
+    
+    // Ищем совпадения и заменяем
+    for (const [fullText, shortText] of Object.entries(abbreviations)) {
+        if (text.toLowerCase().includes(fullText.toLowerCase())) {
+            return text.replace(new RegExp(fullText, 'gi'), shortText);
+        }
+    }
+    
+    return text;
+}
+
+// Функция для добавления новых сокращений в runtime
+function addAvailabilityAbbreviation(fullText, shortText) {
+    if (typeof fullText === 'string' && typeof shortText === 'string') {
+        // Добавляем в localStorage для сохранения между сессиями
+        const customAbbreviations = JSON.parse(localStorage.getItem('custom_availability_abbreviations') || '{}');
+        customAbbreviations[fullText] = shortText;
+        localStorage.setItem('custom_availability_abbreviations', JSON.stringify(customAbbreviations));
+        
+        console.log(`✅ Добавлено сокращение: "${fullText}" → "${shortText}"`);
+        return true;
+    }
+    return false;
+}
+
+// Функция для получения всех сокращений (включая пользовательские)
+function getAllAvailabilityAbbreviations() {
+    const customAbbreviations = JSON.parse(localStorage.getItem('custom_availability_abbreviations') || '{}');
+    return {
+        ...customAbbreviations,
+        // Здесь можно добавить системные сокращения, если нужно
+    };
+}
+
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
     const CACHE_VERSION = '1.3.95';
@@ -1858,7 +1921,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="product-name">
                         ${product.name}
                         ${product.availability_days && product.availability_days !== 'N/A' ? 
-                            `<span class="availability-info">${product.availability_days}</span>` : ''}
+                            `<span class="availability-info">${shortenAvailabilityText(product.availability_days)}</span>` : ''}
                     </div>
                     <span class="details-text" data-product-id="${product.id}">
                         Подробнее →
