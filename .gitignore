@@ -50,3 +50,5 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp 
+# Order counter - should not be tracked in Git
+data/order_counter.json
