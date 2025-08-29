@@ -185,37 +185,28 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-size: 1rem;
     margin-bottom: 3px;
     color: #000000;
-    display: block;
-    line-height: 1.2;
-    max-height: 2.4em; /* максимум 2 строки */
-    overflow: hidden;
-    font-family: 'Yeseva One', serif;
-    transition: color 0.2s ease;
-    cursor: pointer;
-  
-    /* ограничение только в 2 строки */
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.2;
+    flex-shrink: 0; /* Не сжимается */
+    font-family: 'Yeseva One', serif;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    /* Важно: мы убрали -webkit-line-clamp, чтобы избежать многоточия */
+}
   
-    /* убираем троеточие у line-clamp */
-    -webkit-line-clamp: unset;
-    text-overflow: clip;
-    white-space: normal;
-  
-    /* маска: первая строка норм, вторая затухает справа */
-    position: relative;
-  }
-  
-  .product-name::after {
-    content: "";
+.product-name::after {
+    content: '';
     position: absolute;
-    right: 0;
-    bottom: 0.2em; /* чтобы точно на второй строке */
-    width: 15px;   /* длина затухания */
-    height: 1.2em; /* одна строка по высоте */
-    background: linear-gradient(to right, transparent, white);
-  }
+    bottom: 0; /* Располагаем внизу контейнера .product-info */
+    right: 15px; /* Выравниваем по правому краю .product-info, учитывая padding */
+    width: 20px; /* Ширина градиента */
+    height: 1.2em; /* Высота, равная одной строке текста */
+    background: linear-gradient(to left, white, transparent);
+    /* Этот градиент будет накладываться на текст, создавая эффект исчезновения.
+       Он будет виден только при переполнении второй строки. */
+}
 
 .product-name:hover {
     color: #b76c4b;
