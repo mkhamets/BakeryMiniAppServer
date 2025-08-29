@@ -186,16 +186,35 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-bottom: 3px;
     color: #000000;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;  /* максимум 2 строки */
     overflow: hidden;
     line-height: 1.2;
-    flex-shrink: 0; /* Не сжимается */
-    min-height: 2.4em; /* Минимальная высота для 2 строк */
+    min-height: 2.4em; /* 2 строки по 1.2em */
+    max-height: 2.4em;
     font-family: 'Yeseva One', serif;
     transition: color 0.2s ease;
     cursor: pointer;
-}
+  
+    /* Маска только на второй строке */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black calc(100% - 1.2em),  /* первая строка полностью видна */
+      transparent 100%           /* затухание в конце второй строки */
+    );
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%;
+  
+    mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black calc(100% - 1.2em),
+      transparent 100%
+    );
+    mask-repeat: no-repeat;
+    mask-size: 100% 100%;
+  }
 
 .product-name:hover {
     color: #b76c4b;
