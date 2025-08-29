@@ -185,35 +185,36 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-size: 1rem;
     margin-bottom: 3px;
     color: #000000;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;  /* максимум 2 строки */
-    overflow: hidden;
+    display: block;
     line-height: 1.2;
-    min-height: 2.4em; /* 2 строки по 1.2em */
-    max-height: 2.4em;
+    max-height: 2.4em; /* максимум 2 строки */
+    overflow: hidden;
     font-family: 'Yeseva One', serif;
     transition: color 0.2s ease;
     cursor: pointer;
   
-    /* Маска только на второй строке */
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      black 0%,
-      black calc(100% - 1.2em),  /* первая строка полностью видна */
-      transparent 100%           /* затухание в конце второй строки */
-    );
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 100%;
+    /* ограничение только в 2 строки */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   
-    mask-image: linear-gradient(
-      to bottom,
-      black 0%,
-      black calc(100% - 1.2em),
-      transparent 100%
-    );
-    mask-repeat: no-repeat;
-    mask-size: 100% 100%;
+    /* убираем троеточие у line-clamp */
+    -webkit-line-clamp: unset;
+    text-overflow: clip;
+    white-space: normal;
+  
+    /* маска: первая строка норм, вторая затухает справа */
+    position: relative;
+  }
+  
+  .product-name::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0.2em; /* чтобы точно на второй строке */
+    width: 15px;   /* длина затухания */
+    height: 1.2em; /* одна строка по высоте */
+    background: linear-gradient(to right, transparent, white);
   }
 
 .product-name:hover {
