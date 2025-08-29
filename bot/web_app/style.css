@@ -185,27 +185,26 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     font-size: 1rem;
     margin-bottom: 3px;
     color: #000000;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.2;
     flex-shrink: 0; /* Не сжимается */
     font-family: 'Yeseva One', serif;
     transition: color 0.2s ease;
     cursor: pointer;
-    /* Важно: мы убрали -webkit-line-clamp, чтобы избежать многоточия */
+    position: relative; /* Позиционирование относительно этого элемента */
+    max-height: 2.4em; /* Ограничиваем высоту двумя строками (line-height * 2) */
 }
   
 .product-name::after {
     content: '';
     position: absolute;
-    bottom: 0; /* Располагаем внизу контейнера .product-info */
-    right: 15px; /* Выравниваем по правому краю .product-info, учитывая padding */
+    bottom: 0; /* Располагаем внизу контейнера .product-name */
+    right: 0; /* Выравниваем по правому краю .product-name */
     width: 20px; /* Ширина градиента */
     height: 1.2em; /* Высота, равная одной строке текста */
-    background: linear-gradient(to left, white, transparent);
-    /* Этот градиент будет накладываться на текст, создавая эффект исчезновения.
-       Он будет виден только при переполнении второй строки. */
+    /* Используем цвет фона карточки */
+    background: linear-gradient(to left, #f8f8f8, transparent);
+    pointer-events: none; /* Гарантирует, что градиент не будет блокировать события мыши */
 }
 
 .product-name:hover {
