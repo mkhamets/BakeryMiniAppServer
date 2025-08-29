@@ -222,6 +222,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     border-radius: 3px;
     padding-left: 5px;
     padding-right: 5px;
+    padding-bottom: 1px;
 }
 
 .product-price {

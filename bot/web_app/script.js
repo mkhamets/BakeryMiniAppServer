@@ -39,7 +39,34 @@ function shortenAvailabilityText(text) {
         }
     }
     
-    return text;
+    // Дополнительные правила с регулярными выражениями для сложных случаев
+    let processedText = text;
+    
+    // Убираем "выпекаем" и пробелы после него (например: "выпекаем пн, ср, пт, сб" → "пн, ср, пт, сб")
+    processedText = processedText.replace(/(выпекаем\s*)/gi, '');
+    
+    // Убираем "готовим" и пробелы после него
+    processedText = processedText.replace(/(готовим\s*)/gi, '');
+    
+    // Убираем "изготавливаем" и пробелы после него
+    processedText = processedText.replace(/(изготавливаем\s*)/gi, '');
+    
+    // Убираем "производим" и пробелы после него
+    processedText = processedText.replace(/(производим\s*)/gi, '');
+    
+    // Убираем "доступен" и пробелы после него (если это начало фразы)
+    processedText = processedText.replace(/^(доступен\s*)/gi, '');
+    
+    // Убираем "есть в наличии" и заменяем на "в наличии"
+    processedText = processedText.replace(/(есть\s+в\s+наличии)/gi, 'в наличии');
+    
+    // Убираем "можно заказать" и заменяем на "по заказу"
+    processedText = processedText.replace(/(можно\s+заказать)/gi, 'по заказу');
+    
+    // Убираем "принимаем заказы" и заменяем на "по заказу"
+    processedText = processedText.replace(/(принимаем\s+заказы)/gi, 'по заказу');
+    
+    return processedText;
 }
 
 // Функция для добавления новых сокращений в runtime
