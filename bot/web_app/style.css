@@ -192,8 +192,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     transition: color 0.2s ease;
     cursor: pointer;
     position: relative; /* Позиционирование относительно этого элемента */
-    max-height: 2.4em; /* Ограничиваем высоту двумя строками (line-height * 2) */
-    word-break: break-all; /* Обеспечивает непрерывное обрезание текста, а не по словам */
+    max-height: 2.4em; /* Ограничиваем высоту двумя строками (line-height * 2) *//* Обеспечивает непрерывное обрезание текста, а не по словам */
 }
   
 .product-name::after {
