@@ -482,7 +482,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.102';
+    const CACHE_VERSION = '1.3.103';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -2509,22 +2509,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateProductCardUI(productId) {
+        // Детальное логирование для Android отладки счетчика товара
+        logAndroidDebug('🔧 updateProductCardUI called', {
+            productId,
+            cartQuantity: cart[productId]?.quantity || 0,
+            cartState: JSON.parse(JSON.stringify(cart)),
+            timestamp: Date.now()
+        });
+        
         const quantitySpan = document.getElementById(`qty-${productId}`);
         if (quantitySpan) {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
+            const oldText = quantitySpan.textContent;
             quantitySpan.textContent = currentQuantity;
+            
+            logAndroidDebug('📱 Product card quantity updated', {
+                productId,
+                oldText,
+                newText: currentQuantity,
+                elementFound: true,
+                elementId: `qty-${productId}`,
+                elementHTML: quantitySpan.outerHTML
+            });
+        } else {
+            logAndroidDebug('❌ Product card quantity span not found', {
+                productId,
+                searchedId: `qty-${productId}`,
+                availableElements: document.querySelectorAll('[id^="qty-"]').length
+            });
         }
         
         // Also update product screen counter if it exists
         const productScreenCounter = document.getElementById(`screen-quantity-${productId}`);
         if (productScreenCounter) {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
+            const oldValue = productScreenCounter.value;
             productScreenCounter.value = currentQuantity;
+            
+            logAndroidDebug('📱 Product screen quantity updated', {
+                productId,
+                oldValue,
+                newValue: currentQuantity,
+                elementFound: true,
+                elementId: `screen-quantity-${productId}`,
+                elementHTML: productScreenCounter.outerHTML
+            });
+        } else {
+            logAndroidDebug('ℹ️ Product screen quantity counter not found', {
+                productId,
+                searchedId: `screen-quantity-${productId}`
+            });
         }
         
         if (cartContainer && !cartContainer.classList.contains('hidden')) {
             renderCart();
         }
+        
+        logAndroidDebug('✅ updateProductCardUI completed', {
+            productId,
+            finalCartQuantity: cart[productId]?.quantity || 0
+        });
     }
 
 
