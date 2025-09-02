@@ -66,10 +66,12 @@ function clearAndroidDebugLogs() {
 function copyAndroidDebugLogs() {
     try {
         const logs = getAndroidDebugLogs();
-        const recentLogs = logs.slice(-20); // Последние 20 логов
+        
+        // Копируем ВСЕ логи, а не только последние 20
+        const allLogs = logs; // Убираем ограничение slice(-20)
         
         // Форматируем логи для удобного чтения
-        const formattedLogs = recentLogs.map(log => {
+        const formattedLogs = allLogs.map(log => {
             const time = log.timestamp.slice(11, 19);
             const message = log.message;
             const data = log.data ? `\n  Data: ${JSON.stringify(log.data, null, 2)}` : '';
@@ -84,22 +86,39 @@ function copyAndroidDebugLogs() {
         const fullText = `🐛 Android Debug Logs
 📊 Stats: Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
 📅 Generated: ${new Date().toLocaleString()}
+📝 Copied: ${allLogs.length} logs (all available)
 
 ${formattedLogs}`;
         
-        // Копируем в буфер обмена
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(fullText).then(() => {
-                logAndroidDebug('✅ Logs copied to clipboard successfully');
-                // Показываем уведомление
-                showCopyNotification('✅ Логи скопированы в буфер обмена!');
-            }).catch(() => {
-                // Fallback для старых браузеров
-                fallbackCopyTextToClipboard(fullText);
+        // Проверяем размер текста (некоторые браузеры имеют ограничения)
+        if (fullText.length > 1000000) { // Если больше 1MB
+            logAndroidDebug('⚠️ Logs too large, copying only recent logs', {
+                totalSize: fullText.length,
+                totalLogs: allLogs.length
             });
+            
+            // Копируем только последние 50 логов если слишком много
+            const recentLogs = logs.slice(-50);
+            const recentFormattedLogs = recentLogs.map(log => {
+                const time = log.timestamp.slice(11, 19);
+                const message = log.message;
+                const data = log.data ? `\n  Data: ${JSON.stringify(log.data, null, 2)}` : '';
+                return `[${time}] ${message}${data}`;
+            }).join('\n\n');
+            
+            const recentText = `🐛 Android Debug Logs (Recent 50)
+📊 Stats: Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
+📅 Generated: ${new Date().toLocaleString()}
+⚠️ Note: Only recent 50 logs copied (total: ${totalLogs})
+
+${recentFormattedLogs}`;
+            
+            copyTextToClipboard(recentText);
+            showCopyNotification(`⚠️ Скопировано последних 50 из ${totalLogs} логов (слишком много данных)`);
         } else {
-            // Fallback для старых браузеров
-            fallbackCopyTextToClipboard(fullText);
+            // Копируем все логи
+            copyTextToClipboard(fullText);
+            showCopyNotification(`✅ Скопированы все ${allLogs.length} логов!`);
         }
         
         return true;
@@ -107,6 +126,61 @@ ${formattedLogs}`;
         console.error('❌ Failed to copy Android debug logs:', e);
         showCopyNotification('❌ Ошибка копирования логов');
         return false;
+    }
+}
+
+// Функция для копирования только последних логов
+function copyRecentAndroidDebugLogs() {
+    try {
+        const logs = getAndroidDebugLogs();
+        const recentLogs = logs.slice(-30); // Последние 30 логов
+        
+        // Форматируем логи для удобного чтения
+        const formattedLogs = recentLogs.map(log => {
+            const time = log.timestamp.slice(11, 19);
+            const message = log.message;
+            const data = log.data ? `\n  Data: ${JSON.stringify(log.data, null, 2)}` : '';
+            return `[${time}] ${message}${data}`;
+        }).join('\n\n');
+        
+        // Добавляем заголовок и статистику
+        const totalLogs = logs.length;
+        const errorLogs = logs.filter(log => log.message.includes('❌')).length;
+        const buttonLogs = logs.filter(log => log.message.includes('button') || log.message.includes('click')).length;
+        
+        const recentText = `🐛 Android Debug Logs (Recent 30)
+📊 Stats: Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
+📅 Generated: ${new Date().toLocaleString()}
+📝 Copied: Recent 30 logs from total ${totalLogs}
+
+${formattedLogs}`;
+        
+        copyTextToClipboard(recentText);
+        showCopyNotification(`✅ Скопированы последние 30 из ${totalLogs} логов!`);
+        
+        return true;
+    } catch (e) {
+        console.error('❌ Failed to copy recent Android debug logs:', e);
+        showCopyNotification('❌ Ошибка копирования последних логов');
+        return false;
+    }
+}
+
+// Общая функция копирования текста
+function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            logAndroidDebug('✅ Logs copied to clipboard successfully', {
+                textLength: text.length,
+                logCount: text.split('[11:').length - 1
+            });
+        }).catch(() => {
+            // Fallback для старых браузеров
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        // Fallback для старых браузеров
+        fallbackCopyTextToClipboard(text);
     }
 }
 
@@ -232,7 +306,8 @@ function createAndroidDebugPanel() {
         <div id="android-debug-content" style="margin-bottom: 10px;"></div>
         <div style="display: flex; gap: 5px; flex-wrap: wrap;">
             <button id="refresh-logs-btn" style="padding: 5px 10px; background: #b76c4b; color: white; border: none; border-radius: 3px; cursor: pointer;">🔄 Refresh</button>
-            <button id="copy-logs-btn" style="padding: 5px 10px; background: #4488ff; color: white; border: none; border-radius: 3px; cursor: pointer;">📋 Copy</button>
+            <button id="copy-logs-btn" style="padding: 5px 10px; background: #4488ff; color: white; border: none; border-radius: 3px; cursor: pointer;">📋 Copy All</button>
+            <button id="copy-recent-btn" style="padding: 5px 10px; background: #8844ff; color: white; border: none; border-radius: 3px; cursor: pointer;">📋 Recent</button>
             <button id="clear-logs-btn" style="padding: 5px 10px; background: #ff4444; color: white; border: none; border-radius: 3px; cursor: pointer;">🗑️ Clear</button>
             <button id="export-logs-btn" style="padding: 5px 10px; background: #44aa44; color: white; border: none; border-radius: 3px; cursor: pointer;">📥 Export</button>
         </div>
@@ -254,6 +329,7 @@ function createAndroidDebugPanel() {
     // Обработчики кнопок панели
     document.getElementById('refresh-logs-btn').onclick = updateAndroidDebugPanel;
     document.getElementById('copy-logs-btn').onclick = copyAndroidDebugLogs;
+    document.getElementById('copy-recent-btn').onclick = copyRecentAndroidDebugLogs;
     document.getElementById('clear-logs-btn').onclick = () => {
         if (clearAndroidDebugLogs()) {
             updateAndroidDebugPanel();
@@ -406,7 +482,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.101';
+    const CACHE_VERSION = '1.3.102';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -1712,10 +1788,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.101&t=1756284000", image: "images/bakery.svg?v=1.3.101&t=1756284000" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.101&t=1756284000", image: "images/crouasan.svg?v=1.3.101&t=1756284000" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.101&t=1756284000", image: "images/bread1.svg?v=1.3.101&t=1756284000" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.101&t=1756284000", image: "images/cookie.svg?v=1.3.101&t=1756284000" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.102&t=1756284000", image: "images/bakery.svg?v=1.3.102&t=1756284000" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.102&t=1756284000", image: "images/crouasan.svg?v=1.3.102&t=1756284000" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.102&t=1756284000", image: "images/bread1.svg?v=1.3.102&t=1756284000" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.102&t=1756284000", image: "images/cookie.svg?v=1.3.102&t=1756284000" }
     };
 
     await fetchProductsData();
@@ -3464,7 +3540,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.101&t=1756284000';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.102&t=1756284000';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
