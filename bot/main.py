@@ -159,18 +159,17 @@ async def load_order_counter():
 # ИЗМЕНЕНИЕ: Новая функция для сохранения счетчика заказов в файл
 async def save_order_counter(counter_data):
     """Сохраняет счетчик заказов в файл."""
-    async with order_counter_lock:
-        try:
-            # Создаем директорию, если она не существует
-            os.makedirs(os.path.dirname(ORDER_COUNTER_FILE), exist_ok=True)
+    try:
+        # Создаем директорию, если она не существует
+        os.makedirs(os.path.dirname(ORDER_COUNTER_FILE), exist_ok=True)
 
-            # Используем синхронную операцию записи в файл
-            with open(ORDER_COUNTER_FILE, 'w', encoding='utf-8') as f:
-                json.dump(counter_data, f, ensure_ascii=False, indent=4)
-            logger.info(f"Счетчик заказов успешно сохранен: {counter_data}")
-        except Exception as e:
-            logger.error(f"Ошибка при сохранении счетчика заказов: {e}")
-            raise  # Перебрасываем ошибку, чтобы вызывающий код мог ее обработать
+        # Используем синхронную операцию записи в файл
+        with open(ORDER_COUNTER_FILE, 'w', encoding='utf-8') as f:
+            json.dump(counter_data, f, ensure_ascii=False, indent=4)
+        logger.info(f"Счетчик заказов успешно сохранен: {counter_data}")
+    except Exception as e:
+        logger.error(f"Ошибка при сохранении счетчика заказов: {e}")
+        raise  # Перебрасываем ошибку, чтобы вызывающий код мог ее обработать
 
 
 # ИЗМЕНЕНИЕ: Функция generate_order_number теперь асинхронная и работает с файлом
