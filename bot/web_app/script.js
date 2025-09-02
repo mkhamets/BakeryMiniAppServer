@@ -3538,38 +3538,30 @@ function addErrorClearingListeners() {
             });
             
             console.log('🔍 Showing cart button with:', totalItems, 'items');
-            Telegram.WebApp.MainButton.setText(buttonText);
-            // Устанавливаем коричневый цвет как у кнопок + и - и "Начать покупки"
-            Telegram.WebApp.MainButton.setParams({
-                color: '#b76c4b'
-            });
-            Telegram.WebApp.MainButton.show();
             
-            // Принудительная перерисовка MainButton для Android
-            setTimeout(() => {
-                try {
-                    const mainButtonElement = document.querySelector('.tgme_button');
-                    if (mainButtonElement) {
-                        forceRedraw(mainButtonElement);
-                        logAndroidDebug('🔄 ForceRedraw applied to MainButton', {
-                            buttonText,
-                            elementFound: true,
-                            timestamp: Date.now()
-                        });
-                    } else {
-                        logAndroidDebug('ℹ️ MainButton element not found for forceRedraw', {
-                            buttonText,
-                            timestamp: Date.now()
-                        });
-                    }
-                } catch (error) {
-                    logAndroidDebug('❌ Error applying forceRedraw to MainButton', {
-                        error: error.message,
-                        buttonText,
-                        timestamp: Date.now()
-                    });
-                }
-            }, 100);
+            // Используем только Telegram API для обновления MainButton
+            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.MainButton) {
+                Telegram.WebApp.MainButton.setText(buttonText);
+                // Устанавливаем коричневый цвет как у кнопок + и - и "Начать покупки"
+                Telegram.WebApp.MainButton.setParams({
+                    color: '#b76c4b'
+                });
+                Telegram.WebApp.MainButton.show(); // на всякий случай форснуть показ
+                
+                logAndroidDebug('✅ MainButton updated via Telegram API', {
+                    buttonText,
+                    apiUsed: true,
+                    timestamp: Date.now()
+                });
+            } else {
+                logAndroidDebug('❌ Telegram API not available', {
+                    buttonText,
+                    windowTelegram: !!window.Telegram,
+                    webApp: !!Telegram?.WebApp,
+                    mainButton: !!Telegram?.WebApp?.MainButton,
+                    timestamp: Date.now()
+                });
+            }
         } else {
             logAndroidDebug('🚫 Hiding cart button - no items', { totalItems });
             console.log('🔍 Hiding cart button - no items');
