@@ -128,11 +128,9 @@ async def load_order_counter():
                         current_month = datetime.datetime.now().month
                         if last_reset_month != current_month:
                             logger.info(f"Месяц в файле ({last_reset_month}) отличается от текущего ({current_month}). "
-                                      f"Сбрасываем счетчик.")
-                            order_counter = 0
-                            last_reset_month = current_month
-                            # Обновляем файл с новым месяцем
-                            await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+                                      f"Счетчик будет сброшен при первом заказе в новом месяце.")
+                            # НЕ сбрасываем счетчик здесь - только при генерации заказа
+                            # last_reset_month остается старым до первого заказа
 
                         logger.info(f"Счетчик заказов успешно загружен из {ORDER_COUNTER_FILE}: "
                                    f"{order_counter}, Месяц: {last_reset_month}")
@@ -162,10 +160,8 @@ async def save_order_counter(counter_data):
     """Сохраняет счетчик заказов в файл."""
     async with order_counter_lock:
         try:
-            logger.info(f"Начинаем сохранение счетчика: {counter_data}")
             # Создаем директорию, если она не существует
             os.makedirs(os.path.dirname(ORDER_COUNTER_FILE), exist_ok=True)
-            logger.info(f"Директория создана/проверена: {os.path.dirname(ORDER_COUNTER_FILE)}")
 
             # Используем синхронную операцию записи в файл
             with open(ORDER_COUNTER_FILE, 'w', encoding='utf-8') as f:
@@ -173,7 +169,6 @@ async def save_order_counter(counter_data):
             logger.info(f"Счетчик заказов успешно сохранен: {counter_data}")
         except Exception as e:
             logger.error(f"Ошибка при сохранении счетчика заказов: {e}")
-            logger.error(f"Тип ошибки: {type(e).__name__}")
             raise  # Перебрасываем ошибку, чтобы вызывающий код мог ее обработать
 
 
@@ -205,18 +200,14 @@ async def generate_order_number():
             # Сохраняем обновленный счетчик в файл
             try:
                 logger.info("Начинаем сохранение счетчика в файл...")
-                # Добавляем таймаут в 5 секунд для операции сохранения
-                await asyncio.wait_for(
-                    save_order_counter({'counter': order_counter, 'month': last_reset_month}),
-                    timeout=5.0
-                )
+                # Убираем таймаут - на Heroku операции могут быть медленными
+                await save_order_counter({'counter': order_counter, 'month': last_reset_month})
                 logger.info(f"Счетчик успешно сохранен в файл: {order_counter}")
-            except asyncio.TimeoutError:
-                logger.error("Таймаут при сохранении счетчика заказов")
-                logger.warning("Продолжаем выполнение без сохранения счетчика")
             except Exception as save_error:
                 logger.error(f"Ошибка при сохранении счетчика: {save_error}")
                 logger.error(f"Тип ошибки: {type(save_error).__name__}")
+                # Продолжаем выполнение даже при ошибке сохранения
+                logger.warning("Продолжаем выполнение без сохранения счетчика")
                 # Продолжаем выполнение даже если не удалось сохранить
                 # Но логируем предупреждение
                 logger.warning("Продолжаем выполнение без сохранения счетчика")
