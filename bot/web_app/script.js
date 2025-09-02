@@ -3,6 +3,9 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
+// Debug flag to control noisy logs and debug globals
+const DEBUG = true;
+
 // Настраиваем цвет Telegram MainButton на коричневый #b76c4b
 function customizeMainButtonColor() {
   if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.MainButton) return;
@@ -1373,8 +1376,7 @@ function collectFormData() {
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // Debug flag to control noisy logs and debug globals
-    const DEBUG = true;
+    // Debug flag already defined globally
     if (!DEBUG && typeof console !== 'undefined' && console.log) {
         console.log = function(){};
     }
@@ -3828,6 +3830,5 @@ function addErrorClearingListeners() {
     // Делаем функции доступными глобально для отладки
     window.dbg_findCartElements = dbg_findCartElements;
     window.watchCartNodeChanges = watchCartNodeChanges;
-    window.setWebCartButtonText = setWebCartButtonText;
 
 });
