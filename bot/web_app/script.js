@@ -482,7 +482,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.103';
+    const CACHE_VERSION = '1.3.104';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -2498,6 +2498,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         saveCartWithMetadata(cart);
+        
+        // Логирование перед вызовом updateProductCardUI
+        logAndroidDebug('🚀 About to call updateProductCardUI', {
+            productId,
+            cartQuantity: cart[productId]?.quantity || 0,
+            cartState: JSON.parse(JSON.stringify(cart)),
+            timestamp: Date.now()
+        });
+        
         updateProductCardUI(productId);
         updateMainButtonCartInfo();
         
