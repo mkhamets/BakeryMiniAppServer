@@ -14,7 +14,6 @@ function customizeMainButtonColor() {
       color: '#b76c4b',
       text_color: '#ffffff'
     });
-    console.log('✅ MainButton color customized to brown #b76c4b');
   } catch (e) {
     console.warn('Failed to customize MainButton color:', e);
   }
@@ -58,397 +57,15 @@ function setMainButtonTextReliable(buttonText) {
 document.addEventListener('DOMContentLoaded', () => {
   try { 
     customizeMainButtonColor(); // Настраиваем цвет MainButton
-    console.log('✅ MainButton color initialized');
   } catch (e) { console.warn('customizeMainButtonColor error', e); }
 });
 
-// ===== ANDROID DEBUG LOGGING SYSTEM =====
-// Система логирования для отладки проблем на Android устройствах
 
-// Функция для логирования на Android устройствах
+
+// Android Debug System removed - creating stub function to prevent errors
 function logAndroidDebug(message, data = null) {
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (isAndroid) {
-        const timestamp = new Date().toISOString();
-        const logEntry = {
-            timestamp,
-            message,
-            data,
-            userAgent: navigator.userAgent,
-            viewport: {
-                width: window.innerWidth,
-                height: window.innerHeight
-            }
-        };
-        
-        console.log(`🟢 ANDROID DEBUG [${timestamp}]: ${message}`, data);
-        
-        // Сохраняем логи в localStorage для анализа
-        try {
-            const logs = JSON.parse(localStorage.getItem('android_debug_logs') || '[]');
-            logs.push(logEntry);
-            
-            // Храним только последние 200 логов
-            if (logs.length > 200) {
-                logs.splice(0, logs.length - 200);
-            }
-            
-            localStorage.setItem('android_debug_logs', JSON.stringify(logs));
-        } catch (e) {
-            console.error('❌ Failed to save Android debug log:', e);
-        }
-    }
+  // Stub function - does nothing
 }
-
-// Функция для получения всех Android логов
-function getAndroidDebugLogs() {
-    try {
-        return JSON.parse(localStorage.getItem('android_debug_logs') || '[]');
-    } catch (e) {
-        console.error('❌ Failed to load Android debug logs:', e);
-        return [];
-    }
-}
-
-// Функция для очистки Android логов
-function clearAndroidDebugLogs() {
-    try {
-        localStorage.removeItem('android_debug_logs');
-        console.log('✅ Android debug logs cleared');
-        return true;
-    } catch (e) {
-        console.error('❌ Failed to clear Android debug logs:', e);
-        return false;
-    }
-}
-
-// Функция для копирования Android логов в буфер обмена
-function copyAndroidDebugLogs() {
-    try {
-        const logs = getAndroidDebugLogs();
-        
-        // Копируем ВСЕ логи, а не только последние 20
-        const allLogs = logs; // Убираем ограничение slice(-20)
-        
-        // Форматируем логи для удобного чтения
-        const formattedLogs = allLogs.map(log => {
-            const time = log.timestamp.slice(11, 19);
-            const message = log.message;
-            const data = log.data ? `\n  Data: ${JSON.stringify(log.data, null, 2)}` : '';
-            return `[${time}] ${message}${data}`;
-        }).join('\n\n');
-        
-        // Добавляем заголовок и статистику
-        const totalLogs = logs.length;
-        const errorLogs = logs.filter(log => log.message.includes('❌')).length;
-        const buttonLogs = logs.filter(log => log.message.includes('button') || log.message.includes('click')).length;
-        
-        const fullText = `🐛 Android Debug Logs
-📊 Stats: Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
-📅 Generated: ${new Date().toLocaleString()}
-📝 Copied: ${allLogs.length} logs (all available)
-
-${formattedLogs}`;
-        
-        // Проверяем размер текста (некоторые браузеры имеют ограничения)
-        if (fullText.length > 1000000) { // Если больше 1MB
-            logAndroidDebug('⚠️ Logs too large, copying only recent logs', {
-                totalSize: fullText.length,
-                totalLogs: allLogs.length
-            });
-            
-            // Копируем только последние 50 логов если слишком много
-            const recentLogs = logs.slice(-50);
-            const recentFormattedLogs = recentLogs.map(log => {
-                const time = log.timestamp.slice(11, 19);
-                const message = log.message;
-                const data = log.data ? `\n  Data: ${JSON.stringify(log.data, null, 2)}` : '';
-                return `[${time}] ${message}${data}`;
-            }).join('\n\n');
-            
-            const recentText = `🐛 Android Debug Logs (Recent 50)
-📊 Stats: Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
-📅 Generated: ${new Date().toLocaleString()}
-⚠️ Note: Only recent 50 logs copied (total: ${totalLogs})
-
-${recentFormattedLogs}`;
-            
-            copyTextToClipboard(recentText);
-            showCopyNotification(`⚠️ Скопировано последних 50 из ${totalLogs} логов (слишком много данных)`);
-        } else {
-            // Копируем все логи
-            copyTextToClipboard(fullText);
-            showCopyNotification(`✅ Скопированы все ${allLogs.length} логов!`);
-        }
-        
-        return true;
-    } catch (e) {
-        console.error('❌ Failed to copy Android debug logs:', e);
-        showCopyNotification('❌ Ошибка копирования логов');
-        return false;
-    }
-}
-
-// Функция для копирования только последних логов
-function copyRecentAndroidDebugLogs() {
-    try {
-        const logs = getAndroidDebugLogs();
-        const recentLogs = logs.slice(-30); // Последние 30 логов
-        
-        // Форматируем логи для удобного чтения
-        const formattedLogs = recentLogs.map(log => {
-            const time = log.timestamp.slice(11, 19);
-            const message = log.message;
-            const data = log.data ? `\n  Data: ${JSON.stringify(log.data, null, 2)}` : '';
-            return `[${time}] ${message}${data}`;
-        }).join('\n\n');
-        
-        // Добавляем заголовок и статистику
-        const totalLogs = logs.length;
-        const errorLogs = logs.filter(log => log.message.includes('❌')).length;
-        const buttonLogs = logs.filter(log => log.message.includes('button') || log.message.includes('click')).length;
-        
-        const recentText = `🐛 Android Debug Logs (Recent 30)
-📊 Stats: Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
-📅 Generated: ${new Date().toLocaleString()}
-📝 Copied: Recent 30 logs from total ${totalLogs}
-
-${formattedLogs}`;
-        
-        copyTextToClipboard(recentText);
-        showCopyNotification(`✅ Скопированы последние 30 из ${totalLogs} логов!`);
-        
-        return true;
-    } catch (e) {
-        console.error('❌ Failed to copy recent Android debug logs:', e);
-        showCopyNotification('❌ Ошибка копирования последних логов');
-        return false;
-    }
-}
-
-// Общая функция копирования текста
-function copyTextToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-            logAndroidDebug('✅ Logs copied to clipboard successfully', {
-                textLength: text.length,
-                logCount: text.split('[11:').length - 1
-            });
-        }).catch(() => {
-            // Fallback для старых браузеров
-            fallbackCopyTextToClipboard(text);
-        });
-    } else {
-        // Fallback для старых браузеров
-        fallbackCopyTextToClipboard(text);
-    }
-}
-
-// Fallback функция копирования для старых браузеров
-function fallbackCopyTextToClipboard(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            logAndroidDebug('✅ Logs copied to clipboard (fallback method)');
-            showCopyNotification('✅ Логи скопированы в буфер обмена!');
-        } else {
-            logAndroidDebug('❌ Failed to copy logs (fallback method)');
-            showCopyNotification('❌ Не удалось скопировать логи');
-        }
-    } catch (err) {
-        logAndroidDebug('❌ Error copying logs (fallback method)', err);
-        showCopyNotification('❌ Ошибка копирования логов');
-    }
-    
-    document.body.removeChild(textArea);
-}
-
-// Функция для показа уведомления о копировании
-function showCopyNotification(message) {
-    // Удаляем существующие уведомления
-    const existingNotification = document.getElementById('copy-notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-    
-    const notification = document.createElement('div');
-    notification.id = 'copy-notification';
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        background: rgba(0,0,0,0.9); color: white; padding: 15px 20px;
-        border-radius: 8px; font-size: 14px; z-index: 10001;
-        border: 2px solid #b76c4b; text-align: center;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Автоматически скрываем через 3 секунды
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 3000);
-}
-
-// Функция для экспорта Android логов
-function exportAndroidDebugLogs() {
-    try {
-        const logs = getAndroidDebugLogs();
-        const dataStr = JSON.stringify(logs, null, 2);
-        const dataBlob = new Blob([dataStr], {type: 'application/json'});
-        
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = `android_debug_logs_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
-        link.click();
-        
-        console.log('✅ Android debug logs exported');
-        return true;
-    } catch (e) {
-        console.error('❌ Failed to export Android debug logs:', e);
-        return false;
-    }
-}
-
-// Функция для создания отладочной панели
-function createAndroidDebugPanel() {
-    // Удаляем существующую панель если есть
-    const existingPanel = document.getElementById('android-debug-panel');
-    if (existingPanel) {
-        existingPanel.remove();
-    }
-    
-    const existingButton = document.getElementById('android-debug-button');
-    if (existingButton) {
-        existingButton.remove();
-    }
-    
-    // Создаем кнопку для показа/скрытия панели
-    const debugButton = document.createElement('button');
-    debugButton.id = 'android-debug-button';
-    debugButton.innerHTML = '🐛';
-    debugButton.title = 'Android Debug Panel';
-    debugButton.style.cssText = `
-        position: fixed; top: 10px; right: 10px; 
-        z-index: 10000; padding: 8px; border-radius: 50%;
-        background: #b76c4b; color: white; border: none;
-        font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-    `;
-    
-    // Создаем отладочную панель
-    const debugPanel = document.createElement('div');
-    debugPanel.id = 'android-debug-panel';
-    debugPanel.style.cssText = `
-        position: fixed; top: 60px; right: 10px; 
-        background: rgba(0,0,0,0.9); color: white; 
-        padding: 15px; border-radius: 8px; font-size: 12px;
-        max-width: 350px; max-height: 400px; overflow-y: auto;
-        z-index: 9999; display: none; font-family: monospace;
-        border: 2px solid #b76c4b;
-    `;
-    
-    // Добавляем заголовок и кнопки управления
-    debugPanel.innerHTML = `
-        <div style="margin-bottom: 10px; border-bottom: 1px solid #b76c4b; padding-bottom: 5px;">
-            <strong>🐛 Android Debug Panel</strong>
-        </div>
-        <div id="android-debug-content" style="margin-bottom: 10px;"></div>
-        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-            <button id="refresh-logs-btn" style="padding: 5px 10px; background: #b76c4b; color: white; border: none; border-radius: 3px; cursor: pointer;">🔄 Refresh</button>
-            <button id="copy-logs-btn" style="padding: 5px 10px; background: #4488ff; color: white; border: none; border-radius: 3px; cursor: pointer;">📋 Copy All</button>
-            <button id="copy-recent-btn" style="padding: 5px 10px; background: #8844ff; color: white; border: none; border-radius: 3px; cursor: pointer;">📋 Recent</button>
-            <button id="clear-logs-btn" style="padding: 5px 10px; background: #ff4444; color: white; border: none; border-radius: 3px; cursor: pointer;">🗑️ Clear</button>
-            <button id="export-logs-btn" style="padding: 5px 10px; background: #44aa44; color: white; border: none; border-radius: 3px; cursor: pointer;">📥 Export</button>
-        </div>
-    `;
-    
-    // Добавляем элементы на страницу
-    document.body.appendChild(debugButton);
-    document.body.appendChild(debugPanel);
-    
-    // Обработчики событий
-    debugButton.onclick = () => {
-        const isVisible = debugPanel.style.display !== 'none';
-        debugPanel.style.display = isVisible ? 'none' : 'block';
-        if (!isVisible) {
-            updateAndroidDebugPanel();
-        }
-    };
-    
-    // Обработчики кнопок панели
-    document.getElementById('refresh-logs-btn').onclick = updateAndroidDebugPanel;
-    document.getElementById('copy-logs-btn').onclick = copyAndroidDebugLogs;
-    document.getElementById('copy-recent-btn').onclick = copyRecentAndroidDebugLogs;
-    document.getElementById('clear-logs-btn').onclick = () => {
-        if (clearAndroidDebugLogs()) {
-            updateAndroidDebugPanel();
-        }
-    };
-    document.getElementById('export-logs-btn').onclick = exportAndroidDebugLogs;
-    
-    logAndroidDebug('Android debug panel created');
-}
-
-// Функция для обновления отладочной панели
-function updateAndroidDebugPanel() {
-    const content = document.getElementById('android-debug-content');
-    if (!content) return;
-    
-    try {
-        const logs = getAndroidDebugLogs();
-        const recentLogs = logs.slice(-15); // Показываем последние 15 логов
-        
-        if (recentLogs.length === 0) {
-            content.innerHTML = '<div style="color: #888;">No logs yet</div>';
-            return;
-        }
-        
-        content.innerHTML = recentLogs.map(log => `
-            <div style="margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 3px;">
-                <div style="color: #b76c4b; font-size: 10px;">${log.timestamp.slice(11, 19)}</div>
-                <div style="margin: 2px 0;">${log.message}</div>
-                ${log.data ? `<div style="color: #aaa; font-size: 10px; word-break: break-all;">${JSON.stringify(log.data, null, 2)}</div>` : ''}
-            </div>
-        `).join('');
-        
-        // Показываем общую статистику
-        const totalLogs = logs.length;
-        const errorLogs = logs.filter(log => log.message.includes('❌')).length;
-        const buttonLogs = logs.filter(log => log.message.includes('button') || log.message.includes('click')).length;
-        
-        const stats = document.createElement('div');
-        stats.style.cssText = 'margin-top: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; font-size: 10px;';
-        stats.innerHTML = `
-            <strong>📊 Stats:</strong> Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
-        `;
-        content.appendChild(stats);
-        
-    } catch (e) {
-        content.innerHTML = `<div style="color: #ff4444;">Error loading logs: ${e.message}</div>`;
-    }
-}
-
-// Инициализация отладочной системы при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-    // Создаем отладочную панель только на Android
-    if (/Android/i.test(navigator.userAgent)) {
-        setTimeout(() => {
-            createAndroidDebugPanel();
-            logAndroidDebug('Android debug system initialized');
-        }, 1000);
-    }
-});
 
 // Функция для сокращения текстов в availability-info
 function shortenAvailabilityText(text) {
@@ -2423,22 +2040,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (productListElement) {
             productListElement.querySelectorAll('.quantity-controls button').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    // Детальное логирование для Android отладки
-                    logAndroidDebug('🔘 Quantity button clicked (product grid)', {
-                        target: e.target.outerHTML,
-                        currentTarget: e.currentTarget.outerHTML,
-                        buttonElement: e.target.closest('button[data-product-id]')?.outerHTML,
-                        eventType: e.type,
-                        timestamp: Date.now(),
-                        cartState: JSON.parse(JSON.stringify(cart))
-                    });
+
                     
                     const clickedButton = e.target.closest('button[data-product-id]');
                     if (!clickedButton) {
-                        logAndroidDebug('❌ Button not found or missing data-product-id', {
-                            target: e.target.outerHTML,
-                            error: 'Кнопка управления количеством не найдена или не имеет data-product-id'
-                        });
                         console.error('ОЧЕНЬ ВАЖНО: Кнопка управления количеством не найдена или не имеет data-product-id. e.target:', e.target);
                         return;
                     }
@@ -2446,25 +2051,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const productId = clickedButton.dataset.productId;
                     const action = clickedButton.dataset.action;
                     
-                    logAndroidDebug('✅ Button action identified', {
-                        productId,
-                        action,
-                        buttonData: {
-                            productId: clickedButton.dataset.productId,
-                            action: clickedButton.dataset.action,
-                            className: clickedButton.className,
-                            id: clickedButton.id
-                        }
-                    });
+
 
                     if (action === 'increase') {
-                        logAndroidDebug('🟢 Increase action triggered', { productId, action });
                         updateProductQuantity(productId, 1);
                     } else if (action === 'decrease') {
-                        logAndroidDebug('🔴 Decrease action triggered', { productId, action });
                         updateProductQuantity(productId, -1);
-                    } else {
-                        logAndroidDebug('❓ Unknown action', { productId, action });
                     }
                 });
             });
@@ -2506,13 +2098,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateProductQuantity(productId, change) {
-        // Детальное логирование для Android отладки
-        logAndroidDebug('updateProductQuantity called', {
-            productId,
-            change,
-            currentCartState: JSON.parse(JSON.stringify(cart)),
-            timestamp: Date.now()
-        });
         
         let product = null;
         for (const catKey in productsData) {
@@ -3549,87 +3134,34 @@ function addErrorClearingListeners() {
 
 
     function updateMainButtonCartInfo() {
-        // Детальное логирование для Android отладки
-        logAndroidDebug('updateMainButtonCartInfo called', {
-            currentView: getCurrentView(),
-            cartState: JSON.parse(JSON.stringify(cart)),
-            cartKeys: Object.keys(cart),
-            timestamp: Date.now()
-        });
-        
         const currentView = getCurrentView();
         
         // Update page title
         updatePageTitle();
         
-        // Debug logging
-        console.log('🔍 updateMainButtonCartInfo called - currentView:', currentView);
-        
         // Hide the main button if we're on cart or checkout screens
         if (currentView === 'cart' || currentView === 'checkout') {
-            logAndroidDebug('🚫 Hiding cart button - on cart/checkout screen', { currentView });
-            console.log('🔍 Hiding cart button - on cart/checkout screen');
-            
-            // Web-кнопка больше не используется
-            
             Telegram.WebApp.MainButton.hide();
             return;
         }
         
         const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        logAndroidDebug('📊 Cart calculation', {
-            totalItems,
-            totalPrice,
-            cartItems: Object.values(cart).map(item => ({
-                id: item.id,
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price
-            }))
-        });
-        
-        console.log('🔍 Cart items:', totalItems, 'Total price:', totalPrice);
 
         if (totalItems > 0) {
             const buttonText = `Корзина (${totalItems}) - ${totalPrice.toFixed(2)} р.`;
-            logAndroidDebug('✅ Showing cart button', {
-                buttonText,
-                totalItems,
-                totalPrice
-            });
-            
-            console.log('🔍 Showing cart button with:', totalItems, 'items');
             
             // Обновляем Telegram MainButton с кастомным цветом и надежными Android-фиксами
             try {
                 setMainButtonTextReliable(buttonText);
-                logAndroidDebug('✅ MainButton updated via Telegram API', { 
-                    buttonText, 
-                    apiUsed: true, 
-                    timestamp: Date.now() 
-                });
             } catch (e) {
-                logAndroidDebug('❌ MainButton update failed', { 
-                    error: e && e.toString(), 
-                    buttonText 
-                });
+                console.warn('MainButton update failed:', e);
             }
         } else {
-            logAndroidDebug('🚫 Hiding cart button - no items', { totalItems });
-            console.log('🔍 Hiding cart button - no items');
-            
             // Web-кнопка больше не используется
             
             Telegram.WebApp.MainButton.hide();
         }
-        
-        logAndroidDebug('✅ updateMainButtonCartInfo completed', {
-            finalTotalItems: totalItems,
-            finalTotalPrice: totalPrice,
-            buttonVisible: totalItems > 0
-        });
     }
 
     function updateSubmitButtonState() {
@@ -3952,25 +3484,13 @@ function addErrorClearingListeners() {
                 const quantityDisplay = document.getElementById(`screen-quantity-${productId}`);
                 if (quantityDisplay) {
                     quantityDisplay.value = cart[productId] ? cart[productId].quantity : 0;
-                    logAndroidDebug('📱 Updated product screen quantity display', {
-                        productId,
-                        newValue: quantityDisplay.value,
-                        cartQuantity: cart[productId]?.quantity
-                    });
                 }
             });
         }
         
         if (increaseButton) {
             increaseButton.addEventListener('click', (e) => {
-                // Детальное логирование для Android отладки
-                logAndroidDebug('🟢 Increase button clicked (product screen)', {
-                    productId: e.currentTarget.dataset.productId,
-                    buttonElement: e.currentTarget.outerHTML,
-                    eventType: e.type,
-                    timestamp: Date.now(),
-                    cartState: JSON.parse(JSON.stringify(cart))
-                });
+
                 
                 e.preventDefault();
                 e.stopPropagation();
@@ -3980,11 +3500,6 @@ function addErrorClearingListeners() {
                 const quantityDisplay = document.getElementById(`screen-quantity-${productId}`);
                 if (quantityDisplay) {
                     quantityDisplay.value = cart[productId] ? cart[productId].quantity : 0;
-                    logAndroidDebug('📱 Updated product screen quantity display', {
-                        productId,
-                        newValue: quantityDisplay.value,
-                        cartQuantity: cart[productId]?.quantity
-                    });
                 }
             });
         }
