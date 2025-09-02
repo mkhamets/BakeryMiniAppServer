@@ -2553,6 +2553,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }))
             });
             
+            // Принудительное обновление через innerHTML
+            setTimeout(() => {
+                const updatedSpan = document.getElementById(`qty-${productId}`);
+                if (updatedSpan) {
+                    updatedSpan.innerHTML = currentQuantity;
+                    logAndroidDebug('🔄 Forced innerHTML update', {
+                        productId,
+                        quantity: currentQuantity,
+                        elementHTML: updatedSpan.outerHTML,
+                        timestamp: Date.now()
+                    });
+                }
+            }, 50);
+            
             logAndroidDebug('📱 Product card quantity updated (forced recreation)', {
                 productId,
                 oldText,
