@@ -44,18 +44,13 @@ function setWebCartButtonText(buttonText) {
     console.warn('setWebCartButtonText: web button not found');
     return false;
   }
+  
+  console.log('setWebCartButtonText called with:', buttonText);
 
   // показываем/скрываем без удаления из DOM
   if (!buttonText || buttonText.trim() === '' || /Корзина\s*\(0\)/i.test(buttonText)) {
     btn.classList.add('hidden');
     btn.textContent = '';
-    return true;
-  }
-  
-  // Также скрываем на экранах корзины и оформления
-  const currentView = getCurrentView ? getCurrentView() : 'unknown';
-  if (currentView === 'cart' || currentView === 'checkout') {
-    btn.classList.add('hidden');
     return true;
   }
 
