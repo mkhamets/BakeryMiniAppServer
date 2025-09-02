@@ -131,6 +131,7 @@ async def load_order_counter():
                                       f"Счетчик будет сброшен при первом заказе в новом месяце.")
                             # НЕ сбрасываем счетчик здесь - только при генерации заказа
                             # last_reset_month остается старым до первого заказа
+                            # Это позволяет сохранить последний счетчик предыдущего месяца
 
                         logger.info(f"Счетчик заказов успешно загружен из {ORDER_COUNTER_FILE}: "
                                    f"{order_counter}, Месяц: {last_reset_month}")
@@ -192,6 +193,12 @@ async def generate_order_number():
                 logger.info(f"Сменился месяц. Сбрасываем счетчик заказов с {order_counter} на 0.")
                 order_counter = 0
                 last_reset_month = current_month
+                # Сохраняем обновленный счетчик с новым месяцем
+                try:
+                    await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+                    logger.info(f"Счетчик сброшен и сохранен для нового месяца: {last_reset_month}")
+                except Exception as e:
+                    logger.error(f"Ошибка при сохранении сброшенного счетчика: {e}")
 
             # Увеличиваем счетчик для нового заказа
             order_counter += 1
@@ -795,9 +802,12 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
             admin_email_password = os.environ.get("ADMIN_EMAIL_PASSWORD")
             if admin_email_password:
                 logger.info(f"Отправляем email уведомление на {ADMIN_EMAIL}")
-                # Запускаем отправку email в фоновом режиме
-                asyncio.create_task(send_email_notification(ADMIN_EMAIL, email_subject, email_body, "Пекарня Дражина"))
-                logger.info("Задача отправки email создана")
+                # Отправляем email синхронно, чтобы дождаться результата
+                try:
+                    await send_email_notification(ADMIN_EMAIL, email_subject, email_body, "Пекарня Дражина")
+                    logger.info("Email администратору отправлен успешно")
+                except Exception as e:
+                    logger.error(f"Ошибка при отправке email администратору: {e}")
             else:
                 logger.error("Переменная окружения ADMIN_EMAIL_PASSWORD не установлена. "
                             "Email уведомление не будет отправлено.")
