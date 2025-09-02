@@ -482,7 +482,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.104';
+    const CACHE_VERSION = '1.3.106';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -2531,6 +2531,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
             const oldText = quantitySpan.textContent;
             quantitySpan.textContent = currentQuantity;
+            
+            // Принудительная перерисовка для Android (безопасный способ)
+            quantitySpan.style.transform = 'translateZ(0)';
+            quantitySpan.offsetHeight; // Принудительный reflow
+            quantitySpan.style.transform = '';
             
             logAndroidDebug('📱 Product card quantity updated', {
                 productId,
