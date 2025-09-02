@@ -62,6 +62,110 @@ function clearAndroidDebugLogs() {
     }
 }
 
+// Функция для копирования Android логов в буфер обмена
+function copyAndroidDebugLogs() {
+    try {
+        const logs = getAndroidDebugLogs();
+        const recentLogs = logs.slice(-20); // Последние 20 логов
+        
+        // Форматируем логи для удобного чтения
+        const formattedLogs = recentLogs.map(log => {
+            const time = log.timestamp.slice(11, 19);
+            const message = log.message;
+            const data = log.data ? `\n  Data: ${JSON.stringify(log.data, null, 2)}` : '';
+            return `[${time}] ${message}${data}`;
+        }).join('\n\n');
+        
+        // Добавляем заголовок и статистику
+        const totalLogs = logs.length;
+        const errorLogs = logs.filter(log => log.message.includes('❌')).length;
+        const buttonLogs = logs.filter(log => log.message.includes('button') || log.message.includes('click')).length;
+        
+        const fullText = `🐛 Android Debug Logs
+📊 Stats: Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
+📅 Generated: ${new Date().toLocaleString()}
+
+${formattedLogs}`;
+        
+        // Копируем в буфер обмена
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(fullText).then(() => {
+                logAndroidDebug('✅ Logs copied to clipboard successfully');
+                // Показываем уведомление
+                showCopyNotification('✅ Логи скопированы в буфер обмена!');
+            }).catch(() => {
+                // Fallback для старых браузеров
+                fallbackCopyTextToClipboard(fullText);
+            });
+        } else {
+            // Fallback для старых браузеров
+            fallbackCopyTextToClipboard(fullText);
+        }
+        
+        return true;
+    } catch (e) {
+        console.error('❌ Failed to copy Android debug logs:', e);
+        showCopyNotification('❌ Ошибка копирования логов');
+        return false;
+    }
+}
+
+// Fallback функция копирования для старых браузеров
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            logAndroidDebug('✅ Logs copied to clipboard (fallback method)');
+            showCopyNotification('✅ Логи скопированы в буфер обмена!');
+        } else {
+            logAndroidDebug('❌ Failed to copy logs (fallback method)');
+            showCopyNotification('❌ Не удалось скопировать логи');
+        }
+    } catch (err) {
+        logAndroidDebug('❌ Error copying logs (fallback method)', err);
+        showCopyNotification('❌ Ошибка копирования логов');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Функция для показа уведомления о копировании
+function showCopyNotification(message) {
+    // Удаляем существующие уведомления
+    const existingNotification = document.getElementById('copy-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.id = 'copy-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.9); color: white; padding: 15px 20px;
+        border-radius: 8px; font-size: 14px; z-index: 10001;
+        border: 2px solid #b76c4b; text-align: center;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматически скрываем через 3 секунды
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
 // Функция для экспорта Android логов
 function exportAndroidDebugLogs() {
     try {
@@ -128,6 +232,7 @@ function createAndroidDebugPanel() {
         <div id="android-debug-content" style="margin-bottom: 10px;"></div>
         <div style="display: flex; gap: 5px; flex-wrap: wrap;">
             <button id="refresh-logs-btn" style="padding: 5px 10px; background: #b76c4b; color: white; border: none; border-radius: 3px; cursor: pointer;">🔄 Refresh</button>
+            <button id="copy-logs-btn" style="padding: 5px 10px; background: #4488ff; color: white; border: none; border-radius: 3px; cursor: pointer;">📋 Copy</button>
             <button id="clear-logs-btn" style="padding: 5px 10px; background: #ff4444; color: white; border: none; border-radius: 3px; cursor: pointer;">🗑️ Clear</button>
             <button id="export-logs-btn" style="padding: 5px 10px; background: #44aa44; color: white; border: none; border-radius: 3px; cursor: pointer;">📥 Export</button>
         </div>
@@ -148,6 +253,7 @@ function createAndroidDebugPanel() {
     
     // Обработчики кнопок панели
     document.getElementById('refresh-logs-btn').onclick = updateAndroidDebugPanel;
+    document.getElementById('copy-logs-btn').onclick = copyAndroidDebugLogs;
     document.getElementById('clear-logs-btn').onclick = () => {
         if (clearAndroidDebugLogs()) {
             updateAndroidDebugPanel();
@@ -300,7 +406,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.100';
+    const CACHE_VERSION = '1.3.101';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -1606,10 +1712,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.100&t=1756284000", image: "images/bakery.svg?v=1.3.100&t=1756284000" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.100&t=1756284000", image: "images/crouasan.svg?v=1.3.100&t=1756284000" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.100&t=1756284000", image: "images/bread1.svg?v=1.3.100&t=1756284000" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.100&t=1756284000", image: "images/cookie.svg?v=1.3.100&t=1756284000" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.101&t=1756284000", image: "images/bakery.svg?v=1.3.101&t=1756284000" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.101&t=1756284000", image: "images/crouasan.svg?v=1.3.101&t=1756284000" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.101&t=1756284000", image: "images/bread1.svg?v=1.3.101&t=1756284000" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.101&t=1756284000", image: "images/cookie.svg?v=1.3.101&t=1756284000" }
     };
 
     await fetchProductsData();
@@ -3358,7 +3464,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.100&t=1756284000';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.101&t=1756284000';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
