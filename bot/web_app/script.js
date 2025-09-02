@@ -17,14 +17,13 @@ function initWebCartButton() {
     e.preventDefault();
     // Открываем корзину через существующую логику
     try { 
-      // Используем существующий механизм открытия корзины
-      if (typeof showCart === 'function') {
-        showCart();
-      } else if (typeof openCart === 'function') {
-        openCart();
+      // Используем существующий механизм открытия корзины - displayView('cart')
+      if (typeof displayView === 'function') {
+        console.log('Opening cart via displayView...');
+        displayView('cart');
       } else {
         // Fallback: просто показываем корзину
-        console.log('Opening cart...');
+        console.log('Opening cart... (displayView not available)');
       }
     } catch (err) { 
       console.warn('open cart failed', err); 
@@ -49,6 +48,7 @@ function setWebCartButtonText(buttonText) {
 
   // показываем/скрываем без удаления из DOM
   if (!buttonText || buttonText.trim() === '' || /Корзина\s*\(0\)/i.test(buttonText)) {
+    console.log('setWebCartButtonText: hiding button - no items or empty text');
     btn.classList.add('hidden');
     btn.textContent = '';
     return true;
@@ -60,6 +60,8 @@ function setWebCartButtonText(buttonText) {
   // заменяем содержимое безопасно
   // 1) если старый текст совпадает, делаем двойную запись, чтобы гарантировать repaint
   const oldText = btn.textContent || '';
+  console.log('setWebCartButtonText: updating button text from', oldText, 'to', buttonText);
+  
   if (oldText === buttonText) {
     // небольшая "двухшаговая" запись без hide->show
     btn.textContent = ''; // кратковременно очищаем
@@ -67,6 +69,7 @@ function setWebCartButtonText(buttonText) {
       btn.textContent = buttonText;
       // force paint
       void btn.offsetHeight;
+      console.log('setWebCartButtonText: button updated via requestAnimationFrame');
     });
   } else {
     btn.textContent = buttonText;
@@ -75,6 +78,7 @@ function setWebCartButtonText(buttonText) {
     void btn.offsetHeight;
     // сбросим will-change через таймаут
     setTimeout(() => { try { btn.style.willChange = ''; } catch (e) {} }, 100);
+    console.log('setWebCartButtonText: button updated directly');
   }
 
   return true;
@@ -3618,6 +3622,15 @@ function addErrorClearingListeners() {
         if (currentView === 'cart' || currentView === 'checkout') {
             logAndroidDebug('🚫 Hiding cart button - on cart/checkout screen', { currentView });
             console.log('🔍 Hiding cart button - on cart/checkout screen');
+            
+            // Принудительно скрываем web-кнопку
+            const webBtn = document.getElementById('web-cart-button');
+            if (webBtn) {
+                webBtn.classList.add('hidden');
+                webBtn.textContent = '';
+                console.log('🔍 Web cart button hidden - on cart/checkout screen');
+            }
+            
             Telegram.WebApp.MainButton.hide();
             return;
         }
@@ -3674,6 +3687,15 @@ function addErrorClearingListeners() {
         } else {
             logAndroidDebug('🚫 Hiding cart button - no items', { totalItems });
             console.log('🔍 Hiding cart button - no items');
+            
+            // Принудительно скрываем web-кнопку
+            const webBtn = document.getElementById('web-cart-button');
+            if (webBtn) {
+                webBtn.classList.add('hidden');
+                webBtn.textContent = '';
+                console.log('🔍 Web cart button hidden - no items');
+            }
+            
             Telegram.WebApp.MainButton.hide();
         }
         
