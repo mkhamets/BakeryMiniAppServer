@@ -2,6 +2,71 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
+// --- Robust cart button updater ---
+window.__lastCartButtonText = window.__lastCartButtonText || '';
+
+function _findCartTextNodes() {
+  const candidates = Array.from(document.querySelectorAll('button, a, span, div'));
+  return candidates.filter(el => /\bКорзина\s*\(/i.test((el.textContent||'').trim()));
+}
+
+function _visibleNodes(nodes) {
+  return nodes.filter(n => n && n.offsetParent !== null);
+}
+
+// Основная функция для установки текста в веб-кнопку (без hide->show)
+function setVisibleCartText(buttonText) {
+  window.__lastCartButtonText = buttonText;
+  // 1) Найдём все узлы с текстом "Корзина ("
+  const nodes = _findCartTextNodes();
+  const visible = _visibleNodes(nodes);
+
+  if (visible.length) {
+    visible.forEach(el => {
+      try {
+        // Пытаемся безопасно обновить: textContent + легкий reflow без hide/show
+        el.textContent = buttonText;
+        // force paint: promote to its own layer and trigger reflow
+        el.style.webkitTransform = 'translateZ(0)';
+        el.style.transform = 'translateZ(0)';
+        void el.offsetHeight;
+        // restore
+        el.style.transform = '';
+        el.style.webkitTransform = '';
+      } catch (e) {
+        console.warn('setVisibleCartText: update failed for', el, e);
+      }
+    });
+    return true;
+  } else {
+    // Если видимого узла нет — попробуем обновить нативную как fallback
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.MainButton) {
+      try { Telegram.WebApp.MainButton.setText(buttonText); } catch(e){ console.warn(e); }
+    }
+    return false;
+  }
+}
+
+// MutationObserver: если добавят новый узел "Корзина", присвоим ему последний текст
+if (!window.__cartBtnObserver) {
+  const mo = new MutationObserver((muts) => {
+    muts.forEach(m => {
+      m.addedNodes.forEach(n => {
+        try {
+          if (n.nodeType === 1 && /\bКорзина\s*\(/i.test(n.textContent||'')) {
+            // новый узел появился — применяем последний текст
+            if (window.__lastCartButtonText) {
+              setTimeout(() => setVisibleCartText(window.__lastCartButtonText), 0);
+            }
+          }
+        } catch (e) {}
+      });
+    });
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+  window.__cartBtnObserver = mo;
+}
+
 // ===== ANDROID DEBUG LOGGING SYSTEM =====
 // Система логирования для отладки проблем на Android устройствах
 
@@ -3539,20 +3604,37 @@ function addErrorClearingListeners() {
             
             console.log('🔍 Showing cart button with:', totalItems, 'items');
             
-            // Используем только Telegram API для обновления MainButton
+            // Обновляем веб-элемент(ы) через setVisibleCartText
+            const webUpdated = setVisibleCartText(buttonText);
+            logAndroidDebug('🌐 Web elements update result', {
+                buttonText,
+                webUpdated,
+                timestamp: Date.now()
+            });
+            
+            // Также синхронизируем нативную кнопку (без hide->show! только setText)
             if (window.Telegram && Telegram.WebApp && Telegram.WebApp.MainButton) {
-                Telegram.WebApp.MainButton.setText(buttonText);
-                // Устанавливаем коричневый цвет как у кнопок + и - и "Начать покупки"
-                Telegram.WebApp.MainButton.setParams({
-                    color: '#b76c4b'
-                });
-                Telegram.WebApp.MainButton.show(); // на всякий случай форснуть показ
-                
-                logAndroidDebug('✅ MainButton updated via Telegram API', {
-                    buttonText,
-                    apiUsed: true,
-                    timestamp: Date.now()
-                });
+                try { 
+                    Telegram.WebApp.MainButton.setText(buttonText);
+                    Telegram.WebApp.MainButton.setParams({
+                        color: '#b76c4b'
+                    });
+                    Telegram.WebApp.MainButton.show();
+                    
+                    logAndroidDebug('✅ MainButton updated via Telegram API', {
+                        buttonText,
+                        apiUsed: true,
+                        webUpdated,
+                        timestamp: Date.now()
+                    });
+                } catch(e) {
+                    logAndroidDebug('❌ Error updating MainButton via Telegram API', {
+                        buttonText,
+                        error: e.message,
+                        timestamp: Date.now()
+                    });
+                    console.warn(e);
+                }
             } else {
                 logAndroidDebug('❌ Telegram API not available', {
                     buttonText,
@@ -4209,5 +4291,53 @@ function addErrorClearingListeners() {
             document.title = 'Пекарня Дражина';
         }
     }
+
+    // ===== DIAGNOSTIC FUNCTIONS FOR CART BUTTON DEBUGGING =====
+    
+    // Функция для поиска всех элементов с текстом "Корзина ("
+    function dbg_findCartElements() {
+        const nodes = Array.from(document.querySelectorAll('button, a, span, div'));
+        const found = nodes.filter(el => /\bКорзина\s*\(\d+\)/i.test((el.textContent||'').trim()));
+        console.log('Найдено элементов с текстом "Корзина (N)":', found.length);
+        console.table(found.map(el => ({
+            tag: el.tagName,
+            id: el.id || '(no id)',
+            class: el.className || '(no class)',
+            visible: !!(el.offsetParent !== null),
+            connected: el.isConnected,
+            html: (el.outerHTML || '').slice(0,200)
+        })));
+        return found;
+    }
+
+    // Функция для наблюдения за изменениями DOM узлов "Корзина"
+    function watchCartNodeChanges() {
+        const mo = new MutationObserver(muts => {
+            muts.forEach(m => {
+                m.addedNodes.forEach(n => {
+                    try {
+                        if (n.nodeType===1 && /\bКорзина\s*\(\d+\)/i.test(n.textContent||'')) {
+                            console.log('Добавлен новый узел "Корзина":', n, 'visible=', n.offsetParent !== null);
+                        }
+                    } catch(e) {}
+                });
+                m.removedNodes.forEach(n => {
+                    try {
+                        if (n.nodeType===1 && /\bКорзина\s*\(\d+\)/i.test(n.textContent||'')) {
+                            console.log('Удалён узел "Корзина":', n);
+                        }
+                    } catch(e) {}
+                });
+            });
+        });
+        mo.observe(document.body, {childList: true, subtree: true});
+        console.log('Started watching DOM changes for "Корзина" nodes (MutationObserver).');
+        window.__cartNodeWatcher = mo;
+    }
+
+    // Делаем функции доступными глобально для отладки
+    window.dbg_findCartElements = dbg_findCartElements;
+    window.watchCartNodeChanges = watchCartNodeChanges;
+    window.setVisibleCartText = setVisibleCartText;
 
 });
