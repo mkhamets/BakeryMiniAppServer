@@ -482,7 +482,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.106';
+    const CACHE_VERSION = '1.3.107';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -2530,20 +2530,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (quantitySpan) {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
             const oldText = quantitySpan.textContent;
-            quantitySpan.textContent = currentQuantity;
             
-            // Принудительная перерисовка для Android (безопасный способ)
-            quantitySpan.style.transform = 'translateZ(0)';
-            quantitySpan.offsetHeight; // Принудительный reflow
-            quantitySpan.style.transform = '';
+            // Принудительное обновление через пересоздание элемента для Android
+            const parentElement = quantitySpan.parentElement;
+            const newQuantitySpan = document.createElement('span');
+            newQuantitySpan.className = quantitySpan.className;
+            newQuantitySpan.id = quantitySpan.id;
+            newQuantitySpan.textContent = currentQuantity;
             
-            logAndroidDebug('📱 Product card quantity updated', {
+            // Заменяем старый элемент новым
+            parentElement.replaceChild(newQuantitySpan, quantitySpan);
+            
+            logAndroidDebug('📱 Product card quantity updated (forced recreation)', {
                 productId,
                 oldText,
                 newText: currentQuantity,
                 elementFound: true,
                 elementId: `qty-${productId}`,
-                elementHTML: quantitySpan.outerHTML
+                oldElementHTML: quantitySpan.outerHTML,
+                newElementHTML: newQuantitySpan.outerHTML
             });
         } else {
             logAndroidDebug('❌ Product card quantity span not found', {
