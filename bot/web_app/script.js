@@ -2,70 +2,100 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
-// --- Robust cart button updater ---
-window.__lastCartButtonText = window.__lastCartButtonText || '';
+/* ======= Reliable web cart button (no flicker) ======= */
 
-function _findCartTextNodes() {
-  const candidates = Array.from(document.querySelectorAll('button, a, span, div'));
-  return candidates.filter(el => /\bКорзина\s*\(/i.test((el.textContent||'').trim()));
+// создаём стабильную DOM-кнопку, если её ещё нет
+function initWebCartButton() {
+  if (document.getElementById('web-cart-button')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'web-cart-button';
+  btn.type = 'button';
+  btn.className = 'web-cart-button hidden'; // класс можно стилизовать в style.css
+  btn.setAttribute('aria-label', 'Открыть корзину');
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // у тебя есть функция displayView('cart')
+    try { displayView('cart'); } catch (err) { console.warn('open cart failed', err); }
+  });
+
+  // добавим в body в самый конец — вне областей, которые могут ре-рендериться
+  document.body.appendChild(btn);
+  console.info('Web cart button initialized');
 }
 
-function _visibleNodes(nodes) {
-  return nodes.filter(n => n && n.offsetParent !== null);
-}
+// Обновляем текст видимой web-кнопки (без hide/show)
+function setWebCartButtonText(buttonText) {
+  const btn = document.getElementById('web-cart-button');
 
-// Основная функция для установки текста в веб-кнопку (без hide->show)
-function setVisibleCartText(buttonText) {
-  window.__lastCartButtonText = buttonText;
-  // 1) Найдём все узлы с текстом "Корзина ("
-  const nodes = _findCartTextNodes();
-  const visible = _visibleNodes(nodes);
-
-  if (visible.length) {
-    visible.forEach(el => {
-      try {
-        // Пытаемся безопасно обновить: textContent + легкий reflow без hide/show
-        el.textContent = buttonText;
-        // force paint: promote to its own layer and trigger reflow
-        el.style.webkitTransform = 'translateZ(0)';
-        el.style.transform = 'translateZ(0)';
-        void el.offsetHeight;
-        // restore
-        el.style.transform = '';
-        el.style.webkitTransform = '';
-      } catch (e) {
-        console.warn('setVisibleCartText: update failed for', el, e);
-      }
-    });
-    return true;
-  } else {
-    // Если видимого узла нет — попробуем обновить нативную как fallback
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.MainButton) {
-      try { Telegram.WebApp.MainButton.setText(buttonText); } catch(e){ console.warn(e); }
-    }
+  if (!btn) {
+    console.warn('setWebCartButtonText: web button not found');
     return false;
+  }
+
+  // показываем/скрываем без удаления из DOM
+  if (!buttonText || buttonText.trim() === '' || /Корзина\s*\(0\)/i.test(buttonText)) {
+    btn.classList.add('hidden');
+    btn.textContent = '';
+    return true;
+  }
+
+  // самое простое и надёжное обновление: textContent, потом лёгкий трюк для перерисовки
+  btn.classList.remove('hidden');
+
+  // заменяем содержимое безопасно
+  // 1) если старый текст совпадает, делаем двойную запись, чтобы гарантировать repaint
+  const oldText = btn.textContent || '';
+  if (oldText === buttonText) {
+    // небольшая "двухшаговая" запись без hide->show
+    btn.textContent = ''; // кратковременно очищаем
+    requestAnimationFrame(() => {
+      btn.textContent = buttonText;
+      // force paint
+      void btn.offsetHeight;
+    });
+  } else {
+    btn.textContent = buttonText;
+    // небольшая подсказка движку: promote to compositing layer & reflow
+    btn.style.willChange = 'transform, opacity';
+    void btn.offsetHeight;
+    // сбросим will-change через таймаут
+    setTimeout(() => { try { btn.style.willChange = ''; } catch (e) {} }, 100);
+  }
+
+  return true;
+}
+
+// Надёжное обновление нативной кнопки Telegram (двухшаговый трик для Android)
+function setMainButtonTextReliable(buttonText) {
+  if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.MainButton) return;
+  try {
+    const mb = Telegram.WebApp.MainButton;
+    const isAndroid = /Android/i.test(navigator.userAgent || '');
+    if (!isAndroid) {
+      mb.setText(buttonText);
+      mb.show();
+      return;
+    }
+    // Android: двойная установка с короткой паузой (без hide/show)
+    const ZWSP = '\u200B'; // если будет проблемой — заменить на '\u00A0'
+    mb.setText(buttonText + ZWSP);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        mb.setText(buttonText);
+        mb.show();
+      }, 8);
+    });
+  } catch (e) {
+    console.warn('setMainButtonTextReliable failed', e);
+    try { Telegram.WebApp.MainButton.setText(buttonText); Telegram.WebApp.MainButton.show(); } catch(_) {}
   }
 }
 
-// MutationObserver: если добавят новый узел "Корзина", присвоим ему последний текст
-if (!window.__cartBtnObserver) {
-  const mo = new MutationObserver((muts) => {
-    muts.forEach(m => {
-      m.addedNodes.forEach(n => {
-        try {
-          if (n.nodeType === 1 && /\bКорзина\s*\(/i.test(n.textContent||'')) {
-            // новый узел появился — применяем последний текст
-            if (window.__lastCartButtonText) {
-              setTimeout(() => setVisibleCartText(window.__lastCartButtonText), 0);
-            }
-          }
-        } catch (e) {}
-      });
-    });
-  });
-  mo.observe(document.body, { childList: true, subtree: true });
-  window.__cartBtnObserver = mo;
-}
+// Инициализируем кнопку при старте
+document.addEventListener('DOMContentLoaded', () => {
+  try { initWebCartButton(); } catch (e) { console.warn('initWebCartButton error', e); }
+});
 
 // ===== ANDROID DEBUG LOGGING SYSTEM =====
 // Система логирования для отладки проблем на Android устройствах
@@ -3604,44 +3634,27 @@ function addErrorClearingListeners() {
             
             console.log('🔍 Showing cart button with:', totalItems, 'items');
             
-            // Обновляем веб-элемент(ы) через setVisibleCartText
-            const webUpdated = setVisibleCartText(buttonText);
+            // 1) Обновляем стабильную web-кнопку (это увидит пользователь)
+            const webUpdated = setWebCartButtonText(buttonText);
             logAndroidDebug('🌐 Web elements update result', {
                 buttonText,
                 webUpdated,
                 timestamp: Date.now()
             });
-            
-            // Также синхронизируем нативную кнопку (без hide->show! только setText)
-            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.MainButton) {
-                try { 
-                    Telegram.WebApp.MainButton.setText(buttonText);
-                    Telegram.WebApp.MainButton.setParams({
-                        color: '#b76c4b'
-                    });
-                    Telegram.WebApp.MainButton.show();
-                    
-                    logAndroidDebug('✅ MainButton updated via Telegram API', {
-                        buttonText,
-                        apiUsed: true,
-                        webUpdated,
-                        timestamp: Date.now()
-                    });
-                } catch(e) {
-                    logAndroidDebug('❌ Error updating MainButton via Telegram API', {
-                        buttonText,
-                        error: e.message,
-                        timestamp: Date.now()
-                    });
-                    console.warn(e);
-                }
-            } else {
-                logAndroidDebug('❌ Telegram API not available', {
-                    buttonText,
-                    windowTelegram: !!window.Telegram,
-                    webApp: !!Telegram?.WebApp,
-                    mainButton: !!Telegram?.WebApp?.MainButton,
-                    timestamp: Date.now()
+
+            // 2) Параллельно пытаемся синхронизировать нативную кнопку без hide->show
+            try {
+                setMainButtonTextReliable(buttonText);
+                logAndroidDebug('✅ MainButton updated via Telegram API', { 
+                    buttonText, 
+                    apiUsed: true, 
+                    webUpdated, 
+                    timestamp: Date.now() 
+                });
+            } catch (e) {
+                logAndroidDebug('❌ MainButton update failed', { 
+                    error: e && e.toString(), 
+                    buttonText 
                 });
             }
         } else {
