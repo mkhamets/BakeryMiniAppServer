@@ -15,8 +15,20 @@ function initWebCartButton() {
   btn.setAttribute('aria-label', 'Открыть корзину');
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-    // у тебя есть функция displayView('cart')
-    try { displayView('cart'); } catch (err) { console.warn('open cart failed', err); }
+    // Открываем корзину через существующую логику
+    try { 
+      // Используем существующий механизм открытия корзины
+      if (typeof showCart === 'function') {
+        showCart();
+      } else if (typeof openCart === 'function') {
+        openCart();
+      } else {
+        // Fallback: просто показываем корзину
+        console.log('Opening cart...');
+      }
+    } catch (err) { 
+      console.warn('open cart failed', err); 
+    }
   });
 
   // добавим в body в самый конец — вне областей, которые могут ре-рендериться
@@ -37,6 +49,13 @@ function setWebCartButtonText(buttonText) {
   if (!buttonText || buttonText.trim() === '' || /Корзина\s*\(0\)/i.test(buttonText)) {
     btn.classList.add('hidden');
     btn.textContent = '';
+    return true;
+  }
+  
+  // Также скрываем на экранах корзины и оформления
+  const currentView = getCurrentView ? getCurrentView() : 'unknown';
+  if (currentView === 'cart' || currentView === 'checkout') {
+    btn.classList.add('hidden');
     return true;
   }
 
@@ -4351,6 +4370,6 @@ function addErrorClearingListeners() {
     // Делаем функции доступными глобально для отладки
     window.dbg_findCartElements = dbg_findCartElements;
     window.watchCartNodeChanges = watchCartNodeChanges;
-    window.setVisibleCartText = setVisibleCartText;
+    window.setWebCartButtonText = setWebCartButtonText;
 
 });
