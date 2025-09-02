@@ -2517,6 +2517,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    function forceRedraw(element) {
+        element.style.display = 'none';
+        element.offsetHeight; // триггер reflow
+        element.style.display = '';
+    }
+
     function updateProductCardUI(productId) {
         // Детальное логирование для Android отладки счетчика товара
         logAndroidDebug('🔧 updateProductCardUI called', {
@@ -2553,12 +2559,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }))
             });
             
-            // Принудительное обновление через innerHTML
+            // Принудительное обновление через forceRedraw
             setTimeout(() => {
                 const updatedSpan = document.getElementById(`qty-${productId}`);
                 if (updatedSpan) {
-                    updatedSpan.innerHTML = currentQuantity;
-                    logAndroidDebug('🔄 Forced innerHTML update', {
+                    forceRedraw(updatedSpan);
+                    logAndroidDebug('🔄 ForceRedraw applied', {
                         productId,
                         quantity: currentQuantity,
                         elementHTML: updatedSpan.outerHTML,
@@ -3538,6 +3544,32 @@ function addErrorClearingListeners() {
                 color: '#b76c4b'
             });
             Telegram.WebApp.MainButton.show();
+            
+            // Принудительная перерисовка MainButton для Android
+            setTimeout(() => {
+                try {
+                    const mainButtonElement = document.querySelector('.tgme_button');
+                    if (mainButtonElement) {
+                        forceRedraw(mainButtonElement);
+                        logAndroidDebug('🔄 ForceRedraw applied to MainButton', {
+                            buttonText,
+                            elementFound: true,
+                            timestamp: Date.now()
+                        });
+                    } else {
+                        logAndroidDebug('ℹ️ MainButton element not found for forceRedraw', {
+                            buttonText,
+                            timestamp: Date.now()
+                        });
+                    }
+                } catch (error) {
+                    logAndroidDebug('❌ Error applying forceRedraw to MainButton', {
+                        error: error.message,
+                        buttonText,
+                        timestamp: Date.now()
+                    });
+                }
+            }, 100);
         } else {
             logAndroidDebug('🚫 Hiding cart button - no items', { totalItems });
             console.log('🔍 Hiding cart button - no items');
