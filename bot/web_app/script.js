@@ -2,6 +2,212 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
+// ===== ANDROID DEBUG LOGGING SYSTEM =====
+// Система логирования для отладки проблем на Android устройствах
+
+// Функция для логирования на Android устройствах
+function logAndroidDebug(message, data = null) {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            timestamp,
+            message,
+            data,
+            userAgent: navigator.userAgent,
+            viewport: {
+                width: window.innerWidth,
+                height: window.innerHeight
+            }
+        };
+        
+        console.log(`🟢 ANDROID DEBUG [${timestamp}]: ${message}`, data);
+        
+        // Сохраняем логи в localStorage для анализа
+        try {
+            const logs = JSON.parse(localStorage.getItem('android_debug_logs') || '[]');
+            logs.push(logEntry);
+            
+            // Храним только последние 200 логов
+            if (logs.length > 200) {
+                logs.splice(0, logs.length - 200);
+            }
+            
+            localStorage.setItem('android_debug_logs', JSON.stringify(logs));
+        } catch (e) {
+            console.error('❌ Failed to save Android debug log:', e);
+        }
+    }
+}
+
+// Функция для получения всех Android логов
+function getAndroidDebugLogs() {
+    try {
+        return JSON.parse(localStorage.getItem('android_debug_logs') || '[]');
+    } catch (e) {
+        console.error('❌ Failed to load Android debug logs:', e);
+        return [];
+    }
+}
+
+// Функция для очистки Android логов
+function clearAndroidDebugLogs() {
+    try {
+        localStorage.removeItem('android_debug_logs');
+        console.log('✅ Android debug logs cleared');
+        return true;
+    } catch (e) {
+        console.error('❌ Failed to clear Android debug logs:', e);
+        return false;
+    }
+}
+
+// Функция для экспорта Android логов
+function exportAndroidDebugLogs() {
+    try {
+        const logs = getAndroidDebugLogs();
+        const dataStr = JSON.stringify(logs, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `android_debug_logs_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+        link.click();
+        
+        console.log('✅ Android debug logs exported');
+        return true;
+    } catch (e) {
+        console.error('❌ Failed to export Android debug logs:', e);
+        return false;
+    }
+}
+
+// Функция для создания отладочной панели
+function createAndroidDebugPanel() {
+    // Удаляем существующую панель если есть
+    const existingPanel = document.getElementById('android-debug-panel');
+    if (existingPanel) {
+        existingPanel.remove();
+    }
+    
+    const existingButton = document.getElementById('android-debug-button');
+    if (existingButton) {
+        existingButton.remove();
+    }
+    
+    // Создаем кнопку для показа/скрытия панели
+    const debugButton = document.createElement('button');
+    debugButton.id = 'android-debug-button';
+    debugButton.innerHTML = '🐛';
+    debugButton.title = 'Android Debug Panel';
+    debugButton.style.cssText = `
+        position: fixed; top: 10px; right: 10px; 
+        z-index: 10000; padding: 8px; border-radius: 50%;
+        background: #b76c4b; color: white; border: none;
+        font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    `;
+    
+    // Создаем отладочную панель
+    const debugPanel = document.createElement('div');
+    debugPanel.id = 'android-debug-panel';
+    debugPanel.style.cssText = `
+        position: fixed; top: 60px; right: 10px; 
+        background: rgba(0,0,0,0.9); color: white; 
+        padding: 15px; border-radius: 8px; font-size: 12px;
+        max-width: 350px; max-height: 400px; overflow-y: auto;
+        z-index: 9999; display: none; font-family: monospace;
+        border: 2px solid #b76c4b;
+    `;
+    
+    // Добавляем заголовок и кнопки управления
+    debugPanel.innerHTML = `
+        <div style="margin-bottom: 10px; border-bottom: 1px solid #b76c4b; padding-bottom: 5px;">
+            <strong>🐛 Android Debug Panel</strong>
+        </div>
+        <div id="android-debug-content" style="margin-bottom: 10px;"></div>
+        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+            <button id="refresh-logs-btn" style="padding: 5px 10px; background: #b76c4b; color: white; border: none; border-radius: 3px; cursor: pointer;">🔄 Refresh</button>
+            <button id="clear-logs-btn" style="padding: 5px 10px; background: #ff4444; color: white; border: none; border-radius: 3px; cursor: pointer;">🗑️ Clear</button>
+            <button id="export-logs-btn" style="padding: 5px 10px; background: #44aa44; color: white; border: none; border-radius: 3px; cursor: pointer;">📥 Export</button>
+        </div>
+    `;
+    
+    // Добавляем элементы на страницу
+    document.body.appendChild(debugButton);
+    document.body.appendChild(debugPanel);
+    
+    // Обработчики событий
+    debugButton.onclick = () => {
+        const isVisible = debugPanel.style.display !== 'none';
+        debugPanel.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+            updateAndroidDebugPanel();
+        }
+    };
+    
+    // Обработчики кнопок панели
+    document.getElementById('refresh-logs-btn').onclick = updateAndroidDebugPanel;
+    document.getElementById('clear-logs-btn').onclick = () => {
+        if (clearAndroidDebugLogs()) {
+            updateAndroidDebugPanel();
+        }
+    };
+    document.getElementById('export-logs-btn').onclick = exportAndroidDebugLogs;
+    
+    logAndroidDebug('Android debug panel created');
+}
+
+// Функция для обновления отладочной панели
+function updateAndroidDebugPanel() {
+    const content = document.getElementById('android-debug-content');
+    if (!content) return;
+    
+    try {
+        const logs = getAndroidDebugLogs();
+        const recentLogs = logs.slice(-15); // Показываем последние 15 логов
+        
+        if (recentLogs.length === 0) {
+            content.innerHTML = '<div style="color: #888;">No logs yet</div>';
+            return;
+        }
+        
+        content.innerHTML = recentLogs.map(log => `
+            <div style="margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 3px;">
+                <div style="color: #b76c4b; font-size: 10px;">${log.timestamp.slice(11, 19)}</div>
+                <div style="margin: 2px 0;">${log.message}</div>
+                ${log.data ? `<div style="color: #aaa; font-size: 10px; word-break: break-all;">${JSON.stringify(log.data, null, 2)}</div>` : ''}
+            </div>
+        `).join('');
+        
+        // Показываем общую статистику
+        const totalLogs = logs.length;
+        const errorLogs = logs.filter(log => log.message.includes('❌')).length;
+        const buttonLogs = logs.filter(log => log.message.includes('button') || log.message.includes('click')).length;
+        
+        const stats = document.createElement('div');
+        stats.style.cssText = 'margin-top: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; font-size: 10px;';
+        stats.innerHTML = `
+            <strong>📊 Stats:</strong> Total: ${totalLogs} | Errors: ${errorLogs} | Button events: ${buttonLogs}
+        `;
+        content.appendChild(stats);
+        
+    } catch (e) {
+        content.innerHTML = `<div style="color: #ff4444;">Error loading logs: ${e.message}</div>`;
+    }
+}
+
+// Инициализация отладочной системы при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    // Создаем отладочную панель только на Android
+    if (/Android/i.test(navigator.userAgent)) {
+        setTimeout(() => {
+            createAndroidDebugPanel();
+            logAndroidDebug('Android debug system initialized');
+        }, 1000);
+    }
+});
+
 // Функция для сокращения текстов в availability-info
 function shortenAvailabilityText(text) {
     if (!text || text === 'N/A') return text;
@@ -94,7 +300,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.95';
+    const CACHE_VERSION = '1.3.100';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -1400,10 +1606,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.97&t=1756284000", image: "images/bakery.svg?v=1.3.97&t=1756284000" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.97&t=1756284000", image: "images/crouasan.svg?v=1.3.97&t=1756284000" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.97&t=1756284000", image: "images/bread1.svg?v=1.3.97&t=1756284000" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.97&t=1756284000", image: "images/cookie.svg?v=1.3.97&t=1756284000" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.100&t=1756284000", image: "images/bakery.svg?v=1.3.100&t=1756284000" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.100&t=1756284000", image: "images/crouasan.svg?v=1.3.100&t=1756284000" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.100&t=1756284000", image: "images/bread1.svg?v=1.3.100&t=1756284000" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.100&t=1756284000", image: "images/cookie.svg?v=1.3.100&t=1756284000" }
     };
 
     await fetchProductsData();
@@ -1975,18 +2181,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (productListElement) {
             productListElement.querySelectorAll('.quantity-controls button').forEach(button => {
                 button.addEventListener('click', (e) => {
+                    // Детальное логирование для Android отладки
+                    logAndroidDebug('🔘 Quantity button clicked (product grid)', {
+                        target: e.target.outerHTML,
+                        currentTarget: e.currentTarget.outerHTML,
+                        buttonElement: e.target.closest('button[data-product-id]')?.outerHTML,
+                        eventType: e.type,
+                        timestamp: Date.now(),
+                        cartState: JSON.parse(JSON.stringify(cart))
+                    });
+                    
                     const clickedButton = e.target.closest('button[data-product-id]');
                     if (!clickedButton) {
+                        logAndroidDebug('❌ Button not found or missing data-product-id', {
+                            target: e.target.outerHTML,
+                            error: 'Кнопка управления количеством не найдена или не имеет data-product-id'
+                        });
                         console.error('ОЧЕНЬ ВАЖНО: Кнопка управления количеством не найдена или не имеет data-product-id. e.target:', e.target);
                         return;
                     }
+                    
                     const productId = clickedButton.dataset.productId;
                     const action = clickedButton.dataset.action;
+                    
+                    logAndroidDebug('✅ Button action identified', {
+                        productId,
+                        action,
+                        buttonData: {
+                            productId: clickedButton.dataset.productId,
+                            action: clickedButton.dataset.action,
+                            className: clickedButton.className,
+                            id: clickedButton.id
+                        }
+                    });
 
                     if (action === 'increase') {
+                        logAndroidDebug('🟢 Increase action triggered', { productId, action });
                         updateProductQuantity(productId, 1);
                     } else if (action === 'decrease') {
+                        logAndroidDebug('🔴 Decrease action triggered', { productId, action });
                         updateProductQuantity(productId, -1);
+                    } else {
+                        logAndroidDebug('❓ Unknown action', { productId, action });
                     }
                 });
             });
@@ -2028,6 +2264,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateProductQuantity(productId, change) {
+        // Детальное логирование для Android отладки
+        logAndroidDebug('updateProductQuantity called', {
+            productId,
+            change,
+            currentCartState: JSON.parse(JSON.stringify(cart)),
+            timestamp: Date.now()
+        });
+        
         let product = null;
         for (const catKey in productsData) {
             product = productsData[catKey].find(p => p.id === productId);
@@ -2035,23 +2279,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!product) {
+            logAndroidDebug('❌ Product not found', { productId });
             console.error('Продукт не найден:', productId);
             return;
         }
 
         if (!cart[productId]) {
             cart[productId] = { ...product, quantity: 0 };
+            logAndroidDebug('🆕 New product added to cart', {
+                productId,
+                productName: product.name,
+                initialQuantity: 0
+            });
         }
 
+        const oldQuantity = cart[productId].quantity;
         cart[productId].quantity += change;
+        const newQuantity = cart[productId].quantity;
+        
+        logAndroidDebug('📊 Quantity updated', {
+            productId,
+            productName: product.name,
+            oldQuantity,
+            change,
+            newQuantity,
+            cartState: JSON.parse(JSON.stringify(cart))
+        });
 
         if (cart[productId].quantity <= 0) {
+            logAndroidDebug('🗑️ Product removed from cart', {
+                productId,
+                productName: product.name,
+                finalQuantity: cart[productId].quantity
+            });
             delete cart[productId];
         }
 
         saveCartWithMetadata(cart);
         updateProductCardUI(productId);
         updateMainButtonCartInfo();
+        
+        logAndroidDebug('✅ updateProductQuantity completed', {
+            productId,
+            finalCartState: JSON.parse(JSON.stringify(cart)),
+            cartKeys: Object.keys(cart)
+        });
     }
 
     function updateProductCardUI(productId) {
@@ -2940,6 +3212,14 @@ function addErrorClearingListeners() {
 
 
     function updateMainButtonCartInfo() {
+        // Детальное логирование для Android отладки
+        logAndroidDebug('updateMainButtonCartInfo called', {
+            currentView: getCurrentView(),
+            cartState: JSON.parse(JSON.stringify(cart)),
+            cartKeys: Object.keys(cart),
+            timestamp: Date.now()
+        });
+        
         const currentView = getCurrentView();
         
         // Update page title
@@ -2950,6 +3230,7 @@ function addErrorClearingListeners() {
         
         // Hide the main button if we're on cart or checkout screens
         if (currentView === 'cart' || currentView === 'checkout') {
+            logAndroidDebug('🚫 Hiding cart button - on cart/checkout screen', { currentView });
             console.log('🔍 Hiding cart button - on cart/checkout screen');
             Telegram.WebApp.MainButton.hide();
             return;
@@ -2958,20 +3239,45 @@ function addErrorClearingListeners() {
         const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
+        logAndroidDebug('📊 Cart calculation', {
+            totalItems,
+            totalPrice,
+            cartItems: Object.values(cart).map(item => ({
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            }))
+        });
+        
         console.log('🔍 Cart items:', totalItems, 'Total price:', totalPrice);
 
         if (totalItems > 0) {
+            const buttonText = `Корзина (${totalItems}) - ${totalPrice.toFixed(2)} р.`;
+            logAndroidDebug('✅ Showing cart button', {
+                buttonText,
+                totalItems,
+                totalPrice
+            });
+            
             console.log('🔍 Showing cart button with:', totalItems, 'items');
-            Telegram.WebApp.MainButton.setText(`Корзина (${totalItems}) - ${totalPrice.toFixed(2)} р.`);
+            Telegram.WebApp.MainButton.setText(buttonText);
             // Устанавливаем коричневый цвет как у кнопок + и - и "Начать покупки"
             Telegram.WebApp.MainButton.setParams({
                 color: '#b76c4b'
             });
             Telegram.WebApp.MainButton.show();
         } else {
+            logAndroidDebug('🚫 Hiding cart button - no items', { totalItems });
             console.log('🔍 Hiding cart button - no items');
             Telegram.WebApp.MainButton.hide();
         }
+        
+        logAndroidDebug('✅ updateMainButtonCartInfo completed', {
+            finalTotalItems: totalItems,
+            finalTotalPrice: totalPrice,
+            buttonVisible: totalItems > 0
+        });
     }
 
     function updateSubmitButtonState() {
@@ -3052,7 +3358,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.97&t=1756284000';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.100&t=1756284000';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
@@ -3277,6 +3583,15 @@ function addErrorClearingListeners() {
         
         if (decreaseButton) {
             decreaseButton.addEventListener('click', (e) => {
+                // Детальное логирование для Android отладки
+                logAndroidDebug('🔴 Decrease button clicked (product screen)', {
+                    productId: e.currentTarget.dataset.productId,
+                    buttonElement: e.currentTarget.outerHTML,
+                    eventType: e.type,
+                    timestamp: Date.now(),
+                    cartState: JSON.parse(JSON.stringify(cart))
+                });
+                
                 e.preventDefault();
                 e.stopPropagation();
                 const productId = e.currentTarget.dataset.productId;
@@ -3285,12 +3600,26 @@ function addErrorClearingListeners() {
                 const quantityDisplay = document.getElementById(`screen-quantity-${productId}`);
                 if (quantityDisplay) {
                     quantityDisplay.value = cart[productId] ? cart[productId].quantity : 0;
+                    logAndroidDebug('📱 Updated product screen quantity display', {
+                        productId,
+                        newValue: quantityDisplay.value,
+                        cartQuantity: cart[productId]?.quantity
+                    });
                 }
             });
         }
         
         if (increaseButton) {
             increaseButton.addEventListener('click', (e) => {
+                // Детальное логирование для Android отладки
+                logAndroidDebug('🟢 Increase button clicked (product screen)', {
+                    productId: e.currentTarget.dataset.productId,
+                    buttonElement: e.currentTarget.outerHTML,
+                    eventType: e.type,
+                    timestamp: Date.now(),
+                    cartState: JSON.parse(JSON.stringify(cart))
+                });
+                
                 e.preventDefault();
                 e.stopPropagation();
                 const productId = e.currentTarget.dataset.productId;
@@ -3299,6 +3628,11 @@ function addErrorClearingListeners() {
                 const quantityDisplay = document.getElementById(`screen-quantity-${productId}`);
                 if (quantityDisplay) {
                     quantityDisplay.value = cart[productId] ? cart[productId].quantity : 0;
+                    logAndroidDebug('📱 Updated product screen quantity display', {
+                        productId,
+                        newValue: quantityDisplay.value,
+                        cartQuantity: cart[productId]?.quantity
+                    });
                 }
             });
         }
