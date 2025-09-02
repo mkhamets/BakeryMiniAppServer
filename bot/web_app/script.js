@@ -1,88 +1,28 @@
 // Инициализация Telegram Web App
+// v1.3.108 - Добавлен кастомный цвет для MainButton
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
 
-/* ======= Reliable web cart button (no flicker) ======= */
-
-// создаём стабильную DOM-кнопку, если её ещё нет
-function initWebCartButton() {
-  if (document.getElementById('web-cart-button')) return;
-
-  const btn = document.createElement('button');
-  btn.id = 'web-cart-button';
-  btn.type = 'button';
-  btn.className = 'web-cart-button hidden'; // класс можно стилизовать в style.css
-  btn.setAttribute('aria-label', 'Открыть корзину');
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    // Открываем корзину через существующую логику
-    try { 
-      // Используем существующий механизм открытия корзины - displayView('cart')
-      if (typeof displayView === 'function') {
-        console.log('Opening cart via displayView...');
-        displayView('cart');
-      } else {
-        // Fallback: просто показываем корзину
-        console.log('Opening cart... (displayView not available)');
-      }
-    } catch (err) { 
-      console.warn('open cart failed', err); 
-    }
-  });
-
-  // добавим в body в самый конец — вне областей, которые могут ре-рендериться
-  document.body.appendChild(btn);
-  console.info('Web cart button initialized');
-}
-
-// Обновляем текст видимой web-кнопки (без hide/show)
-function setWebCartButtonText(buttonText) {
-  const btn = document.getElementById('web-cart-button');
-
-  if (!btn) {
-    console.warn('setWebCartButtonText: web button not found');
-    return false;
-  }
+// Настраиваем цвет Telegram MainButton на коричневый #b76c4b
+function customizeMainButtonColor() {
+  if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.MainButton) return;
   
-  console.log('setWebCartButtonText called with:', buttonText);
-
-  // показываем/скрываем без удаления из DOM
-  if (!buttonText || buttonText.trim() === '' || /Корзина\s*\(0\)/i.test(buttonText)) {
-    console.log('setWebCartButtonText: hiding button - no items or empty text');
-    btn.classList.add('hidden');
-    btn.textContent = '';
-    return true;
-  }
-
-  // самое простое и надёжное обновление: textContent, потом лёгкий трюк для перерисовки
-  btn.classList.remove('hidden');
-
-  // заменяем содержимое безопасно
-  // 1) если старый текст совпадает, делаем двойную запись, чтобы гарантировать repaint
-  const oldText = btn.textContent || '';
-  console.log('setWebCartButtonText: updating button text from', oldText, 'to', buttonText);
-  
-  if (oldText === buttonText) {
-    // небольшая "двухшаговая" запись без hide->show
-    btn.textContent = ''; // кратковременно очищаем
-    requestAnimationFrame(() => {
-      btn.textContent = buttonText;
-      // force paint
-      void btn.offsetHeight;
-      console.log('setWebCartButtonText: button updated via requestAnimationFrame');
+  try {
+    const mb = Telegram.WebApp.MainButton;
+    // Устанавливаем коричневый цвет фона и белый текст
+    mb.setParams({
+      color: '#b76c4b',
+      text_color: '#ffffff'
     });
-  } else {
-    btn.textContent = buttonText;
-    // небольшая подсказка движку: promote to compositing layer & reflow
-    btn.style.willChange = 'transform, opacity';
-    void btn.offsetHeight;
-    // сбросим will-change через таймаут
-    setTimeout(() => { try { btn.style.willChange = ''; } catch (e) {} }, 100);
-    console.log('setWebCartButtonText: button updated directly');
+    console.log('✅ MainButton color customized to brown #b76c4b');
+  } catch (e) {
+    console.warn('Failed to customize MainButton color:', e);
   }
-
-  return true;
 }
+
+/* ======= Web cart button removed - using only Telegram MainButton ======= */
+/* Web cart button functionality removed to avoid conflicts */
+/* MainButton now has custom color #b76c4b and reliable Android updates */
 
 // Надёжное обновление нативной кнопки Telegram (двухшаговый трик для Android)
 function setMainButtonTextReliable(buttonText) {
@@ -90,6 +30,10 @@ function setMainButtonTextReliable(buttonText) {
   try {
     const mb = Telegram.WebApp.MainButton;
     const isAndroid = /Android/i.test(navigator.userAgent || '');
+    
+    // Сначала настраиваем цвет (если еще не настроен)
+    customizeMainButtonColor();
+    
     if (!isAndroid) {
       mb.setText(buttonText);
       mb.show();
@@ -110,9 +54,12 @@ function setMainButtonTextReliable(buttonText) {
   }
 }
 
-// Инициализируем кнопку при старте
+// Инициализируем кастомный цвет MainButton при старте
 document.addEventListener('DOMContentLoaded', () => {
-  try { initWebCartButton(); } catch (e) { console.warn('initWebCartButton error', e); }
+  try { 
+    customizeMainButtonColor(); // Настраиваем цвет MainButton
+    console.log('✅ MainButton color initialized');
+  } catch (e) { console.warn('customizeMainButtonColor error', e); }
 });
 
 // ===== ANDROID DEBUG LOGGING SYSTEM =====
@@ -3623,13 +3570,7 @@ function addErrorClearingListeners() {
             logAndroidDebug('🚫 Hiding cart button - on cart/checkout screen', { currentView });
             console.log('🔍 Hiding cart button - on cart/checkout screen');
             
-            // Принудительно скрываем web-кнопку
-            const webBtn = document.getElementById('web-cart-button');
-            if (webBtn) {
-                webBtn.classList.add('hidden');
-                webBtn.textContent = '';
-                console.log('🔍 Web cart button hidden - on cart/checkout screen');
-            }
+            // Web-кнопка больше не используется
             
             Telegram.WebApp.MainButton.hide();
             return;
@@ -3661,21 +3602,12 @@ function addErrorClearingListeners() {
             
             console.log('🔍 Showing cart button with:', totalItems, 'items');
             
-            // 1) Обновляем стабильную web-кнопку (это увидит пользователь)
-            const webUpdated = setWebCartButtonText(buttonText);
-            logAndroidDebug('🌐 Web elements update result', {
-                buttonText,
-                webUpdated,
-                timestamp: Date.now()
-            });
-
-            // 2) Параллельно пытаемся синхронизировать нативную кнопку без hide->show
+            // Обновляем Telegram MainButton с кастомным цветом и надежными Android-фиксами
             try {
                 setMainButtonTextReliable(buttonText);
                 logAndroidDebug('✅ MainButton updated via Telegram API', { 
                     buttonText, 
                     apiUsed: true, 
-                    webUpdated, 
                     timestamp: Date.now() 
                 });
             } catch (e) {
@@ -3688,13 +3620,7 @@ function addErrorClearingListeners() {
             logAndroidDebug('🚫 Hiding cart button - no items', { totalItems });
             console.log('🔍 Hiding cart button - no items');
             
-            // Принудительно скрываем web-кнопку
-            const webBtn = document.getElementById('web-cart-button');
-            if (webBtn) {
-                webBtn.classList.add('hidden');
-                webBtn.textContent = '';
-                console.log('🔍 Web cart button hidden - no items');
-            }
+            // Web-кнопка больше не используется
             
             Telegram.WebApp.MainButton.hide();
         }
