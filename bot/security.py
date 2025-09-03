@@ -1,6 +1,7 @@
 """
 Bot Security Module
 Provides security functions and monitoring for the Telegram bot
+Updated to integrate with new HMAC security features
 """
 
 import os
@@ -9,6 +10,8 @@ import asyncio
 import aiohttp
 from typing import Dict, Optional, List
 from datetime import datetime, timedelta
+
+from bot.security_manager import security_manager
 
 logger = logging.getLogger(__name__)
 
@@ -198,13 +201,24 @@ async def security_check(bot_token: str) -> Dict:
     results = {
         "webhook_security": await monitor.check_webhook_security(),
         "bot_activity": await monitor.monitor_bot_activity(),
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
+        "hmac_security": {
+            "enabled": True,
+            "algorithm": security_manager.hmac_algorithm,
+            "secret_configured": bool(security_manager.hmac_secret and 
+                                    security_manager.hmac_secret != 'default-secret-key-change-in-production')
+        },
+        "rate_limiting": {
+            "active_limits": len(security_manager.rate_limit_store),
+            "total_requests": sum(len(requests) for requests in security_manager.rate_limit_store.values())
+        }
     }
     
     # Overall security assessment
     overall_secure = (
         results["webhook_security"].get("secure", False) and
-        results["bot_activity"].get("secure", False)
+        results["bot_activity"].get("secure", False) and
+        results["hmac_security"]["secret_configured"]
     )
     
     results["overall_secure"] = overall_secure

@@ -128,11 +128,10 @@ async def load_order_counter():
                         current_month = datetime.datetime.now().month
                         if last_reset_month != current_month:
                             logger.info(f"Месяц в файле ({last_reset_month}) отличается от текущего ({current_month}). "
-                                      f"Сбрасываем счетчик.")
-                            order_counter = 0
-                            last_reset_month = current_month
-                            # Обновляем файл с новым месяцем
-                            await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+                                      f"Счетчик будет сброшен при первом заказе в новом месяце.")
+                            # НЕ сбрасываем счетчик здесь - только при генерации заказа
+                            # last_reset_month остается старым до первого заказа
+                            # Это позволяет сохранить последний счетчик предыдущего месяца
 
                         logger.info(f"Счетчик заказов успешно загружен из {ORDER_COUNTER_FILE}: "
                                    f"{order_counter}, Месяц: {last_reset_month}")
@@ -160,21 +159,17 @@ async def load_order_counter():
 # ИЗМЕНЕНИЕ: Новая функция для сохранения счетчика заказов в файл
 async def save_order_counter(counter_data):
     """Сохраняет счетчик заказов в файл."""
-    async with order_counter_lock:
-        try:
-            logger.info(f"Начинаем сохранение счетчика: {counter_data}")
-            # Создаем директорию, если она не существует
-            os.makedirs(os.path.dirname(ORDER_COUNTER_FILE), exist_ok=True)
-            logger.info(f"Директория создана/проверена: {os.path.dirname(ORDER_COUNTER_FILE)}")
+    try:
+        # Создаем директорию, если она не существует
+        os.makedirs(os.path.dirname(ORDER_COUNTER_FILE), exist_ok=True)
 
-            # Используем синхронную операцию записи в файл
-            with open(ORDER_COUNTER_FILE, 'w', encoding='utf-8') as f:
-                json.dump(counter_data, f, ensure_ascii=False, indent=4)
-            logger.info(f"Счетчик заказов успешно сохранен: {counter_data}")
-        except Exception as e:
-            logger.error(f"Ошибка при сохранении счетчика заказов: {e}")
-            logger.error(f"Тип ошибки: {type(e).__name__}")
-            raise  # Перебрасываем ошибку, чтобы вызывающий код мог ее обработать
+        # Используем синхронную операцию записи в файл
+        with open(ORDER_COUNTER_FILE, 'w', encoding='utf-8') as f:
+            json.dump(counter_data, f, ensure_ascii=False, indent=4)
+        logger.info(f"Счетчик заказов успешно сохранен: {counter_data}")
+    except Exception as e:
+        logger.error(f"Ошибка при сохранении счетчика заказов: {e}")
+        raise  # Перебрасываем ошибку, чтобы вызывающий код мог ее обработать
 
 
 # ИЗМЕНЕНИЕ: Функция generate_order_number теперь асинхронная и работает с файлом
@@ -197,6 +192,12 @@ async def generate_order_number():
                 logger.info(f"Сменился месяц. Сбрасываем счетчик заказов с {order_counter} на 0.")
                 order_counter = 0
                 last_reset_month = current_month
+                # Сохраняем обновленный счетчик с новым месяцем
+                try:
+                    await save_order_counter({'counter': order_counter, 'month': last_reset_month})
+                    logger.info(f"Счетчик сброшен и сохранен для нового месяца: {last_reset_month}")
+                except Exception as e:
+                    logger.error(f"Ошибка при сохранении сброшенного счетчика: {e}")
 
             # Увеличиваем счетчик для нового заказа
             order_counter += 1
@@ -205,20 +206,13 @@ async def generate_order_number():
             # Сохраняем обновленный счетчик в файл
             try:
                 logger.info("Начинаем сохранение счетчика в файл...")
-                # Добавляем таймаут в 5 секунд для операции сохранения
-                await asyncio.wait_for(
-                    save_order_counter({'counter': order_counter, 'month': last_reset_month}),
-                    timeout=5.0
-                )
+                # Убираем таймаут - на Heroku операции могут быть медленными
+                await save_order_counter({'counter': order_counter, 'month': last_reset_month})
                 logger.info(f"Счетчик успешно сохранен в файл: {order_counter}")
-            except asyncio.TimeoutError:
-                logger.error("Таймаут при сохранении счетчика заказов")
-                logger.warning("Продолжаем выполнение без сохранения счетчика")
             except Exception as save_error:
                 logger.error(f"Ошибка при сохранении счетчика: {save_error}")
                 logger.error(f"Тип ошибки: {type(save_error).__name__}")
-                # Продолжаем выполнение даже если не удалось сохранить
-                # Но логируем предупреждение
+                # Продолжаем выполнение даже при ошибке сохранения
                 logger.warning("Продолжаем выполнение без сохранения счетчика")
 
         # Форматируем дату и счетчик
@@ -804,9 +798,12 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
             admin_email_password = os.environ.get("ADMIN_EMAIL_PASSWORD")
             if admin_email_password:
                 logger.info(f"Отправляем email уведомление на {ADMIN_EMAIL}")
-                # Запускаем отправку email в фоновом режиме
-                asyncio.create_task(send_email_notification(ADMIN_EMAIL, email_subject, email_body, "Пекарня Дражина"))
-                logger.info("Задача отправки email создана")
+                # Отправляем email синхронно, чтобы дождаться результата
+                try:
+                    await send_email_notification(ADMIN_EMAIL, email_subject, email_body, "Пекарня Дражина")
+                    logger.info("Email администратору отправлен успешно")
+                except Exception as e:
+                    logger.error(f"Ошибка при отправке email администратору: {e}")
             else:
                 logger.error("Переменная окружения ADMIN_EMAIL_PASSWORD не установлена. "
                             "Email уведомление не будет отправлено.")

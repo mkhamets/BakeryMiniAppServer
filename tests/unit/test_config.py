@@ -8,7 +8,7 @@ import shutil
 # Add the bot directory to the path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'bot'))
 
-from config import BOT_TOKEN, BASE_WEBAPP_URL, ADMIN_CHAT_ID, ADMIN_EMAIL, ADMIN_EMAIL_PASSWORD, SMTP_SERVER
+from config import config, BOT_TOKEN, BASE_WEBAPP_URL, ADMIN_CHAT_ID, ADMIN_EMAIL, ADMIN_EMAIL_PASSWORD, SMTP_SERVER
 
 
 class TestConfig(unittest.TestCase):
@@ -167,6 +167,105 @@ class TestConfig(unittest.TestCase):
             import importlib
             import config
             importlib.reload(config)
+
+
+class TestSecureConfig(unittest.TestCase):
+    """Test cases for SecureConfig class."""
+
+    def setUp(self):
+        """Set up test environment."""
+        self.original_env = os.environ.copy()
+
+    def tearDown(self):
+        """Clean up after tests."""
+        os.environ.clear()
+        os.environ.update(self.original_env)
+
+    @patch.dict(os.environ, {
+        'BOT_TOKEN': '123456:test-token',
+        'ADMIN_CHAT_ID': '123456789',
+        'ADMIN_EMAIL': 'test@example.com',
+        'ADMIN_EMAIL_PASSWORD': 'test-password'
+    })
+    def test_secure_config_initialization(self):
+        """Test SecureConfig initialization with valid environment."""
+        # Clear any existing config module
+        if 'config' in sys.modules:
+            del sys.modules['config']
+        
+        import importlib
+        import config
+        importlib.reload(config)
+        
+        # Test that config instance is created
+        self.assertIsNotNone(config.config)
+        self.assertIsInstance(config.config, config.SecureConfig)
+        
+        # Test basic properties
+        self.assertEqual(config.config.BOT_TOKEN, '123456:test-token')
+        self.assertEqual(config.config.ADMIN_CHAT_ID, 123456789)
+        self.assertEqual(config.config.ADMIN_EMAIL, 'test@example.com')
+
+    def test_secure_config_missing_required_vars(self):
+        """Test SecureConfig fails with missing required environment variables."""
+        # Clear environment
+        os.environ.clear()
+        
+        # Clear any existing config module
+        if 'config' in sys.modules:
+            del sys.modules['config']
+        
+        with self.assertRaises(EnvironmentError):
+            import importlib
+            import config
+            importlib.reload(config)
+
+    @patch.dict(os.environ, {
+        'BOT_TOKEN': '123456:test-token',
+        'ADMIN_CHAT_ID': '123456789',
+        'ADMIN_EMAIL': 'test@example.com',
+        'ADMIN_EMAIL_PASSWORD': 'test-password',
+        'ENABLE_RATE_LIMITING': 'true',
+        'RATE_LIMIT_MAX_REQUESTS': '200',
+        'LOG_LEVEL': 'DEBUG'
+    })
+    def test_secure_config_security_settings(self):
+        """Test security-related configuration settings."""
+        # Clear any existing config module
+        if 'config' in sys.modules:
+            del sys.modules['config']
+        
+        import importlib
+        import config
+        importlib.reload(config)
+        
+        # Test security settings
+        self.assertTrue(config.config.ENABLE_RATE_LIMITING)
+        self.assertEqual(config.config.RATE_LIMIT_MAX_REQUESTS, 200)
+        self.assertEqual(config.config.LOG_LEVEL, 'DEBUG')
+
+    @patch.dict(os.environ, {
+        'BOT_TOKEN': '123456:test-token',
+        'ADMIN_CHAT_ID': '123456789',
+        'ADMIN_EMAIL': 'test@example.com',
+        'ADMIN_EMAIL_PASSWORD': 'test-password'
+    })
+    def test_secure_config_webhook_security_config(self):
+        """Test webhook security configuration method."""
+        # Clear any existing config module
+        if 'config' in sys.modules:
+            del sys.modules['config']
+        
+        import importlib
+        import config
+        importlib.reload(config)
+        
+        webhook_config = config.config.get_webhook_security_config()
+        
+        self.assertIsInstance(webhook_config, dict)
+        self.assertIn('allowed', webhook_config)
+        self.assertIn('trusted_domains', webhook_config)
+        self.assertIn('secret_configured', webhook_config)
 
 
 if __name__ == '__main__':

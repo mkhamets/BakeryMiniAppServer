@@ -1,6 +1,7 @@
 """
 Unit tests for security features.
-Tests security headers, CORS, rate limiting, and other security measures.
+Tests security headers, CORS, rate limiting, HMAC signatures, and other security measures.
+Updated to include new HMAC security features.
 """
 
 import unittest
@@ -8,6 +9,7 @@ import sys
 import os
 import json
 import asyncio
+import time
 from unittest.mock import patch, MagicMock, AsyncMock
 import aiohttp
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
@@ -337,6 +339,76 @@ class TestSecurityHeadersContent(unittest.TestCase):
         # This is a basic test - in a real scenario, we'd extract the policy from the response
         for permission in expected_permissions:
             self.assertTrue(True)  # Placeholder - would check actual policy content
+
+
+class TestHMACSecurity(unittest.TestCase):
+    """Test HMAC signature security features."""
+
+    def setUp(self):
+        """Set up test environment."""
+        self.security_manager = SecurityManager()
+        self.test_data = "test_data_string"
+        self.test_secret = "test_secret_key"
+
+    def test_hmac_signature_generation(self):
+        """Test HMAC signature generation."""
+        signature = self.security_manager.generate_hmac_signature(self.test_data, self.test_secret)
+        
+        # Signature should be base64 encoded
+        self.assertIsInstance(signature, str)
+        self.assertGreater(len(signature), 0)
+        
+        # Same data should generate same signature
+        signature2 = self.security_manager.generate_hmac_signature(self.test_data, self.test_secret)
+        self.assertEqual(signature, signature2)
+
+    def test_hmac_signature_verification(self):
+        """Test HMAC signature verification."""
+        signature = self.security_manager.generate_hmac_signature(self.test_data, self.test_secret)
+        
+        # Valid signature should verify
+        self.assertTrue(self.security_manager.verify_hmac_signature(
+            self.test_data, signature, self.test_secret
+        ))
+        
+        # Invalid signature should fail
+        self.assertFalse(self.security_manager.verify_hmac_signature(
+            self.test_data, "invalid_signature", self.test_secret
+        ))
+        
+        # Different data should fail
+        self.assertFalse(self.security_manager.verify_hmac_signature(
+            "different_data", signature, self.test_secret
+        ))
+
+    def test_auth_token_generation(self):
+        """Test authentication token generation."""
+        token_data = self.security_manager.generate_auth_token()
+        
+        # Token should have required fields
+        self.assertIn("token", token_data)
+        self.assertIn("timestamp", token_data)
+        self.assertIn("expires_in", token_data)
+        
+        # Token should be valid
+        self.assertIsInstance(token_data["token"], str)
+        self.assertIsInstance(token_data["timestamp"], int)
+        self.assertEqual(token_data["expires_in"], 3600)
+
+    def test_timestamp_validation(self):
+        """Test timestamp validation for replay attack prevention."""
+        current_time = int(time.time())
+        
+        # Valid timestamp should pass
+        self.assertTrue(self.security_manager.validate_timestamp(current_time))
+        self.assertTrue(self.security_manager.validate_timestamp(current_time - 100))
+        self.assertTrue(self.security_manager.validate_timestamp(current_time + 100))
+        
+        # Old timestamp should fail
+        self.assertFalse(self.security_manager.validate_timestamp(current_time - 400))
+        
+        # Future timestamp should fail
+        self.assertFalse(self.security_manager.validate_timestamp(current_time + 400))
 
 
 if __name__ == '__main__':

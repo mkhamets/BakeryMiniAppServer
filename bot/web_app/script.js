@@ -1,6 +1,135 @@
 // Инициализация Telegram Web App
+// v1.3.108 - Добавлен кастомный цвет для MainButton
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
+
+// Debug flag to control noisy logs and debug globals
+const DEBUG = true;
+
+// ===== SECURITY CONFIGURATION =====
+// Use Telegram WebApp initData as secret (unique per session)
+function getHMACSecret() {
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) {
+        return Telegram.WebApp.initData;
+    }
+    // Fallback for development
+    return 'development-fallback-secret';
+}
+
+// ===== HMAC SIGNATURE FUNCTIONS =====
+async function generateHMACSignature(data, secret) {
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const messageData = encoder.encode(data);
+    
+    const key = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+    );
+    
+    const signature = await crypto.subtle.sign('HMAC', key, messageData);
+    return btoa(String.fromCharCode(...new Uint8Array(signature)));
+}
+
+async function signRequest(method, path, timestamp) {
+    const requestData = `${method}:${path}:${timestamp}`;
+    const secret = getHMACSecret();
+    return await generateHMACSignature(requestData, secret);
+}
+
+// ===== AUTHENTICATION TOKEN =====
+let authToken = null;
+let tokenExpiry = 0;
+
+async function getAuthToken() {
+    const now = Date.now() / 1000;
+    
+    // Return cached token if still valid
+    if (authToken && now < tokenExpiry) {
+        return authToken;
+    }
+    
+    try {
+        const response = await fetch('/bot-app/api/auth/token');
+        if (!response.ok) {
+            throw new Error(`Token request failed: ${response.status}`);
+        }
+        
+        const tokenData = await response.json();
+        authToken = tokenData.token;
+        tokenExpiry = now + tokenData.expires_in;
+        
+        console.log('✅ Auth token obtained');
+        return authToken;
+    } catch (error) {
+        console.error('❌ Failed to get auth token:', error);
+        return null;
+    }
+}
+
+// Настраиваем цвет Telegram MainButton на коричневый #b76c4b
+function customizeMainButtonColor() {
+  if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.MainButton) return;
+  
+  try {
+    const mb = Telegram.WebApp.MainButton;
+    // Устанавливаем коричневый цвет фона и белый текст
+    mb.setParams({
+      color: '#b76c4b',
+      text_color: '#ffffff'
+    });
+  } catch (e) {
+    console.warn('Failed to customize MainButton color:', e);
+  }
+}
+
+/* ======= Web cart button removed - using only Telegram MainButton ======= */
+/* Web cart button functionality removed to avoid conflicts */
+/* MainButton now has custom color #b76c4b and reliable Android updates */
+
+// Надёжное обновление нативной кнопки Telegram (двухшаговый трик для Android)
+function setMainButtonTextReliable(buttonText) {
+  if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.MainButton) return;
+  try {
+    const mb = Telegram.WebApp.MainButton;
+    const isAndroid = /Android/i.test(navigator.userAgent || '');
+    
+    // Сначала настраиваем цвет (если еще не настроен)
+    customizeMainButtonColor();
+    
+    if (!isAndroid) {
+      mb.setText(buttonText);
+      mb.show();
+      return;
+    }
+    // Android: двойная установка с короткой паузой (без hide/show)
+    const ZWSP = '\u200B'; // если будет проблемой — заменить на '\u00A0'
+    mb.setText(buttonText + ZWSP);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        mb.setText(buttonText);
+        mb.show();
+      }, 8);
+    });
+  } catch (e) {
+    console.warn('setMainButtonTextReliable failed', e);
+    try { Telegram.WebApp.MainButton.setText(buttonText); Telegram.WebApp.MainButton.show(); } catch(_) {}
+  }
+}
+
+// Инициализируем кастомный цвет MainButton при старте
+document.addEventListener('DOMContentLoaded', () => {
+  try { 
+    customizeMainButtonColor(); // Настраиваем цвет MainButton
+  } catch (e) { console.warn('customizeMainButtonColor error', e); }
+});
+
+
+
+// Android Debug System removed
 
 // Функция для сокращения текстов в availability-info
 function shortenAvailabilityText(text) {
@@ -77,7 +206,6 @@ function addAvailabilityAbbreviation(fullText, shortText) {
         customAbbreviations[fullText] = shortText;
         localStorage.setItem('custom_availability_abbreviations', JSON.stringify(customAbbreviations));
         
-        console.log(`✅ Добавлено сокращение: "${fullText}" → "${shortText}"`);
         return true;
     }
     return false;
@@ -94,7 +222,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.95';
+    const CACHE_VERSION = '1.3.108';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -175,7 +303,6 @@ async function invalidateCacheOnUpdate() {
         
         // For mobile devices, use more aggressive cache invalidation
         if (isMobileDevice && isTelegramWebView) {
-            console.log('📱 Mobile Telegram WebApp detected - using aggressive cache strategy');
             
             if (storedVersion !== CACHE_VERSION) {
                 console.log(`🔄 Mobile: App version changed from ${storedVersion} to ${CACHE_VERSION}`);
@@ -201,7 +328,6 @@ async function invalidateCacheOnUpdate() {
         } else {
             // Desktop logic - less aggressive
             if (storedVersion !== CACHE_VERSION) {
-                console.log(`🔄 Desktop: App version changed from ${storedVersion} to ${CACHE_VERSION}`);
                 
                 // Smart clear that preserves cart
                 await clearBrowserCache();
@@ -226,7 +352,6 @@ async function invalidateCacheOnUpdate() {
 async function forceMobileResourceReload() {
     try {
         const timestamp = Date.now();
-        console.log('📱 Forcing mobile resource reload with timestamp:', timestamp);
         
         // Force reload CSS files
         const links = document.querySelectorAll('link[rel="stylesheet"]');
@@ -236,7 +361,6 @@ async function forceMobileResourceReload() {
                 const separator = href.includes('?') ? '&' : '?';
                 const newHref = href + separator + '_mobile_t=' + timestamp;
                 link.setAttribute('href', newHref);
-                console.log('🔄 CSS reloaded:', newHref);
             }
         });
         
@@ -248,7 +372,6 @@ async function forceMobileResourceReload() {
                 const separator = src.includes('?') ? '&' : '?';
                 const newSrc = src + separator + '_mobile_t=' + timestamp;
                 script.setAttribute('src', newSrc);
-                console.log('🔄 JS reloaded:', newSrc);
             }
         });
         
@@ -313,17 +436,35 @@ function forceTelegramCacheClear() {
     }
 }
 
+// Disable Telegram WebApp debug logs
+if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+    // Override console methods to filter out Telegram WebApp logs
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    
+    console.log = function(...args) {
+        const message = args.join(' ');
+        if (!message.includes('[Telegram.WebView]') && !message.includes('postEvent')) {
+            originalLog.apply(console, args);
+        }
+    };
+    
+    console.warn = function(...args) {
+        const message = args.join(' ');
+        if (!message.includes('[Telegram.WebView]') && !message.includes('postEvent')) {
+            originalWarn.apply(console, args);
+        }
+    };
+}
+
 // Initialize cache management on app start
 async function initializeCacheManagement() {
     try {
-        console.log('🚀 Initializing smart cache management...');
-        console.log('📱 Mobile device:', isMobileDevice);
-        console.log('🍎 iOS device:', isIOSDevice);
-        console.log('💬 Telegram WebView:', isTelegramWebView);
+        // Initializing smart cache management
         
         // Mobile-specific initialization
         if (isMobileDevice && isTelegramWebView) {
-            console.log('📱 Mobile Telegram WebView - using aggressive cache strategy');
+            // Mobile Telegram WebView - using aggressive cache strategy
             forceTelegramCacheClear();
         }
         
@@ -331,7 +472,7 @@ async function initializeCacheManagement() {
         if (!document.querySelector('#checkout-form')) {
             await invalidateCacheOnUpdate();
         } else {
-            console.log('🛒 Checkout form detected - skipping cache invalidation to preserve cart');
+            // Checkout form detected - skipping cache invalidation to preserve cart
         }
         
         // Set up periodic cache health check (less frequent for mobile to save battery)
@@ -357,7 +498,7 @@ async function initializeCacheManagement() {
         
         // Service Worker integration removed to fix iOS twitching issues
         
-        console.log('✅ Cache management initialized (Service Worker removed)');
+        // Cache management initialized
     } catch (error) {
         console.error('❌ Error initializing cache management:', error);
     }
@@ -452,7 +593,7 @@ function saveCartWithMetadata(cartData) {
     try {
         const cartWithMetadata = createCartWithMetadata(cartData);
         localStorage.setItem('cart', JSON.stringify(cartWithMetadata));
-        console.log('💾 Cart saved with metadata');
+        // Cart saved with metadata
         return true;
     } catch (error) {
         console.error('❌ Error saving cart:', error);
@@ -1308,8 +1449,7 @@ function collectFormData() {
 // Оборачиваем весь основной код в обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // Debug flag to control noisy logs and debug globals
-    const DEBUG = true;
+    // Debug flag already defined globally
     if (!DEBUG && typeof console !== 'undefined' && console.log) {
         console.log = function(){};
     }
@@ -1400,10 +1540,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.97&t=1756284000", image: "images/bakery.svg?v=1.3.97&t=1756284000" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.97&t=1756284000", image: "images/crouasan.svg?v=1.3.97&t=1756284000" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.97&t=1756284000", image: "images/bread1.svg?v=1.3.97&t=1756284000" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.97&t=1756284000", image: "images/cookie.svg?v=1.3.97&t=1756284000" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.102&t=1756284000", image: "images/bakery.svg?v=1.3.102&t=1756284000" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.102&t=1756284000", image: "images/crouasan.svg?v=1.3.102&t=1756284000" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.102&t=1756284000", image: "images/bread1.svg?v=1.3.102&t=1756284000" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.102&t=1756284000", image: "images/cookie.svg?v=1.3.102&t=1756284000" }
     };
 
     await fetchProductsData();
@@ -1426,14 +1566,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Only refresh if app is active
             if (!document.hidden) {
                 try {
-                    console.log('🔄 Auto-refreshing products data...');
                     const newProductsData = await fetchProductsData();
                     
                     // Check if products data has actually changed
                     const hasChanges = checkProductsDataChanges(previousProductsData, newProductsData);
                     
                     if (hasChanges) {
-                        console.log('🔄 Products data changed, refreshing product grid...');
+                        // Products data changed, refreshing product grid
                         
                         // 🔄 REFRESH PRODUCT GRID IF ON CATEGORY SCREEN
                         const productsContainer = document.getElementById('products-container');
@@ -1441,7 +1580,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // User is on a category screen, refresh the product grid
                             const currentCategory = localStorage.getItem('lastProductCategory');
                             if (currentCategory) {
-                                console.log('🔄 Refreshing product grid for category:', currentCategory);
+                                // Refreshing product grid for category
                                 await loadProducts(currentCategory);
                             }
                         }
@@ -1449,7 +1588,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Update previous data
                         previousProductsData = JSON.parse(JSON.stringify(newProductsData));
                     } else {
-                        console.log('✅ No changes in products data, skipping grid refresh');
+                        // No changes in products data, skipping grid refresh
                     }
                 } catch (error) {
                     console.warn('Auto-refresh failed:', error);
@@ -1457,7 +1596,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 60000); // 1 minute
         
-        console.log('✅ Auto-refresh setup: Cart will refresh every minute when active, grid only when changes detected');
+        // Auto-refresh setup: Cart will refresh every minute when active, grid only when changes detected
     }
     
     // Function to check if products data has changed
@@ -1600,8 +1739,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (mainContainer) mainContainer.scrollTop = 0;
                 if (cartContainer) cartContainer.scrollTop = 0;
             }, 200);
-            
-            console.log('🔧 Scroll to top executed');
+
         } catch (error) {
             console.error('❌ Error during scroll to top:', error);
         }
@@ -1816,7 +1954,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchProductsData() {
         try {
-            const response = await fetch('/bot-app/api/products');
+            // Get authentication token
+            const token = await getAuthToken();
+            if (!token) {
+                throw new Error('Failed to get authentication token');
+            }
+            
+            // Generate timestamp and signature
+            const timestamp = Math.floor(Date.now() / 1000);
+            const path = '/bot-app/api/products';
+            const signature = await signRequest('GET', path, timestamp);
+            
+            // Make signed request
+            const response = await fetch(path, {
+                headers: {
+                    'X-Signature': signature,
+                    'X-Timestamp': timestamp.toString(),
+                    'X-Auth-Token': token,
+                    'X-Telegram-Init-Data': getHMACSecret()
+                }
+            });
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -1839,7 +1997,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadCategories() {
         try {
-            const response = await fetch('/bot-app/api/categories');
+            // Get authentication token
+            const token = await getAuthToken();
+            if (!token) {
+                throw new Error('Failed to get authentication token');
+            }
+            
+            // Generate timestamp and signature
+            const timestamp = Math.floor(Date.now() / 1000);
+            const path = '/bot-app/api/categories';
+            const signature = await signRequest('GET', path, timestamp);
+            
+            // Make signed request
+            const response = await fetch(path, {
+                headers: {
+                    'X-Signature': signature,
+                    'X-Timestamp': timestamp.toString(),
+                    'X-Auth-Token': token,
+                    'X-Telegram-Init-Data': getHMACSecret()
+                }
+            });
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -1975,13 +2153,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (productListElement) {
             productListElement.querySelectorAll('.quantity-controls button').forEach(button => {
                 button.addEventListener('click', (e) => {
+
+                    
                     const clickedButton = e.target.closest('button[data-product-id]');
                     if (!clickedButton) {
                         console.error('ОЧЕНЬ ВАЖНО: Кнопка управления количеством не найдена или не имеет data-product-id. e.target:', e.target);
                         return;
                     }
+                    
                     const productId = clickedButton.dataset.productId;
                     const action = clickedButton.dataset.action;
+                    
+
 
                     if (action === 'increase') {
                         updateProductQuantity(productId, 1);
@@ -2028,6 +2211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateProductQuantity(productId, change) {
+        
         let product = null;
         for (const catKey in productsData) {
             product = productsData[catKey].find(p => p.id === productId);
@@ -2035,6 +2219,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!product) {
+
             console.error('Продукт не найден:', productId);
             return;
         }
@@ -2043,34 +2228,78 @@ document.addEventListener('DOMContentLoaded', async () => {
             cart[productId] = { ...product, quantity: 0 };
         }
 
+        const oldQuantity = cart[productId].quantity;
         cart[productId].quantity += change;
+        const newQuantity = cart[productId].quantity;
 
         if (cart[productId].quantity <= 0) {
             delete cart[productId];
         }
 
         saveCartWithMetadata(cart);
+        
+        // Логирование перед вызовом updateProductCardUI
+        
         updateProductCardUI(productId);
         updateMainButtonCartInfo();
     }
 
+    function forceRedraw(element) {
+        element.style.display = 'none';
+        element.offsetHeight; // триггер reflow
+        element.style.display = '';
+    }
+
     function updateProductCardUI(productId) {
+        // Детальное логирование для Android отладки счетчика товара
+        
         const quantitySpan = document.getElementById(`qty-${productId}`);
         if (quantitySpan) {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
-            quantitySpan.textContent = currentQuantity;
+            const oldText = quantitySpan.textContent;
+            
+            // Принудительное обновление через пересоздание элемента для Android
+            const parentElement = quantitySpan.parentElement;
+            const newQuantitySpan = document.createElement('span');
+            newQuantitySpan.className = quantitySpan.className;
+            newQuantitySpan.id = quantitySpan.id;
+            newQuantitySpan.textContent = currentQuantity;
+            
+            // Заменяем старый элемент новым
+            parentElement.replaceChild(newQuantitySpan, quantitySpan);
+            
+            // Дополнительная проверка - ищем все элементы с таким ID
+            const allElementsWithId = document.querySelectorAll(`#qty-${productId}`);
+            
+            // Принудительное обновление через forceRedraw
+            setTimeout(() => {
+                const updatedSpan = document.getElementById(`qty-${productId}`);
+                if (updatedSpan) {
+                    forceRedraw(updatedSpan);
+                }
+            }, 50);
+            
+
+        } else {
+            // Product card quantity span not found
         }
         
         // Also update product screen counter if it exists
         const productScreenCounter = document.getElementById(`screen-quantity-${productId}`);
         if (productScreenCounter) {
             const currentQuantity = cart[productId] ? cart[productId].quantity : 0;
+            const oldValue = productScreenCounter.value;
             productScreenCounter.value = currentQuantity;
+            
+
+        } else {
+            // Product screen quantity counter not found
         }
         
         if (cartContainer && !cartContainer.classList.contains('hidden')) {
             renderCart();
         }
+
     }
 
 
@@ -2260,7 +2489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // NEW: Function to render disabled product error message
     function renderDisabledProductsError(disabledProducts) {
-        console.log('🔍 Rendering disabled products error for:', disabledProducts.length, 'products');
+        // Rendering disabled products error
         
         // Remove existing error message if it exists
         const existingError = document.getElementById('disabled-products-error');
@@ -2269,7 +2498,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (disabledProducts.length === 0) {
-            console.log('✅ No disabled products, no error message needed');
+            // No disabled products, no error message needed
             return;
         }
 
@@ -2291,17 +2520,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const availabilityInfoContainer = document.getElementById('availability-info-container');
         const cartActionsBottom = document.querySelector('.cart-actions-bottom');
         
-        console.log('🔍 Availability info container:', availabilityInfoContainer);
-        console.log('🔍 Cart actions bottom:', cartActionsBottom);
+        // Availability info container and cart actions bottom
         
         if (availabilityInfoContainer && cartActionsBottom) {
             // Insert AFTER availability info (below it) and BEFORE cart actions
             availabilityInfoContainer.after(errorContainer);
-            console.log('✅ Error message inserted after availability info');
+            // Error message inserted after availability info
         } else if (cartActionsBottom) {
             // Fallback: insert above cart actions if availability info doesn't exist
             cartActionsBottom.parentNode.insertBefore(errorContainer, cartActionsBottom);
-            console.log('✅ Error message inserted above cart actions (fallback)');
+            // Error message inserted above cart actions (fallback)
         } else {
             console.error('❌ Could not find cart-actions-bottom element');
         }
@@ -2396,12 +2624,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (currentView === 'products') {
             const currentCategory = localStorage.getItem('lastProductCategory');
             if (currentCategory) {
-                console.log('🔄 Refreshing product grid after cart clear');
+                // Refreshing product grid after cart clear
                 loadProducts(currentCategory);
             }
         }
         
-        console.log('🗑️ Cart cleared successfully - 2-day persistence system preserved');
+        // Cart cleared successfully - 2-day persistence system preserved
     }
 
     // Manual cache clearing function for debugging/development
@@ -2409,7 +2637,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const success = await clearBrowserCache();
             if (success) {
-                console.log('✅ All caches cleared successfully');
+                // All caches cleared successfully
                 // Optionally show user feedback
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
                     Telegram.WebApp.showAlert('Кеш очищен успешно!');
@@ -2450,7 +2678,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 status.cacheCount = cacheNames.length;
             }
             
-            console.log('📊 Cache Status:', status);
+            // Cache Status
             return status;
         } catch (error) {
             console.error('❌ Error getting cache status:', error);
@@ -2490,27 +2718,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Элемент с ID "back-from-checkout-to-cart" не найден в DOM. Невозможно прикрепить слушатель кликов.');
         }
 
-        console.log('🔍 === FORM INITIALIZATION DEBUG ===');
-        console.log('🔍 checkoutForm element found:', !!checkoutForm);
-        console.log('🔍 checkoutForm element:', checkoutForm);
+        // Form initialization debug
         
         if (checkoutForm) {
-            console.log('✅ Adding submit event listener to checkoutForm');
+            // Adding submit event listener to checkoutForm
             checkoutForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 
-                console.log('🚀 === PLACE ORDER BUTTON CLICKED ===');
-                console.log('📅 Current timestamp:', new Date().toISOString());
+                // Place order button clicked
 
                 // Use unified form data collection
                 const orderDetails = collectFormData();
-                console.log('📋 === COLLECTED FORM DATA ===');
-                console.log('orderDetails:', JSON.stringify(orderDetails, null, 2));
-                console.log('firstName value:', orderDetails.firstName);
-                console.log('lastName value:', orderDetails.lastName);
-                console.log('middleName value:', orderDetails.middleName);
-                console.log('phoneNumber value:', orderDetails.phoneNumber);
-                console.log('email value:', orderDetails.email);
+                // Collected form data
                 
                 // Keep pickup address ID as-is for backend processing
                 // The backend _get_pickup_details function expects the numeric ID
@@ -2523,9 +2742,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Validation is already complete from validateOrderForm()
                 // Just handle the validation result
                 if (!isValid) {
-                    console.log('❌ === FORM VALIDATION FAILED ===');
-                    console.log('🎯 First error field that will get focus:', errorFields[0] ? errorFields[0].field : 'none');
-                    console.log('🎯 First error field element:', errorFields[0] ? errorFields[0].element : 'none');
+                    // Form validation failed
                     // Show errors and focus on first error field
                     showValidationErrors(errorFields, errorMessages);
                     return;
@@ -2538,12 +2755,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (isNaN(totalAmount)) {
                         // Fallback: calculate from cart items
                         totalAmount = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                        console.log('🔄 Using fallback total amount calculation:', totalAmount);
+                        // Using fallback total amount calculation
                     }
                 } catch (error) {
                     // Fallback: calculate from cart items
                     totalAmount = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    console.log('🔄 Using fallback total amount calculation due to error:', totalAmount);
+                    // Using fallback total amount calculation due to error
                 }
                 
                 const courierRadio = document.getElementById('delivery-courier-radio');
@@ -2593,7 +2810,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
 
                 try {
-                    console.log('Отправка заказа:', orderPayload);
+                    // Отправка заказа
                     
                     Telegram.WebApp.sendData(JSON.stringify(orderPayload));
                     
@@ -2601,17 +2818,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const customerData = extractCustomerDataFromForm();
                     if (Object.keys(customerData).length > 0) {
                         saveCustomerDataWithMetadata(customerData);
-                        console.log('💾 Customer data saved for future prepopulation');
+                        // Customer data saved for future prepopulation
                     }
                     
                     // Order sent successfully - clear cart immediately and then close WebApp
-                    console.log('✅ Order sent successfully, clearing cart...');
+                    // Order sent successfully, clearing cart
                     clearCart();
                     
                     // Verify cart was cleared and force clear if needed
                     setTimeout(() => {
                         if (Object.keys(cart).length > 0) {
-                            console.log('🔄 Cart still has items, forcing clear...');
+                            // Cart still has items, forcing clear
                             clearCart();
                         }
                     }, 1000);
@@ -2621,7 +2838,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         try {
                             if (Telegram.WebApp.close) {
                                 Telegram.WebApp.close();
-                                console.log('✅ WebApp closed after successful order completion');
+                                // WebApp closed after successful order completion
                             }
                         } catch (closeError) {
                             console.warn('Could not close WebApp automatically');
@@ -2641,7 +2858,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // No need for separate click handler to avoid double execution
         const submitButton = document.querySelector('.submit-order-button');
         if (submitButton) {
-            console.log('✅ Submit button found, form submission handled by form submit event');
+            // Submit button found, form submission handled by form submit event
         } else {
             console.error('❌ Submit button not found');
         }
@@ -2945,31 +3162,27 @@ function addErrorClearingListeners() {
         // Update page title
         updatePageTitle();
         
-        // Debug logging
-        console.log('🔍 updateMainButtonCartInfo called - currentView:', currentView);
-        
         // Hide the main button if we're on cart or checkout screens
         if (currentView === 'cart' || currentView === 'checkout') {
-            console.log('🔍 Hiding cart button - on cart/checkout screen');
             Telegram.WebApp.MainButton.hide();
             return;
         }
         
         const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        console.log('🔍 Cart items:', totalItems, 'Total price:', totalPrice);
 
         if (totalItems > 0) {
-            console.log('🔍 Showing cart button with:', totalItems, 'items');
-            Telegram.WebApp.MainButton.setText(`Корзина (${totalItems}) - ${totalPrice.toFixed(2)} р.`);
-            // Устанавливаем коричневый цвет как у кнопок + и - и "Начать покупки"
-            Telegram.WebApp.MainButton.setParams({
-                color: '#b76c4b'
-            });
-            Telegram.WebApp.MainButton.show();
+            const buttonText = `Корзина (${totalItems}) - ${totalPrice.toFixed(2)} р.`;
+            
+            // Обновляем Telegram MainButton с кастомным цветом и надежными Android-фиксами
+            try {
+                setMainButtonTextReliable(buttonText);
+            } catch (e) {
+                console.warn('MainButton update failed:', e);
+            }
         } else {
-            console.log('🔍 Hiding cart button - no items');
+            // Web-кнопка больше не используется
+            
             Telegram.WebApp.MainButton.hide();
         }
     }
@@ -3052,7 +3265,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.97&t=1756284000';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.102&t=1756284000';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
@@ -3095,7 +3308,7 @@ function addErrorClearingListeners() {
         startShoppingButton.addEventListener('click', () => {
             // 🔗 ПЕРЕНАПРАВЛЕНИЕ В БОТ ЧАТ С ЗАДЕРЖКОЙ ЗАКРЫТИЯ: Кнопка "Заказать с доставкой" 
             // перенаправляет пользователя в основной чат бота, а затем закрывает WebApp через полсекунды
-            console.log('🔗 Перенаправление в бот чат с задержкой закрытия WebApp');
+            // Перенаправление в бот чат с задержкой закрытия WebApp
             
             // Redirect to bot chat immediately
             try {
@@ -3277,6 +3490,8 @@ function addErrorClearingListeners() {
         
         if (decreaseButton) {
             decreaseButton.addEventListener('click', (e) => {
+                // Детальное логирование для Android отладки
+                
                 e.preventDefault();
                 e.stopPropagation();
                 const productId = e.currentTarget.dataset.productId;
@@ -3291,6 +3506,8 @@ function addErrorClearingListeners() {
         
         if (increaseButton) {
             increaseButton.addEventListener('click', (e) => {
+
+                
                 e.preventDefault();
                 e.stopPropagation();
                 const productId = e.currentTarget.dataset.productId;
@@ -3375,7 +3592,6 @@ function addErrorClearingListeners() {
             // Initialize calendar view
             this.renderCalendar();
             
-            console.log('✅ Classical Calendar initialized');
         }
         
         formatDate(date) {
@@ -3478,9 +3694,7 @@ function addErrorClearingListeners() {
                 this.closeCalendar();
             }, 300);
             
-            console.log('📅 Date selected:', formattedDate);
-            
-            // Do not trigger full form validation here to avoid loops
+
         }
         
         // Month navigation removed - calendar automatically follows current date
@@ -3505,7 +3719,6 @@ function addErrorClearingListeners() {
             this.renderCalendar();
             
             this.calendarOverlay.classList.add('active');
-            console.log('📅 Classical calendar opened - showing month with available dates');
             
             // Prevent body scroll on mobile
             if (isMobileDevice) {
@@ -3515,7 +3728,6 @@ function addErrorClearingListeners() {
         
         closeCalendar() {
             this.calendarOverlay.classList.remove('active');
-            console.log('📅 Classical calendar closed');
             
             // Restore body scroll
             if (isMobileDevice) {
@@ -3580,5 +3792,51 @@ function addErrorClearingListeners() {
             document.title = 'Пекарня Дражина';
         }
     }
+
+    // ===== DIAGNOSTIC FUNCTIONS FOR CART BUTTON DEBUGGING =====
+    
+    // Функция для поиска всех элементов с текстом "Корзина ("
+    function dbg_findCartElements() {
+        const nodes = Array.from(document.querySelectorAll('button, a, span, div'));
+        const found = nodes.filter(el => /\bКорзина\s*\(\d+\)/i.test((el.textContent||'').trim()));
+        console.log('Найдено элементов с текстом "Корзина (N)":', found.length);
+        console.table(found.map(el => ({
+            tag: el.tagName,
+            id: el.id || '(no id)',
+            class: el.className || '(no class)',
+            visible: !!(el.offsetParent !== null),
+            connected: el.isConnected,
+            html: (el.outerHTML || '').slice(0,200)
+        })));
+        return found;
+    }
+
+    // Функция для наблюдения за изменениями DOM узлов "Корзина"
+    function watchCartNodeChanges() {
+        const mo = new MutationObserver(muts => {
+            muts.forEach(m => {
+                m.addedNodes.forEach(n => {
+                    try {
+                        if (n.nodeType===1 && /\bКорзина\s*\(\d+\)/i.test(n.textContent||'')) {
+                            console.log('Добавлен новый узел "Корзина":', n, 'visible=', n.offsetParent !== null);
+                        }
+                    } catch(e) {}
+                });
+                m.removedNodes.forEach(n => {
+                    try {
+                        if (n.nodeType===1 && /\bКорзина\s*\(\d+\)/i.test(n.textContent||'')) {
+                            console.log('Удалён узел "Корзина":', n);
+                        }
+                    } catch(e) {}
+                });
+            });
+        });
+        mo.observe(document.body, {childList: true, subtree: true});
+        window.__cartNodeWatcher = mo;
+    }
+
+    // Делаем функции доступными глобально для отладки
+    window.dbg_findCartElements = dbg_findCartElements;
+    window.watchCartNodeChanges = watchCartNodeChanges;
 
 });
