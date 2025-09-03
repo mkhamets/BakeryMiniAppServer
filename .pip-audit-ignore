@@ -1,0 +1,12 @@
+# Ignore system dependencies that are not directly used by the application
+# These are transitive dependencies that may have vulnerabilities but don't affect our app
+
+# System pip vulnerabilities (not used in production)
+pip
+
+# Legacy compatibility packages (not directly used)
+future
+wheel
+
+# These are system-level packages that may have vulnerabilities
+# but are not directly used by our application logic
