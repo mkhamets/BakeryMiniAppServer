@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 # Add the bot directory to the path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'bot'))
 
-from keyboards import generate_main_menu, BASE_WEBAPP_URL
+from bot.keyboards import generate_main_menu, BASE_WEBAPP_URL
 
 
 class TestKeyboards(unittest.TestCase):
@@ -22,22 +22,17 @@ class TestKeyboards(unittest.TestCase):
         """Test main menu generation with empty cart."""
         keyboard = generate_main_menu(cart_items_count=0)
         
-        # Check keyboard type
+        # Check keyboard type (should be InlineKeyboardMarkup)
         self.assertIsNotNone(keyboard)
-        
-        # Check keyboard properties
-        self.assertTrue(keyboard.resize_keyboard)
-        self.assertTrue(keyboard.is_persistent)
-        self.assertFalse(keyboard.one_time_keyboard)
-        self.assertEqual(keyboard.input_field_placeholder, "Используйте меню ⬇️")
+        self.assertTrue(hasattr(keyboard, 'inline_keyboard'))
         
         # Check keyboard structure
-        self.assertIsInstance(keyboard.keyboard, list)
-        self.assertGreater(len(keyboard.keyboard), 0)
+        self.assertIsInstance(keyboard.inline_keyboard, list)
+        self.assertGreaterEqual(len(keyboard.inline_keyboard), 3)
         
         # Check that cart button doesn't show count when empty
         cart_button = None
-        for row in keyboard.keyboard:
+        for row in keyboard.inline_keyboard:
             for button in row:
                 if "🛒 Проверить корзину" in button.text:
                     cart_button = button
@@ -53,9 +48,17 @@ class TestKeyboards(unittest.TestCase):
         """Test main menu generation with items in cart."""
         keyboard = generate_main_menu(cart_items_count=3)
         
+        # Check keyboard type (should be InlineKeyboardMarkup)
+        self.assertIsNotNone(keyboard)
+        self.assertTrue(hasattr(keyboard, 'inline_keyboard'))
+        
+        # Check keyboard structure
+        self.assertIsInstance(keyboard.inline_keyboard, list)
+        self.assertGreaterEqual(len(keyboard.inline_keyboard), 3)
+        
         # Check that cart button shows count
         cart_button = None
-        for row in keyboard.keyboard:
+        for row in keyboard.inline_keyboard:
             for button in row:
                 if "🛒 Проверить корзину" in button.text:
                     cart_button = button
@@ -71,7 +74,7 @@ class TestKeyboards(unittest.TestCase):
         keyboard = generate_main_menu(cart_items_count=99)
         
         cart_button = None
-        for row in keyboard.keyboard:
+        for row in keyboard.inline_keyboard:
             for button in row:
                 if "🛒 Проверить корзину" in button.text:
                     cart_button = button
@@ -87,7 +90,7 @@ class TestKeyboards(unittest.TestCase):
         keyboard = generate_main_menu()
         
         menu_button = None
-        for row in keyboard.keyboard:
+        for row in keyboard.inline_keyboard:
             for button in row:
                 if "Наше меню" in button.text:
                     menu_button = button
@@ -104,7 +107,7 @@ class TestKeyboards(unittest.TestCase):
         keyboard = generate_main_menu()
         
         cart_button = None
-        for row in keyboard.keyboard:
+        for row in keyboard.inline_keyboard:
             for button in row:
                 if "🛒 Проверить корзину" in button.text:
                     cart_button = button
@@ -121,11 +124,11 @@ class TestKeyboards(unittest.TestCase):
         keyboard = generate_main_menu()
         
         # Check that we have the expected number of rows
-        self.assertGreaterEqual(len(keyboard.keyboard), 3)
+        self.assertGreaterEqual(len(keyboard.inline_keyboard), 3)
         
         # Check for required buttons
         button_texts = []
-        for row in keyboard.keyboard:
+        for row in keyboard.inline_keyboard:
             for button in row:
                 button_texts.append(button.text)
         
@@ -146,7 +149,7 @@ class TestKeyboards(unittest.TestCase):
         keyboard = generate_main_menu()
         
         webapp_buttons = []
-        for row in keyboard.keyboard:
+        for row in keyboard.inline_keyboard:
             for button in row:
                 if hasattr(button, 'web_app') and button.web_app:
                     webapp_buttons.append(button)

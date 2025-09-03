@@ -12,7 +12,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from bot.api_server import (
     load_products_data_for_api, get_products_for_webapp,
-    get_categories_for_webapp, serve_main_app_page, setup_api_server
+    get_categories_for_webapp, serve_main_app_page, setup_api_server,
+    generate_hmac_signature, verify_hmac_signature, generate_auth_token,
+    check_rate_limit, get_auth_token
 )
 
 
@@ -294,6 +296,66 @@ class TestAPIServerErrorHandling(unittest.TestCase):
 
         with self.assertRaises(FileNotFoundError):
             await serve_main_app_page(request)
+
+
+class TestAPISecurity(unittest.TestCase):
+    """Test cases for API security features."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.test_secret = "test-secret-key"
+        self.test_data = "test-data-string"
+
+    def test_generate_hmac_signature(self):
+        """Test HMAC signature generation."""
+        signature = generate_hmac_signature(self.test_data, self.test_secret)
+        
+        # Signature should be base64 encoded
+        self.assertIsInstance(signature, str)
+        self.assertGreater(len(signature), 0)
+        
+        # Same data should generate same signature
+        signature2 = generate_hmac_signature(self.test_data, self.test_secret)
+        self.assertEqual(signature, signature2)
+
+    def test_verify_hmac_signature(self):
+        """Test HMAC signature verification."""
+        signature = generate_hmac_signature(self.test_data, self.test_secret)
+        
+        # Valid signature should verify
+        self.assertTrue(verify_hmac_signature(self.test_data, signature, self.test_secret))
+        
+        # Invalid signature should fail
+        self.assertFalse(verify_hmac_signature(self.test_data, "invalid_signature", self.test_secret))
+        
+        # Different data should fail
+        self.assertFalse(verify_hmac_signature("different_data", signature, self.test_secret))
+
+    def test_generate_auth_token(self):
+        """Test authentication token generation."""
+        token_data = generate_auth_token()
+        
+        # Token should have required fields
+        self.assertIn("token", token_data)
+        self.assertIn("timestamp", token_data)
+        self.assertIn("expires_in", token_data)
+        
+        # Token should be valid
+        self.assertIsInstance(token_data["token"], str)
+        self.assertIsInstance(token_data["timestamp"], int)
+        self.assertEqual(token_data["expires_in"], 3600)
+
+    def test_check_rate_limit(self):
+        """Test rate limiting functionality."""
+        test_ip = "192.168.1.1"
+        
+        # First few requests should be allowed
+        for i in range(5):
+            self.assertTrue(check_rate_limit(test_ip))
+        
+        # After many requests, should still be allowed (rate limit is per hour)
+        # This test depends on the actual rate limit implementation
+        self.assertTrue(check_rate_limit(test_ip))
 
 
 if __name__ == '__main__':
