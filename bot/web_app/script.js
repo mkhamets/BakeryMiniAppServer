@@ -372,6 +372,27 @@ function forceTelegramCacheClear() {
     }
 }
 
+// Disable Telegram WebApp debug logs
+if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+    // Override console methods to filter out Telegram WebApp logs
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    
+    console.log = function(...args) {
+        const message = args.join(' ');
+        if (!message.includes('[Telegram.WebView]') && !message.includes('postEvent')) {
+            originalLog.apply(console, args);
+        }
+    };
+    
+    console.warn = function(...args) {
+        const message = args.join(' ');
+        if (!message.includes('[Telegram.WebView]') && !message.includes('postEvent')) {
+            originalWarn.apply(console, args);
+        }
+    };
+}
+
 // Initialize cache management on app start
 async function initializeCacheManagement() {
     try {
