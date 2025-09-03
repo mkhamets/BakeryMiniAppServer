@@ -6,6 +6,64 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 // Debug flag to control noisy logs and debug globals
 const DEBUG = true;
 
+// ===== SECURITY CONFIGURATION =====
+// HMAC secret key (should match server-side)
+const HMAC_SECRET = 'default-secret-key-change-in-production';
+const HMAC_ALGORITHM = 'SHA-256';
+
+// ===== HMAC SIGNATURE FUNCTIONS =====
+async function generateHMACSignature(data, secret) {
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const messageData = encoder.encode(data);
+    
+    const key = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+    );
+    
+    const signature = await crypto.subtle.sign('HMAC', key, messageData);
+    return btoa(String.fromCharCode(...new Uint8Array(signature)));
+}
+
+async function signRequest(method, path, timestamp) {
+    const requestData = `${method}:${path}:${timestamp}`;
+    return await generateHMACSignature(requestData, HMAC_SECRET);
+}
+
+// ===== AUTHENTICATION TOKEN =====
+let authToken = null;
+let tokenExpiry = 0;
+
+async function getAuthToken() {
+    const now = Date.now() / 1000;
+    
+    // Return cached token if still valid
+    if (authToken && now < tokenExpiry) {
+        return authToken;
+    }
+    
+    try {
+        const response = await fetch('/bot-app/api/auth/token');
+        if (!response.ok) {
+            throw new Error(`Token request failed: ${response.status}`);
+        }
+        
+        const tokenData = await response.json();
+        authToken = tokenData.token;
+        tokenExpiry = now + tokenData.expires_in;
+        
+        console.log('✅ Auth token obtained');
+        return authToken;
+    } catch (error) {
+        console.error('❌ Failed to get auth token:', error);
+        return null;
+    }
+}
+
 // Настраиваем цвет Telegram MainButton на коричневый #b76c4b
 function customizeMainButtonColor() {
   if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.MainButton) return;
@@ -1890,7 +1948,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchProductsData() {
         try {
-            const response = await fetch('/bot-app/api/products');
+            // Get authentication token
+            const token = await getAuthToken();
+            if (!token) {
+                throw new Error('Failed to get authentication token');
+            }
+            
+            // Generate timestamp and signature
+            const timestamp = Math.floor(Date.now() / 1000);
+            const path = '/bot-app/api/products';
+            const signature = await signRequest('GET', path, timestamp);
+            
+            // Make signed request
+            const response = await fetch(path, {
+                headers: {
+                    'X-Signature': signature,
+                    'X-Timestamp': timestamp.toString(),
+                    'X-Auth-Token': token
+                }
+            });
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -1913,7 +1990,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadCategories() {
         try {
-            const response = await fetch('/bot-app/api/categories');
+            // Get authentication token
+            const token = await getAuthToken();
+            if (!token) {
+                throw new Error('Failed to get authentication token');
+            }
+            
+            // Generate timestamp and signature
+            const timestamp = Math.floor(Date.now() / 1000);
+            const path = '/bot-app/api/categories';
+            const signature = await signRequest('GET', path, timestamp);
+            
+            // Make signed request
+            const response = await fetch(path, {
+                headers: {
+                    'X-Signature': signature,
+                    'X-Timestamp': timestamp.toString(),
+                    'X-Auth-Token': token
+                }
+            });
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

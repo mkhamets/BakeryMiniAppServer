@@ -2,6 +2,9 @@ import json
 import logging
 import os
 import time
+import hmac
+import hashlib
+import base64
 from aiohttp import web
 import aiohttp_cors
 from collections import defaultdict
@@ -18,6 +21,83 @@ if not logger.handlers:
 # Путь к файлу с данными о продуктах
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRODUCTS_DATA_FILE = os.path.join(BASE_DIR, 'data', 'products_scraped.json')
+
+# ===== SECURITY CONFIGURATION =====
+# HMAC secret key for request signing (should be in environment variables)
+HMAC_SECRET = os.environ.get('HMAC_SECRET', 'default-secret-key-change-in-production')
+HMAC_ALGORITHM = 'sha256'
+
+# Rate limiting configuration
+RATE_LIMIT_REQUESTS_PER_HOUR = 100  # Max requests per hour per IP
+RATE_LIMIT_BLOCK_DURATION = 3600    # Block duration in seconds (1 hour)
+
+# In-memory storage for rate limiting (in production, use Redis)
+rate_limit_storage = defaultdict(list)
+
+# ===== HMAC SIGNATURE FUNCTIONS =====
+def generate_hmac_signature(data: str, secret: str) -> str:
+    """Generate HMAC signature for data"""
+    signature = hmac.new(
+        secret.encode('utf-8'),
+        data.encode('utf-8'),
+        hashlib.sha256
+    ).digest()
+    return base64.b64encode(signature).decode('utf-8')
+
+def verify_hmac_signature(data: str, signature: str, secret: str) -> bool:
+    """Verify HMAC signature"""
+    expected_signature = generate_hmac_signature(data, secret)
+    return hmac.compare_digest(signature, expected_signature)
+
+# ===== RATE LIMITING FUNCTIONS =====
+def check_rate_limit(ip_address: str) -> bool:
+    """Check if IP address is within rate limits"""
+    current_time = time.time()
+    
+    # Clean old entries
+    rate_limit_storage[ip_address] = [
+        timestamp for timestamp in rate_limit_storage[ip_address]
+        if current_time - timestamp < 3600  # Keep only last hour
+    ]
+    
+    # Check if limit exceeded
+    if len(rate_limit_storage[ip_address]) >= RATE_LIMIT_REQUESTS_PER_HOUR:
+        return False
+    
+    # Add current request
+    rate_limit_storage[ip_address].append(current_time)
+    return True
+
+# ===== TOKEN GENERATION =====
+def generate_auth_token() -> dict:
+    """Generate authentication token for client"""
+    timestamp = int(time.time())
+    token_data = f"auth:{timestamp}"
+    signature = generate_hmac_signature(token_data, HMAC_SECRET)
+    
+    return {
+        "token": signature,
+        "timestamp": timestamp,
+        "expires_in": 3600  # 1 hour
+    }
+
+async def get_auth_token(request):
+    """Generate authentication token for client"""
+    client_ip = request.remote
+    
+    # Basic rate limiting for token requests (more strict)
+    if not check_rate_limit(f"{client_ip}:token"):
+        logger.warning(f"API: Token rate limit exceeded for IP {client_ip}")
+        return web.json_response({"error": "Token rate limit exceeded"}, status=429)
+    
+    token_data = generate_auth_token()
+    logger.info(f"API: Generated auth token for IP {client_ip}")
+    
+    return web.json_response(token_data, headers={
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    })
 
 # Путь к директории с файлами Web App
 WEB_APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web_app')
@@ -82,9 +162,45 @@ async def check_api_rate_limit(request, action: str = "api_request") -> bool:
 
 async def get_products_for_webapp(request):
     """Отдает данные о продуктах для Web App, с возможностью фильтрации по категории."""
-    # Check rate limiting
-    if not await check_api_rate_limit(request, "get_products"):
+    
+    # ===== RATE LIMITING =====
+    client_ip = request.remote
+    if not check_rate_limit(client_ip):
+        logger.warning(f"API: Rate limit exceeded for IP {client_ip}")
         return web.json_response({"error": "Rate limit exceeded"}, status=429, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
+    
+    # ===== HMAC SIGNATURE VERIFICATION =====
+    signature = request.headers.get('X-Signature')
+    timestamp = request.headers.get('X-Timestamp')
+    
+    if not signature or not timestamp:
+        logger.warning(f"API: Missing signature or timestamp from {client_ip}")
+        return web.json_response({"error": "Missing signature"}, status=403, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
+    
+    # Check timestamp (prevent replay attacks)
+    current_time = int(time.time())
+    request_time = int(timestamp)
+    if abs(current_time - request_time) > 300:  # 5 minutes tolerance
+        logger.warning(f"API: Timestamp too old from {client_ip}")
+        return web.json_response({"error": "Request expired"}, status=403, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
+    
+    # Verify signature
+    request_data = f"{request.method}:{request.path}:{timestamp}"
+    if not verify_hmac_signature(request_data, signature, HMAC_SECRET):
+        logger.warning(f"API: Invalid signature from {client_ip}")
+        return web.json_response({"error": "Invalid signature"}, status=403, headers={
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
             'Expires': '0'
@@ -183,6 +299,9 @@ async def setup_api_server():
     # 2. Маршрут для получения категорий
     # ИЗМЕНЕНО: Добавлен префикс '/bot-app'
     app.router.add_get('/bot-app/api/categories', get_categories_for_webapp)
+    
+    # 3. Маршрут для получения токена аутентификации
+    app.router.add_get('/bot-app/api/auth/token', get_auth_token)
 
     # 3. Маршрут для главной страницы Web App
     app.router.add_get('/bot-app/', serve_main_app_page)
