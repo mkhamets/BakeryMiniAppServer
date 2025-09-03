@@ -65,10 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// Android Debug System removed - creating stub function to prevent errors
-function logAndroidDebug(message, data = null) {
-  // Stub function - does nothing
-}
+// Android Debug System removed
 
 // Функция для сокращения текстов в availability-info
 function shortenAvailabilityText(text) {
@@ -145,7 +142,6 @@ function addAvailabilityAbbreviation(fullText, shortText) {
         customAbbreviations[fullText] = shortText;
         localStorage.setItem('custom_availability_abbreviations', JSON.stringify(customAbbreviations));
         
-        console.log(`✅ Добавлено сокращение: "${fullText}" → "${shortText}"`);
         return true;
     }
     return false;
@@ -243,7 +239,6 @@ async function invalidateCacheOnUpdate() {
         
         // For mobile devices, use more aggressive cache invalidation
         if (isMobileDevice && isTelegramWebView) {
-            console.log('📱 Mobile Telegram WebApp detected - using aggressive cache strategy');
             
             if (storedVersion !== CACHE_VERSION) {
                 console.log(`🔄 Mobile: App version changed from ${storedVersion} to ${CACHE_VERSION}`);
@@ -269,7 +264,6 @@ async function invalidateCacheOnUpdate() {
         } else {
             // Desktop logic - less aggressive
             if (storedVersion !== CACHE_VERSION) {
-                console.log(`🔄 Desktop: App version changed from ${storedVersion} to ${CACHE_VERSION}`);
                 
                 // Smart clear that preserves cart
                 await clearBrowserCache();
@@ -294,7 +288,6 @@ async function invalidateCacheOnUpdate() {
 async function forceMobileResourceReload() {
     try {
         const timestamp = Date.now();
-        console.log('📱 Forcing mobile resource reload with timestamp:', timestamp);
         
         // Force reload CSS files
         const links = document.querySelectorAll('link[rel="stylesheet"]');
@@ -304,7 +297,6 @@ async function forceMobileResourceReload() {
                 const separator = href.includes('?') ? '&' : '?';
                 const newHref = href + separator + '_mobile_t=' + timestamp;
                 link.setAttribute('href', newHref);
-                console.log('🔄 CSS reloaded:', newHref);
             }
         });
         
@@ -316,7 +308,6 @@ async function forceMobileResourceReload() {
                 const separator = src.includes('?') ? '&' : '?';
                 const newSrc = src + separator + '_mobile_t=' + timestamp;
                 script.setAttribute('src', newSrc);
-                console.log('🔄 JS reloaded:', newSrc);
             }
         });
         
@@ -1493,7 +1484,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Only refresh if app is active
             if (!document.hidden) {
                 try {
-                    console.log('🔄 Auto-refreshing products data...');
                     const newProductsData = await fetchProductsData();
                     
                     // Check if products data has actually changed
@@ -1667,8 +1657,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (mainContainer) mainContainer.scrollTop = 0;
                 if (cartContainer) cartContainer.scrollTop = 0;
             }, 200);
-            
-            console.log('🔧 Scroll to top executed');
+
         } catch (error) {
             console.error('❌ Error during scroll to top:', error);
         }
@@ -2108,60 +2097,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!product) {
-            logAndroidDebug('❌ Product not found', { productId });
+
             console.error('Продукт не найден:', productId);
             return;
         }
 
         if (!cart[productId]) {
             cart[productId] = { ...product, quantity: 0 };
-            logAndroidDebug('🆕 New product added to cart', {
-                productId,
-                productName: product.name,
-                initialQuantity: 0
-            });
         }
 
         const oldQuantity = cart[productId].quantity;
         cart[productId].quantity += change;
         const newQuantity = cart[productId].quantity;
-        
-        logAndroidDebug('📊 Quantity updated', {
-            productId,
-            productName: product.name,
-            oldQuantity,
-            change,
-            newQuantity,
-            cartState: JSON.parse(JSON.stringify(cart))
-        });
 
         if (cart[productId].quantity <= 0) {
-            logAndroidDebug('🗑️ Product removed from cart', {
-                productId,
-                productName: product.name,
-                finalQuantity: cart[productId].quantity
-            });
             delete cart[productId];
         }
 
         saveCartWithMetadata(cart);
         
         // Логирование перед вызовом updateProductCardUI
-        logAndroidDebug('🚀 About to call updateProductCardUI', {
-            productId,
-            cartQuantity: cart[productId]?.quantity || 0,
-            cartState: JSON.parse(JSON.stringify(cart)),
-            timestamp: Date.now()
-        });
         
         updateProductCardUI(productId);
         updateMainButtonCartInfo();
-        
-        logAndroidDebug('✅ updateProductQuantity completed', {
-            productId,
-            finalCartState: JSON.parse(JSON.stringify(cart)),
-            cartKeys: Object.keys(cart)
-        });
     }
 
     function forceRedraw(element) {
@@ -2172,12 +2130,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateProductCardUI(productId) {
         // Детальное логирование для Android отладки счетчика товара
-        logAndroidDebug('🔧 updateProductCardUI called', {
-            productId,
-            cartQuantity: cart[productId]?.quantity || 0,
-            cartState: JSON.parse(JSON.stringify(cart)),
-            timestamp: Date.now()
-        });
         
         const quantitySpan = document.getElementById(`qty-${productId}`);
         if (quantitySpan) {
@@ -2196,45 +2148,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Дополнительная проверка - ищем все элементы с таким ID
             const allElementsWithId = document.querySelectorAll(`#qty-${productId}`);
-            logAndroidDebug('🔍 Found all elements with this ID', {
-                productId,
-                totalElements: allElementsWithId.length,
-                elements: Array.from(allElementsWithId).map(el => ({
-                    text: el.textContent,
-                    html: el.outerHTML,
-                    isVisible: el.offsetParent !== null
-                }))
-            });
             
             // Принудительное обновление через forceRedraw
             setTimeout(() => {
                 const updatedSpan = document.getElementById(`qty-${productId}`);
                 if (updatedSpan) {
                     forceRedraw(updatedSpan);
-                    logAndroidDebug('🔄 ForceRedraw applied', {
-                        productId,
-                        quantity: currentQuantity,
-                        elementHTML: updatedSpan.outerHTML,
-                        timestamp: Date.now()
-                    });
                 }
             }, 50);
             
-            logAndroidDebug('📱 Product card quantity updated (forced recreation)', {
-                productId,
-                oldText,
-                newText: currentQuantity,
-                elementFound: true,
-                elementId: `qty-${productId}`,
-                oldElementHTML: quantitySpan.outerHTML,
-                newElementHTML: newQuantitySpan.outerHTML
-            });
+
         } else {
-            logAndroidDebug('❌ Product card quantity span not found', {
-                productId,
-                searchedId: `qty-${productId}`,
-                availableElements: document.querySelectorAll('[id^="qty-"]').length
-            });
+            // Product card quantity span not found
         }
         
         // Also update product screen counter if it exists
@@ -2244,29 +2169,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const oldValue = productScreenCounter.value;
             productScreenCounter.value = currentQuantity;
             
-            logAndroidDebug('📱 Product screen quantity updated', {
-                productId,
-                oldValue,
-                newValue: currentQuantity,
-                elementFound: true,
-                elementId: `screen-quantity-${productId}`,
-                elementHTML: productScreenCounter.outerHTML
-            });
+
         } else {
-            logAndroidDebug('ℹ️ Product screen quantity counter not found', {
-                productId,
-                searchedId: `screen-quantity-${productId}`
-            });
+            // Product screen quantity counter not found
         }
         
         if (cartContainer && !cartContainer.classList.contains('hidden')) {
             renderCart();
         }
-        
-        logAndroidDebug('✅ updateProductCardUI completed', {
-            productId,
-            finalCartQuantity: cart[productId]?.quantity || 0
-        });
+
     }
 
 
@@ -3470,13 +3381,6 @@ function addErrorClearingListeners() {
         if (decreaseButton) {
             decreaseButton.addEventListener('click', (e) => {
                 // Детальное логирование для Android отладки
-                logAndroidDebug('🔴 Decrease button clicked (product screen)', {
-                    productId: e.currentTarget.dataset.productId,
-                    buttonElement: e.currentTarget.outerHTML,
-                    eventType: e.type,
-                    timestamp: Date.now(),
-                    cartState: JSON.parse(JSON.stringify(cart))
-                });
                 
                 e.preventDefault();
                 e.stopPropagation();
@@ -3578,7 +3482,6 @@ function addErrorClearingListeners() {
             // Initialize calendar view
             this.renderCalendar();
             
-            console.log('✅ Classical Calendar initialized');
         }
         
         formatDate(date) {
@@ -3681,9 +3584,7 @@ function addErrorClearingListeners() {
                 this.closeCalendar();
             }, 300);
             
-            console.log('📅 Date selected:', formattedDate);
-            
-            // Do not trigger full form validation here to avoid loops
+
         }
         
         // Month navigation removed - calendar automatically follows current date
@@ -3708,7 +3609,6 @@ function addErrorClearingListeners() {
             this.renderCalendar();
             
             this.calendarOverlay.classList.add('active');
-            console.log('📅 Classical calendar opened - showing month with available dates');
             
             // Prevent body scroll on mobile
             if (isMobileDevice) {
@@ -3718,7 +3618,6 @@ function addErrorClearingListeners() {
         
         closeCalendar() {
             this.calendarOverlay.classList.remove('active');
-            console.log('📅 Classical calendar closed');
             
             // Restore body scroll
             if (isMobileDevice) {
@@ -3823,7 +3722,6 @@ function addErrorClearingListeners() {
             });
         });
         mo.observe(document.body, {childList: true, subtree: true});
-        console.log('Started watching DOM changes for "Корзина" nodes (MutationObserver).');
         window.__cartNodeWatcher = mo;
     }
 
