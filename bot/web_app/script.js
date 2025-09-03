@@ -7,9 +7,14 @@ Telegram.WebApp.expand(); // Разворачиваем Web App на весь э
 const DEBUG = true;
 
 // ===== SECURITY CONFIGURATION =====
-// HMAC secret key (should match server-side)
-const HMAC_SECRET = 'default-secret-key-change-in-production';
-const HMAC_ALGORITHM = 'SHA-256';
+// Use Telegram WebApp initData as secret (unique per session)
+function getHMACSecret() {
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) {
+        return Telegram.WebApp.initData;
+    }
+    // Fallback for development
+    return 'development-fallback-secret';
+}
 
 // ===== HMAC SIGNATURE FUNCTIONS =====
 async function generateHMACSignature(data, secret) {
@@ -31,7 +36,8 @@ async function generateHMACSignature(data, secret) {
 
 async function signRequest(method, path, timestamp) {
     const requestData = `${method}:${path}:${timestamp}`;
-    return await generateHMACSignature(requestData, HMAC_SECRET);
+    const secret = getHMACSecret();
+    return await generateHMACSignature(requestData, secret);
 }
 
 // ===== AUTHENTICATION TOKEN =====
@@ -1964,7 +1970,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {
                     'X-Signature': signature,
                     'X-Timestamp': timestamp.toString(),
-                    'X-Auth-Token': token
+                    'X-Auth-Token': token,
+                    'X-Telegram-Init-Data': getHMACSecret()
                 }
             });
             
@@ -2006,7 +2013,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {
                     'X-Signature': signature,
                     'X-Timestamp': timestamp.toString(),
-                    'X-Auth-Token': token
+                    'X-Auth-Token': token,
+                    'X-Telegram-Init-Data': getHMACSecret()
                 }
             });
             

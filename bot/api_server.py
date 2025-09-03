@@ -176,6 +176,7 @@ async def get_products_for_webapp(request):
     # ===== HMAC SIGNATURE VERIFICATION =====
     signature = request.headers.get('X-Signature')
     timestamp = request.headers.get('X-Timestamp')
+    init_data = request.headers.get('X-Telegram-Init-Data', '')
     
     if not signature or not timestamp:
         logger.warning(f"API: Missing signature or timestamp from {client_ip}")
@@ -196,9 +197,12 @@ async def get_products_for_webapp(request):
             'Expires': '0'
         })
     
+    # Use Telegram initData as secret (unique per session)
+    hmac_secret = init_data if init_data else HMAC_SECRET
+    
     # Verify signature
     request_data = f"{request.method}:{request.path}:{timestamp}"
-    if not verify_hmac_signature(request_data, signature, HMAC_SECRET):
+    if not verify_hmac_signature(request_data, signature, hmac_secret):
         logger.warning(f"API: Invalid signature from {client_ip}")
         return web.json_response({"error": "Invalid signature"}, status=403, headers={
             'Cache-Control': 'no-cache, no-store, must-revalidate',
