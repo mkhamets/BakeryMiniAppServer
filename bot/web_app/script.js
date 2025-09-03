@@ -375,14 +375,11 @@ function forceTelegramCacheClear() {
 // Initialize cache management on app start
 async function initializeCacheManagement() {
     try {
-        console.log('🚀 Initializing smart cache management...');
-        console.log('📱 Mobile device:', isMobileDevice);
-        console.log('🍎 iOS device:', isIOSDevice);
-        console.log('💬 Telegram WebView:', isTelegramWebView);
+        // Initializing smart cache management
         
         // Mobile-specific initialization
         if (isMobileDevice && isTelegramWebView) {
-            console.log('📱 Mobile Telegram WebView - using aggressive cache strategy');
+            // Mobile Telegram WebView - using aggressive cache strategy
             forceTelegramCacheClear();
         }
         
@@ -390,7 +387,7 @@ async function initializeCacheManagement() {
         if (!document.querySelector('#checkout-form')) {
             await invalidateCacheOnUpdate();
         } else {
-            console.log('🛒 Checkout form detected - skipping cache invalidation to preserve cart');
+            // Checkout form detected - skipping cache invalidation to preserve cart
         }
         
         // Set up periodic cache health check (less frequent for mobile to save battery)
@@ -416,7 +413,7 @@ async function initializeCacheManagement() {
         
         // Service Worker integration removed to fix iOS twitching issues
         
-        console.log('✅ Cache management initialized (Service Worker removed)');
+        // Cache management initialized
     } catch (error) {
         console.error('❌ Error initializing cache management:', error);
     }
@@ -511,7 +508,7 @@ function saveCartWithMetadata(cartData) {
     try {
         const cartWithMetadata = createCartWithMetadata(cartData);
         localStorage.setItem('cart', JSON.stringify(cartWithMetadata));
-        console.log('💾 Cart saved with metadata');
+        // Cart saved with metadata
         return true;
     } catch (error) {
         console.error('❌ Error saving cart:', error);
@@ -1490,7 +1487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const hasChanges = checkProductsDataChanges(previousProductsData, newProductsData);
                     
                     if (hasChanges) {
-                        console.log('🔄 Products data changed, refreshing product grid...');
+                        // Products data changed, refreshing product grid
                         
                         // 🔄 REFRESH PRODUCT GRID IF ON CATEGORY SCREEN
                         const productsContainer = document.getElementById('products-container');
@@ -1498,7 +1495,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // User is on a category screen, refresh the product grid
                             const currentCategory = localStorage.getItem('lastProductCategory');
                             if (currentCategory) {
-                                console.log('🔄 Refreshing product grid for category:', currentCategory);
+                                // Refreshing product grid for category
                                 await loadProducts(currentCategory);
                             }
                         }
@@ -1506,7 +1503,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Update previous data
                         previousProductsData = JSON.parse(JSON.stringify(newProductsData));
                     } else {
-                        console.log('✅ No changes in products data, skipping grid refresh');
+                        // No changes in products data, skipping grid refresh
                     }
                 } catch (error) {
                     console.warn('Auto-refresh failed:', error);
@@ -1514,7 +1511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 60000); // 1 minute
         
-        console.log('✅ Auto-refresh setup: Cart will refresh every minute when active, grid only when changes detected');
+        // Auto-refresh setup: Cart will refresh every minute when active, grid only when changes detected
     }
     
     // Function to check if products data has changed
@@ -2367,7 +2364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // NEW: Function to render disabled product error message
     function renderDisabledProductsError(disabledProducts) {
-        console.log('🔍 Rendering disabled products error for:', disabledProducts.length, 'products');
+        // Rendering disabled products error
         
         // Remove existing error message if it exists
         const existingError = document.getElementById('disabled-products-error');
@@ -2376,7 +2373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (disabledProducts.length === 0) {
-            console.log('✅ No disabled products, no error message needed');
+            // No disabled products, no error message needed
             return;
         }
 
@@ -2398,17 +2395,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const availabilityInfoContainer = document.getElementById('availability-info-container');
         const cartActionsBottom = document.querySelector('.cart-actions-bottom');
         
-        console.log('🔍 Availability info container:', availabilityInfoContainer);
-        console.log('🔍 Cart actions bottom:', cartActionsBottom);
+        // Availability info container and cart actions bottom
         
         if (availabilityInfoContainer && cartActionsBottom) {
             // Insert AFTER availability info (below it) and BEFORE cart actions
             availabilityInfoContainer.after(errorContainer);
-            console.log('✅ Error message inserted after availability info');
+            // Error message inserted after availability info
         } else if (cartActionsBottom) {
             // Fallback: insert above cart actions if availability info doesn't exist
             cartActionsBottom.parentNode.insertBefore(errorContainer, cartActionsBottom);
-            console.log('✅ Error message inserted above cart actions (fallback)');
+            // Error message inserted above cart actions (fallback)
         } else {
             console.error('❌ Could not find cart-actions-bottom element');
         }
@@ -2503,12 +2499,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (currentView === 'products') {
             const currentCategory = localStorage.getItem('lastProductCategory');
             if (currentCategory) {
-                console.log('🔄 Refreshing product grid after cart clear');
+                // Refreshing product grid after cart clear
                 loadProducts(currentCategory);
             }
         }
         
-        console.log('🗑️ Cart cleared successfully - 2-day persistence system preserved');
+        // Cart cleared successfully - 2-day persistence system preserved
     }
 
     // Manual cache clearing function for debugging/development
@@ -2516,7 +2512,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const success = await clearBrowserCache();
             if (success) {
-                console.log('✅ All caches cleared successfully');
+                // All caches cleared successfully
                 // Optionally show user feedback
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
                     Telegram.WebApp.showAlert('Кеш очищен успешно!');
@@ -2557,7 +2553,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 status.cacheCount = cacheNames.length;
             }
             
-            console.log('📊 Cache Status:', status);
+            // Cache Status
             return status;
         } catch (error) {
             console.error('❌ Error getting cache status:', error);
@@ -2597,27 +2593,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Элемент с ID "back-from-checkout-to-cart" не найден в DOM. Невозможно прикрепить слушатель кликов.');
         }
 
-        console.log('🔍 === FORM INITIALIZATION DEBUG ===');
-        console.log('🔍 checkoutForm element found:', !!checkoutForm);
-        console.log('🔍 checkoutForm element:', checkoutForm);
+        // Form initialization debug
         
         if (checkoutForm) {
-            console.log('✅ Adding submit event listener to checkoutForm');
+            // Adding submit event listener to checkoutForm
             checkoutForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 
-                console.log('🚀 === PLACE ORDER BUTTON CLICKED ===');
-                console.log('📅 Current timestamp:', new Date().toISOString());
+                // Place order button clicked
 
                 // Use unified form data collection
                 const orderDetails = collectFormData();
-                console.log('📋 === COLLECTED FORM DATA ===');
-                console.log('orderDetails:', JSON.stringify(orderDetails, null, 2));
-                console.log('firstName value:', orderDetails.firstName);
-                console.log('lastName value:', orderDetails.lastName);
-                console.log('middleName value:', orderDetails.middleName);
-                console.log('phoneNumber value:', orderDetails.phoneNumber);
-                console.log('email value:', orderDetails.email);
+                // Collected form data
                 
                 // Keep pickup address ID as-is for backend processing
                 // The backend _get_pickup_details function expects the numeric ID
@@ -2630,9 +2617,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Validation is already complete from validateOrderForm()
                 // Just handle the validation result
                 if (!isValid) {
-                    console.log('❌ === FORM VALIDATION FAILED ===');
-                    console.log('🎯 First error field that will get focus:', errorFields[0] ? errorFields[0].field : 'none');
-                    console.log('🎯 First error field element:', errorFields[0] ? errorFields[0].element : 'none');
+                    // Form validation failed
                     // Show errors and focus on first error field
                     showValidationErrors(errorFields, errorMessages);
                     return;
@@ -2645,12 +2630,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (isNaN(totalAmount)) {
                         // Fallback: calculate from cart items
                         totalAmount = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                        console.log('🔄 Using fallback total amount calculation:', totalAmount);
+                        // Using fallback total amount calculation
                     }
                 } catch (error) {
                     // Fallback: calculate from cart items
                     totalAmount = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    console.log('🔄 Using fallback total amount calculation due to error:', totalAmount);
+                    // Using fallback total amount calculation due to error
                 }
                 
                 const courierRadio = document.getElementById('delivery-courier-radio');
@@ -2700,7 +2685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
 
                 try {
-                    console.log('Отправка заказа:', orderPayload);
+                    // Отправка заказа
                     
                     Telegram.WebApp.sendData(JSON.stringify(orderPayload));
                     
@@ -2708,17 +2693,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const customerData = extractCustomerDataFromForm();
                     if (Object.keys(customerData).length > 0) {
                         saveCustomerDataWithMetadata(customerData);
-                        console.log('💾 Customer data saved for future prepopulation');
+                        // Customer data saved for future prepopulation
                     }
                     
                     // Order sent successfully - clear cart immediately and then close WebApp
-                    console.log('✅ Order sent successfully, clearing cart...');
+                    // Order sent successfully, clearing cart
                     clearCart();
                     
                     // Verify cart was cleared and force clear if needed
                     setTimeout(() => {
                         if (Object.keys(cart).length > 0) {
-                            console.log('🔄 Cart still has items, forcing clear...');
+                            // Cart still has items, forcing clear
                             clearCart();
                         }
                     }, 1000);
@@ -2728,7 +2713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         try {
                             if (Telegram.WebApp.close) {
                                 Telegram.WebApp.close();
-                                console.log('✅ WebApp closed after successful order completion');
+                                // WebApp closed after successful order completion
                             }
                         } catch (closeError) {
                             console.warn('Could not close WebApp automatically');
@@ -2748,7 +2733,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // No need for separate click handler to avoid double execution
         const submitButton = document.querySelector('.submit-order-button');
         if (submitButton) {
-            console.log('✅ Submit button found, form submission handled by form submit event');
+            // Submit button found, form submission handled by form submit event
         } else {
             console.error('❌ Submit button not found');
         }
@@ -3198,7 +3183,7 @@ function addErrorClearingListeners() {
         startShoppingButton.addEventListener('click', () => {
             // 🔗 ПЕРЕНАПРАВЛЕНИЕ В БОТ ЧАТ С ЗАДЕРЖКОЙ ЗАКРЫТИЯ: Кнопка "Заказать с доставкой" 
             // перенаправляет пользователя в основной чат бота, а затем закрывает WebApp через полсекунды
-            console.log('🔗 Перенаправление в бот чат с задержкой закрытия WebApp');
+            // Перенаправление в бот чат с задержкой закрытия WebApp
             
             // Redirect to bot chat immediately
             try {
