@@ -4,6 +4,8 @@ import hmac
 import json
 import logging
 import time
+import base64
+import os
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
@@ -22,6 +24,10 @@ class SecurityManager:
         self.security_events = []
         self.last_cleanup = time.time()
         self.cleanup_interval = 3600  # 1 hour
+        
+        # HMAC configuration
+        self.hmac_secret = os.environ.get('HMAC_SECRET', 'default-secret-key-change-in-production')
+        self.hmac_algorithm = 'sha256'
         
     async def validate_webhook_request(self, request_data: dict, signature: str = None) -> bool:
         """Validate incoming webhook request."""
@@ -292,6 +298,11 @@ class SecurityManager:
                 "allowed": config.ALLOW_WEBHOOKS,
                 "trusted_domains": config.TRUSTED_DOMAINS
             },
+            "hmac_security": {
+                "enabled": True,
+                "algorithm": self.hmac_algorithm,
+                "secret_configured": bool(self.hmac_secret and self.hmac_secret != 'default-secret-key-change-in-production')
+            },
             "security_events": {
                 "total": len(self.security_events),
                 "recent": len([e for e in self.security_events 
@@ -299,6 +310,43 @@ class SecurityManager:
             },
             "last_cleanup": datetime.fromtimestamp(self.last_cleanup).isoformat()
         }
+    
+    def generate_hmac_signature(self, data: str, secret: str = None) -> str:
+        """Generate HMAC signature for data."""
+        if secret is None:
+            secret = self.hmac_secret
+        
+        signature = hmac.new(
+            secret.encode('utf-8'),
+            data.encode('utf-8'),
+            hashlib.sha256
+        ).digest()
+        return base64.b64encode(signature).decode('utf-8')
+    
+    def verify_hmac_signature(self, data: str, signature: str, secret: str = None) -> bool:
+        """Verify HMAC signature."""
+        if secret is None:
+            secret = self.hmac_secret
+        
+        expected_signature = self.generate_hmac_signature(data, secret)
+        return hmac.compare_digest(signature, expected_signature)
+    
+    def generate_auth_token(self) -> dict:
+        """Generate authentication token for client."""
+        timestamp = int(time.time())
+        token_data = f"auth:{timestamp}"
+        signature = self.generate_hmac_signature(token_data)
+        
+        return {
+            "token": signature,
+            "timestamp": timestamp,
+            "expires_in": 3600  # 1 hour
+        }
+    
+    def validate_timestamp(self, timestamp: int, tolerance: int = 300) -> bool:
+        """Validate timestamp to prevent replay attacks."""
+        current_time = int(time.time())
+        return abs(current_time - timestamp) <= tolerance
 
 # Global security manager instance
 security_manager = SecurityManager()
