@@ -382,6 +382,18 @@
                         <div id="pickup-text" class="delivery-info-text hidden">
                             <p class="pickup-info-black">Заказ на самовывоз оформляется в день покупки и формируется после произведения оплаты посредством системы ЕРИП. Время готовности заказа и его поступление в пункт самовывоза можно уточнить по телефону <a href="tel:+375291172577">+375 (29) 117-25-77</a></p>
                         </div>
+                        
+                        <!-- Чекбокс согласия на обработку персональных данных -->
+                        <div class="form-group privacy-consent-group">
+                            <div class="privacy-consent-container">
+                                <input type="checkbox" id="privacy-consent" name="privacyConsent" required>
+                                <label for="privacy-consent" class="privacy-consent-label">
+                                    <span class="required-star">*</span> Я согласен на обработку моих персональных данных.
+                                </label>
+                            </div>
+                            <div class="error-message" id="privacyConsent-error">Необходимо согласие на обработку персональных данных.</div>
+                        </div>
+                        
                         <button type="submit" class="submit-order-button">Сделать заказ</button>
                     </form>
                     <div class="cart-actions-checkout">

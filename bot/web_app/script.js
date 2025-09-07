@@ -993,6 +993,11 @@ function clearAllErrors() {
         field.classList.remove('form-field-error');
     });
     
+    // Remove error styling from checkbox containers
+    document.querySelectorAll('.privacy-consent-group.error').forEach(container => {
+        container.classList.remove('error');
+    });
+    
     // Hide all error messages
     document.querySelectorAll('.error-message').forEach(message => {
         message.classList.remove('show');
@@ -1081,6 +1086,10 @@ function showValidationErrors(errorFields, errorMessages) {
                 // Add visual indicator to radio group container
                 errorField.errorContainer.classList.add('form-field-error');
                 console.log(`Added error styling to radio container for: ${errorField.field}`);
+            } else if (errorField.elementType === 'checkbox' && errorField.errorContainer) {
+                // For checkboxes, style the container
+                errorField.errorContainer.classList.add('error');
+                console.log(`Added error styling to checkbox container for: ${errorField.field}`);
             } else if (errorField.element && !['paymentMethod', 'paymentMethodPickup', 'pickupAddress', 'deliveryMethod'].includes(errorField.field)) {
                 // For regular inputs, add error class
                 errorField.element.classList.add('form-field-error');
@@ -1149,7 +1158,20 @@ function showValidationErrors(errorFields, errorMessages) {
 // Add this before the DOMContentLoaded event listener
 
 function validateField(value, validation) {
-    // Empty check
+    // Special handling for checkbox fields
+    if (validation.elementType === 'checkbox') {
+        // For checkboxes, value is boolean, no need for trim()
+        if (validation.customValidation) {
+            const customResult = validation.customValidation(value);
+            if (!customResult) {
+                console.log(`❌ ${validation.field} validation FAILED - custom validation`);
+            }
+            return customResult;
+        }
+        return value === true;
+    }
+
+    // Empty check for non-checkbox fields
     if (!value || value.trim() === '') {
         console.log(`❌ ${validation.field} validation FAILED - empty value`);
         return false;
@@ -1261,6 +1283,11 @@ function validatePaymentMethodField(value) {
     return value && value.trim() !== '';
 }
 
+function validatePrivacyConsentField(value) {
+    // For checkbox, value is boolean
+    return value === true;
+}
+
 function validateOrderForm(orderDetails) {
     
     const validationOrder = [
@@ -1348,6 +1375,14 @@ function validateOrderForm(orderDetails) {
             errorElement: 'payment-method-section-pickup',  // Container for error styling
             condition: () => orderDetails.deliveryMethod === 'pickup',
             customValidation: validatePaymentMethodField
+        },
+        { 
+            field: 'privacyConsent', 
+            label: 'согласие на обработку персональных данных', 
+            element: 'privacy-consent',
+            elementType: 'checkbox',
+            errorElement: 'privacyConsent-error',
+            customValidation: validatePrivacyConsentField
         }
     ];
 
@@ -1388,6 +1423,13 @@ function validateOrderForm(orderDetails) {
                     if (radioName) {
                         elementRef = document.querySelector(`input[name="${radioName}"]`);
                     }
+                }
+            } else if (validation.elementType === 'checkbox' && validation.errorElement) {
+                // For checkboxes, get the container for error styling
+                errorContainer = document.getElementById(validation.errorElement);
+                // Use the checkbox element itself for focus
+                if (!elementRef) {
+                    elementRef = document.getElementById(validation.element);
                 }
             }
             
@@ -1438,7 +1480,8 @@ function collectFormData() {
         paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value || '',
         paymentMethodPickup: document.querySelector('input[name="paymentMethodPickup"]:checked')?.value || '',
         commentDelivery: document.getElementById('comment-delivery')?.value || '',
-        commentPickup: document.getElementById('comment-pickup')?.value || ''
+        commentPickup: document.getElementById('comment-pickup')?.value || '',
+        privacyConsent: document.getElementById('privacy-consent')?.checked || false
     };
     
     return orderDetails;
