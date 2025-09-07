@@ -9,10 +9,13 @@ tests/
 ├── unit/                    # Unit tests for individual modules
 │   ├── test_config.py      # Configuration module tests
 │   ├── test_keyboards.py   # Keyboard generation tests
-│   └── test_parser.py      # Web scraping parser tests
+│   ├── test_parser.py      # Web scraping parser tests
+│   ├── test_privacy_consent_simple.py # Privacy consent tests
+│   └── ...
 ├── integration/            # Integration tests
 │   └── test_api_integration.py  # API server integration tests
 ├── web_app/               # Web app tests
+│   ├── test_checkout_validation.py # Checkout validation tests
 │   └── test_script.js     # JavaScript functionality tests
 ├── run_tests.py           # Main test runner
 └── README.md              # This file
@@ -72,6 +75,19 @@ node tests/web_app/test_script.js
 - ✅ URL joining functionality
 - ✅ Data structure validation
 
+#### `test_privacy_consent_simple.py`
+- ✅ Privacy consent checkbox HTML structure
+- ✅ Privacy consent CSS styles
+- ✅ Privacy consent JavaScript functions
+- ✅ Privacy consent validation logic
+- ✅ Privacy consent form integration
+- ✅ Privacy consent error handling
+- ✅ Privacy consent event handling
+- ✅ Privacy consent accessibility
+- ✅ Privacy consent mobile responsiveness
+- ✅ Privacy consent gender-neutral text
+- ✅ Privacy consent required validation
+
 ### 2. Integration Tests (`tests/integration/`)
 
 **Purpose**: Test how different components work together.
@@ -88,6 +104,12 @@ node tests/web_app/test_script.js
 ### 3. Web App Tests (`tests/web_app/`)
 
 **Purpose**: Test JavaScript functionality in the web app.
+
+#### `test_checkout_validation.py`
+- ✅ Checkout form validation
+- ✅ Order processing
+- ✅ Error handling
+- ✅ Form field validation
 
 #### `test_script.js`
 - ✅ Cart functionality (add, remove, update quantities)
@@ -202,6 +224,15 @@ The test suite covers:
 - ✅ View management
 - ✅ Data validation
 - ✅ UI interactions
+
+### Privacy Consent (100%)
+- ✅ HTML structure validation
+- ✅ CSS styling validation
+- ✅ JavaScript functionality
+- ✅ Form integration
+- ✅ Error handling
+- ✅ Accessibility features
+- ✅ Mobile responsiveness
 
 ## 🔧 Test Configuration
 
@@ -357,6 +388,6 @@ For test-related issues:
 
 ---
 
-**Last Updated**: 2024-01-XX
+**Last Updated**: 2025-09-07
 **Test Coverage**: 90%+
-**Total Tests**: 50+ 
+**Total Tests**: 60+

@@ -1,73 +1,73 @@
 # 🛠️ Development Guide - Bakery Mini App Server
 
-## 🏗️ Архитектура проекта
+## 🏗️ Project Architecture
 
-### Структура кода
+### Code Structure
 ```
 BakeryMiniAppServer/
-├── bot/                    # Основной код приложения
-│   ├── web_app/           # Файлы веб-приложения
-│   │   ├── index.html     # Главный HTML файл
-│   │   ├── script.js      # JavaScript приложение
-│   │   ├── style.css      # CSS стили
-│   │   └── images/        # Статические изображения
-│   ├── api_server.py      # API сервер
-│   ├── main.py           # Основной файл бота
-│   ├── parser.py         # Парсер продукции
-│   ├── config.py         # Конфигурация
-│   ├── keyboards.py      # Клавиатуры Telegram
-│   ├── security_manager.py # Менеджер безопасности
-│   ├── security.py       # Функции безопасности
-│   ├── security_middleware.py # Middleware безопасности
+├── bot/                    # Main application code
+│   ├── web_app/           # Web application files
+│   │   ├── index.html     # Main HTML file
+│   │   ├── script.js      # JavaScript application
+│   │   ├── style.css      # CSS styles
+│   │   └── images/        # Static images
+│   ├── api_server.py      # API server
+│   ├── main.py           # Main bot file
+│   ├── parser.py         # Product parser
+│   ├── config.py         # Configuration
+│   ├── keyboards.py      # Telegram keyboards
+│   ├── security_manager.py # Security manager
+│   ├── security.py       # Security functions
+│   ├── security_middleware.py # Security middleware
 │   └── security_headers.py # Security headers
-├── data/                  # Файлы данных
+├── data/                  # Data files
 │   ├── products_scraped.json
 │   └── order_counter.json
-├── tests/                 # Тестовые файлы
-│   ├── unit/             # Unit тесты
-│   ├── integration/      # Integration тесты
-│   └── web_app/          # Web app тесты
-├── scripts/              # Утилиты
+├── tests/                 # Test files
+│   ├── unit/             # Unit tests
+│   ├── integration/      # Integration tests
+│   └── web_app/          # Web app tests
+├── scripts/              # Utilities
 │   ├── normalize_cache.py
 │   └── bump_cache.sh
-└── docs/                 # Документация
+└── docs/                 # Documentation
 ```
 
-## 🔧 Основные компоненты
+## 🔧 Main Components
 
 ### 1. Bot Main (bot/main.py)
-Основной файл бота, содержащий:
-- Инициализацию бота и диспетчера
-- Обработчики команд и сообщений
-- Логику корзины и заказов
-- Email уведомления
+Main bot file containing:
+- Bot and dispatcher initialization
+- Command and message handlers
+- Cart and order logic
+- Email notifications
 
 ### 2. API Server (bot/api_server.py)
-HTTP API сервер для WebApp:
-- Endpoints для продукции и категорий
-- HMAC аутентификация
+HTTP API server for WebApp:
+- Product and category endpoints
+- HMAC authentication
 - Rate limiting
 - Security headers
 
 ### 3. Configuration (bot/config.py)
-Управление конфигурацией:
-- SecureConfig класс
-- Валидация переменных окружения
-- Настройки безопасности
+Configuration management:
+- SecureConfig class
+- Environment variable validation
+- Security settings
 
 ### 4. Security Manager (bot/security_manager.py)
-Централизованное управление безопасностью:
-- HMAC подписи
+Centralized security management:
+- HMAC signatures
 - Rate limiting
-- Валидация webhook
-- Мониторинг безопасности
+- Webhook validation
+- Security monitoring
 
-## 🧪 Тестирование
+## 🧪 Testing
 
-### Структура тестов
+### Test Structure
 ```
 tests/
-├── unit/                 # Unit тесты
+├── unit/                 # Unit tests
 │   ├── test_api_server.py
 │   ├── test_config.py
 │   ├── test_keyboards.py
@@ -76,110 +76,110 @@ tests/
 │   ├── test_cart.py
 │   ├── test_security_features.py
 │   └── ...
-├── integration/          # Integration тесты
+├── integration/          # Integration tests
 │   └── test_api_integration.py
-└── web_app/             # Web app тесты
+└── web_app/             # Web app tests
     ├── test_checkout_validation.py
     └── test_script.js
 ```
 
-### Запуск тестов
+### Running Tests
 ```bash
-# Все тесты
+# All tests
 python -m pytest tests/
 
-# Unit тесты
+# Unit tests
 python -m pytest tests/unit/
 
-# Integration тесты
+# Integration tests
 python -m pytest tests/integration/
 
-# С покрытием
+# With coverage
 python -m pytest --cov=bot tests/
 
-# Конкретный тест
+# Specific test
 python -m pytest tests/unit/test_api_server.py -v
 ```
 
-### Категории тестов
-- **Unit Tests:** Тестирование отдельных функций
-- **Integration Tests:** Тестирование API endpoints
-- **Security Tests:** Валидация функций безопасности
-- **Web App Tests:** Тестирование frontend функциональности
+### Test Categories
+- **Unit Tests:** Individual function testing
+- **Integration Tests:** API endpoint testing
+- **Security Tests:** Security function validation
+- **Web App Tests:** Frontend functionality testing
 
-## 🔄 Разработка
+## 🔄 Development
 
-### Настройка среды разработки
+### Development Environment Setup
 ```bash
-# Клонирование репозитория
+# Clone repository
 git clone https://github.com/your-username/BakeryMiniAppServer.git
 cd BakeryMiniAppServer
 
-# Создание виртуального окружения
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# или
+# or
 venv\Scripts\activate     # Windows
 
-# Установка зависимостей
+# Install dependencies
 pip install -r requirements.txt
 pip install -r requirements-test.txt
 ```
 
-### Локальная разработка
+### Local Development
 ```bash
-# Настройка переменных окружения
+# Setup environment variables
 cp env.example .env
-# Отредактируйте .env файл
+# Edit .env file
 
-# Запуск в режиме разработки
+# Run in development mode
 python bot/main.py
 ```
 
-### Структура кода
+### Code Structure
 
-#### Основные принципы
-- **Модульность:** Каждый компонент в отдельном файле
-- **Безопасность:** Все функции проверяются на безопасность
-- **Тестируемость:** Код покрыт тестами
-- **Документированность:** Все функции документированы
+#### Main Principles
+- **Modularity:** Each component in separate file
+- **Security:** All functions checked for security
+- **Testability:** Code covered with tests
+- **Documentation:** All functions documented
 
-#### Стиль кода
+#### Code Style
 ```python
-# Пример структуры функции
+# Example function structure
 async def process_order(order_data: dict, user_id: int) -> dict:
     """
-    Обрабатывает заказ пользователя.
+    Process user order.
     
     Args:
-        order_data: Данные заказа
-        user_id: ID пользователя
+        order_data: Order data
+        user_id: User ID
         
     Returns:
-        dict: Результат обработки заказа
+        dict: Order processing result
         
     Raises:
-        ValidationError: При неверных данных заказа
+        ValidationError: For invalid order data
     """
-    # Валидация входных данных
+    # Input data validation
     if not validate_order_data(order_data):
         raise ValidationError("Invalid order data")
     
-    # Обработка заказа
+    # Order processing
     result = await _process_order_internal(order_data, user_id)
     
     return result
 ```
 
-## 📊 Мониторинг и логирование
+## 📊 Monitoring and Logging
 
-### Логирование
+### Logging
 ```python
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Различные уровни логирования
+# Different logging levels
 logger.debug("Debug information")
 logger.info("General information")
 logger.warning("Warning message")
@@ -187,14 +187,14 @@ logger.error("Error occurred")
 logger.critical("Critical error")
 ```
 
-### Мониторинг производительности
+### Performance Monitoring
 ```python
 import time
 
 async def monitored_function():
     start_time = time.time()
     
-    # Выполнение функции
+    # Function execution
     result = await some_operation()
     
     duration = time.time() - start_time
@@ -203,107 +203,107 @@ async def monitored_function():
     return result
 ```
 
-## 🔧 Утилиты разработки
+## 🔧 Development Utilities
 
-### Скрипты
+### Scripts
 ```bash
-# Обновление кеша
+# Cache update
 python scripts/normalize_cache.py
 
-# Обновление версий
+# Version update
 bash scripts/bump_cache.sh
 
-# Запуск парсера
+# Run parser
 python run_parser.py
 
-# Планировщик задач
+# Task scheduler
 python scheduler.py
 ```
 
-### Инструменты разработки
+### Development Tools
 ```bash
-# Проверка кода
+# Code checking
 flake8 bot/
 black bot/
 isort bot/
 
-# Проверка безопасности
+# Security checking
 bandit -r bot/
 pip-audit
 
-# Тестирование
+# Testing
 pytest tests/ -v --cov=bot
 ```
 
-## 🚀 Процесс разработки
+## 🚀 Development Process
 
 ### Workflow
-1. **Создание ветки** для новой функции
-2. **Разработка** с написанием тестов
-3. **Тестирование** всех компонентов
-4. **Code review** и проверка безопасности
-5. **Слияние** в основную ветку
-6. **Развертывание** на staging/production
+1. **Create branch** for new feature
+2. **Development** with test writing
+3. **Testing** all components
+4. **Code review** and security check
+5. **Merge** to main branch
+6. **Deploy** to staging/production
 
-### Git workflow
+### Git Workflow
 ```bash
-# Создание ветки
+# Create branch
 git checkout -b feature/new-feature
 
-# Разработка
+# Development
 git add .
 git commit -m "Add new feature"
 
-# Отправка
+# Push
 git push origin feature/new-feature
 
-# Создание Pull Request
-# После review - слияние
+# Create Pull Request
+# After review - merge
 git checkout main
 git pull origin main
 ```
 
-## 📋 Контрольные списки
+## 📋 Checklists
 
-### Перед коммитом
-- [ ] Код протестирован
-- [ ] Тесты проходят
-- [ ] Безопасность проверена
-- [ ] Документация обновлена
-- [ ] Логирование добавлено
+### Before Commit
+- [ ] Code tested
+- [ ] Tests pass
+- [ ] Security checked
+- [ ] Documentation updated
+- [ ] Logging added
 
-### Перед развертыванием
-- [ ] Все тесты проходят
-- [ ] Security audit выполнен
-- [ ] Performance тесты пройдены
-- [ ] Документация актуальна
-- [ ] Backup создан
+### Before Deployment
+- [ ] All tests pass
+- [ ] Security audit completed
+- [ ] Performance tests passed
+- [ ] Documentation current
+- [ ] Backup created
 
-## 🔍 Отладка
+## 🔍 Debugging
 
-### Локальная отладка
+### Local Debugging
 ```python
 import pdb
 
-# Точка останова
+# Breakpoint
 pdb.set_trace()
 
-# Или используйте IDE debugger
+# Or use IDE debugger
 ```
 
-### Отладка в production
+### Production Debugging
 ```bash
-# Просмотр логов
+# View logs
 heroku logs --tail
 
-# Подключение к приложению
+# Connect to app
 heroku run bash
 
-# Проверка переменных окружения
+# Check environment variables
 heroku config
 ```
 
 ---
 
-**Последнее обновление:** 2025-09-03  
-**Поддерживается:** Команда разработки
+**Last Updated:** 2025-09-07  
+**Maintained by:** Development Team

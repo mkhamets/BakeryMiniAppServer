@@ -1,41 +1,41 @@
 # 🥖 Bakery Mini App Server
 
-Telegram WebApp для пекарни Дражина с полным функционалом заказа выпечки.
+Telegram WebApp for Drazhin Bakery with full bakery ordering functionality.
 
-## 🎯 Обзор
+## 🎯 Overview
 
-Этот проект представляет собой полнофункциональное Telegram WebApp для пекарни, включающее:
-- Каталог продукции с категориями
-- Корзину покупок
-- Оформление заказов
-- Уведомления по email
-- Систему безопасности
+This project is a fully functional Telegram WebApp for a bakery, including:
+- Product catalog with categories
+- Shopping cart
+- Order processing
+- Email notifications
+- Security system
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### Предварительные требования
+### Prerequisites
 - Python 3.11+
 - Git
 - Heroku CLI
 - Telegram Bot Token
 
-### Установка
+### Installation
 ```bash
 git clone <repository-url>
 cd BakeryMiniAppServer
 pip install -r requirements.txt
 ```
 
-### Настройка окружения
-Скопируйте `env.example` в `.env` и настройте:
+### Environment Setup
+Copy `env.example` to `.env` and configure:
 ```bash
 cp env.example .env
-# Отредактируйте .env с вашими значениями
+# Edit .env with your values
 ```
 
-## 🔧 Конфигурация
+## 🔧 Configuration
 
-### Обязательные переменные окружения
+### Required Environment Variables
 ```bash
 BOT_TOKEN=your_telegram_bot_token
 ADMIN_CHAT_ID=your_telegram_user_id
@@ -43,23 +43,23 @@ ADMIN_EMAIL=your_email@example.com
 BASE_WEBAPP_URL=https://your-app.herokuapp.com/bot-app/
 ```
 
-### Дополнительные переменные окружения
+### Additional Environment Variables
 ```bash
 ADMIN_EMAIL_PASSWORD=your_smtp_password
 SMTP_SERVER=smtp.gmail.com
 HMAC_SECRET=your_hmac_secret_key
 ```
 
-## 🚀 Развертывание
+## 🚀 Deployment
 
-### Heroku (Рекомендуется)
+### Heroku (Recommended)
 
-1. **Создайте Heroku приложение:**
+1. **Create Heroku app:**
 ```bash
 heroku create your-app-name
 ```
 
-2. **Установите переменные окружения:**
+2. **Set environment variables:**
 ```bash
 heroku config:set BOT_TOKEN="your_token"
 heroku config:set ADMIN_CHAT_ID="your_id"
@@ -67,96 +67,96 @@ heroku config:set ADMIN_EMAIL="your_email"
 heroku config:set BASE_WEBAPP_URL="https://your-app.herokuapp.com/bot-app/"
 ```
 
-3. **Разверните:**
+3. **Deploy:**
 ```bash
 git push heroku main
 ```
 
-## 🛠️ Структура проекта
+## 🛠️ Project Structure
 
 ```
 BakeryMiniAppServer/
-├── bot/                    # Основной код приложения
-│   ├── web_app/           # Файлы веб-приложения
-│   │   ├── index.html     # Главный HTML файл
-│   │   ├── script.js      # JavaScript приложение
-│   │   ├── style.css      # CSS стили
-│   │   └── images/        # Статические изображения
-│   ├── api_server.py      # API сервер
-│   ├── main.py           # Основной файл бота
-│   ├── parser.py         # Парсер продукции
-│   └── config.py         # Конфигурация
-├── data/                  # Файлы данных
+├── bot/                    # Main application code
+│   ├── web_app/           # Web application files
+│   │   ├── index.html     # Main HTML file
+│   │   ├── script.js      # JavaScript application
+│   │   ├── style.css      # CSS styles
+│   │   └── images/        # Static images
+│   ├── api_server.py      # API server
+│   ├── main.py           # Main bot file
+│   ├── parser.py         # Product parser
+│   └── config.py         # Configuration
+├── data/                  # Data files
 │   ├── products_scraped.json
 │   └── order_counter.json
-├── tests/                 # Тестовые файлы
-├── scripts/              # Утилиты
-└── docs/                 # Документация
+├── tests/                 # Test files
+├── scripts/              # Utilities
+└── docs/                 # Documentation
 ```
 
-## 🔑 Основные функции
+## 🔑 Key Features
 
-### 1. Управление данными клиентов
-- **Автозаполнение форм:** Запоминает информацию о клиентах
-- **Хранение 1 год:** Данные сохраняются для повторных клиентов
-- **Приватность:** Только локальное хранение, без серверного хранения
+### 1. Customer Data Management
+- **Form Auto-fill:** Remembers customer information
+- **1 Year Storage:** Data saved for returning customers
+- **Privacy:** Local storage only, no server-side storage
 
-### 2. Управление продукцией
-- **Автоматический парсинг:** Обновляет данные о продукции каждый час
-- **Фильтрация по категориям:** Организованный показ продукции
-- **Оптимизация изображений:** Ленивая загрузка и сжатие
+### 2. Product Management
+- **Automatic Parsing:** Updates product data every hour
+- **Category Filtering:** Organized product display
+- **Image Optimization:** Lazy loading and compression
 
-### 3. Обработка заказов
-- **Управление корзиной:** Добавление/удаление товаров с контролем количества
-- **Валидация форм:** Комплексная валидация ввода
-- **Отслеживание заказов:** Уникальные номера заказов и статус
+### 3. Order Processing
+- **Cart Management:** Add/remove items with quantity control
+- **Form Validation:** Comprehensive input validation
+- **Order Tracking:** Unique order numbers and status
 
 ## 📊 API Endpoints
 
 ```
-GET /bot-app/api/products          # Получить всю продукцию
-GET /bot-app/api/products?category=bread  # Получить продукцию по категории
-GET /bot-app/api/categories        # Получить категории продукции
-GET /bot-app/api/auth/token        # Получить токен аутентификации
+GET /bot-app/api/products          # Get all products
+GET /bot-app/api/products?category=bread  # Get products by category
+GET /bot-app/api/categories        # Get product categories
+GET /bot-app/api/auth/token        # Get authentication token
 ```
 
-## 🧪 Тестирование
+## 🧪 Testing
 
-### Запуск тестов
+### Running Tests
 ```bash
-# Запустить все тесты
+# Run all tests
 python -m pytest tests/
 
-# Запустить конкретные категории тестов
+# Run specific test categories
 python -m pytest tests/unit/
 python -m pytest tests/integration/
 
-# Запустить с покрытием
+# Run with coverage
 python -m pytest --cov=bot tests/
 ```
 
-### Категории тестов
-- **Unit Tests:** Тестирование отдельных функций
-- **Integration Tests:** Тестирование API endpoints
-- **Security Tests:** Валидация функций безопасности
-- **Performance Tests:** Нагрузочное и стресс-тестирование
+### Test Categories
+- **Unit Tests:** Individual function testing
+- **Integration Tests:** API endpoint testing
+- **Security Tests:** Security function validation
+- **Performance Tests:** Load and stress testing
 
-## 🔄 История версий
+## 🔄 Version History
 
-### Текущая версия: 1.3.108
-- ✅ HMAC аутентификация подписей
-- ✅ Реализация rate limiting
-- ✅ Валидация Telegram WebApp
-- ✅ Улучшения безопасности
+### Current Version: 1.3.108
+- ✅ HMAC signature authentication
+- ✅ Rate limiting implementation
+- ✅ Telegram WebApp validation
+- ✅ Security improvements
 
-### Предыдущие версии
-- **1.3.97:** Начальная реализация безопасности
-- **1.3.95:** Сохранение данных клиентов
-- **1.3.90:** Базовый функционал
-- **1.3.85:** Основная функциональность
+### Previous Versions
+- **1.3.97:** Initial security implementation
+- **1.3.95:** Customer data storage
+- **1.3.90:** Basic functionality
+- **1.3.85:** Core functionality
 
 ---
 
-**Последнее обновление:** 2025-09-03  
-**Поддерживается:** Команда разработки  
-**Контакт по безопасности:** security@drazhin.by
+**Last Updated:** 2025-09-07  
+**Maintained by:** Development Team  
+**Security Contact:** security@drazhin.by

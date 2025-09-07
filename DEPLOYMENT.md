@@ -1,15 +1,15 @@
 # 🚀 Deployment Guide - Bakery Mini App Server
 
-## 🎯 Методы развертывания
+## 🎯 Deployment Methods
 
-### Heroku Deployment (Рекомендуется)
+### Heroku Deployment (Recommended)
 
-#### 1. Создание Heroku приложения
+#### 1. Creating Heroku App
 ```bash
 heroku create your-app-name
 ```
 
-#### 2. Настройка переменных окружения
+#### 2. Environment Variables Setup
 ```bash
 heroku config:set BOT_TOKEN="your_token"
 heroku config:set ADMIN_CHAT_ID="your_id"
@@ -18,12 +18,12 @@ heroku config:set BASE_WEBAPP_URL="https://your-app.herokuapp.com/bot-app/"
 heroku config:set HMAC_SECRET="your_hmac_secret"
 ```
 
-#### 3. Развертывание
+#### 3. Deployment
 ```bash
 git push heroku main
 ```
 
-### Альтернативные методы развертывания
+### Alternative Deployment Methods
 
 #### GitHub Actions
 ```yaml
@@ -44,11 +44,11 @@ jobs:
 ```
 
 #### Web Interface
-1. Подключите GitHub репозиторий к Heroku
-2. Включите автоматические развертывания
-3. Настройте переменные окружения в панели управления
+1. Connect GitHub repository to Heroku
+2. Enable automatic deployments
+3. Configure environment variables in dashboard
 
-## 🔧 Конфигурационные файлы
+## 🔧 Configuration Files
 
 ### app.json
 ```json
@@ -102,9 +102,9 @@ beautifulsoup4==4.12.2
 lxml==4.9.3
 ```
 
-## 📋 Переменные окружения
+## 📋 Environment Variables
 
-### Обязательные переменные
+### Required Variables
 ```bash
 BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 ADMIN_CHAT_ID=123456789
@@ -112,7 +112,7 @@ ADMIN_EMAIL=admin@example.com
 BASE_WEBAPP_URL=https://your-app.herokuapp.com/bot-app/
 ```
 
-### Дополнительные переменные
+### Additional Variables
 ```bash
 ADMIN_EMAIL_PASSWORD=your_smtp_password
 SMTP_SERVER=smtp.gmail.com
@@ -124,60 +124,60 @@ RATE_LIMIT_MAX_REQUESTS=100
 LOG_LEVEL=INFO
 ```
 
-## 🔄 Процесс развертывания
+## 🔄 Deployment Process
 
-### 1. Подготовка
+### 1. Preparation
 ```bash
-# Клонирование репозитория
+# Clone repository
 git clone https://github.com/your-username/BakeryMiniAppServer.git
 cd BakeryMiniAppServer
 
-# Установка зависимостей
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Локальное тестирование
+### 2. Local Testing
 ```bash
-# Настройка переменных окружения
+# Setup environment variables
 cp env.example .env
-# Отредактируйте .env файл
+# Edit .env file
 
-# Запуск локально
+# Run locally
 python bot/main.py
 ```
 
-### 3. Развертывание на Heroku
+### 3. Heroku Deployment
 ```bash
-# Создание приложения
+# Create app
 heroku create your-app-name
 
-# Настройка переменных
+# Configure variables
 heroku config:set BOT_TOKEN="your_token"
 heroku config:set ADMIN_CHAT_ID="your_id"
 heroku config:set ADMIN_EMAIL="your_email"
 
-# Развертывание
+# Deploy
 git push heroku main
 ```
 
-### 4. Проверка развертывания
+### 4. Deployment Verification
 ```bash
-# Проверка статуса
+# Check status
 heroku ps
 
-# Просмотр логов
+# View logs
 heroku logs --tail
 
-# Проверка конфигурации
+# Check configuration
 heroku config
 ```
 
-## 🛠️ Скрипты развертывания
+## 🛠️ Deployment Scripts
 
 ### build.sh
 ```bash
 #!/bin/bash
-# Скрипт сборки и обновления кеша
+# Build and cache update script
 
 echo "Building application..."
 python -c "
@@ -192,112 +192,112 @@ echo "Build completed successfully!"
 ### deploy.sh
 ```bash
 #!/bin/bash
-# Скрипт автоматизации развертывания
+# Deployment automation script
 
 echo "Starting deployment..."
 
-# Проверка статуса git
+# Check git status
 if [ -n "$(git status --porcelain)" ]; then
     echo "Error: Working directory not clean"
     exit 1
 fi
 
-# Развертывание на Heroku
+# Deploy to Heroku
 git push heroku main
 
 echo "Deployment completed!"
 ```
 
-## 📊 Мониторинг развертывания
+## 📊 Deployment Monitoring
 
-### Проверка здоровья приложения
+### Health Check
 ```bash
-# Проверка статуса
+# Check status
 curl https://your-app.herokuapp.com/health
 
-# Проверка API
+# Check API
 curl https://your-app.herokuapp.com/bot-app/api/categories
 ```
 
-### Логи и мониторинг
+### Logs and Monitoring
 ```bash
-# Просмотр логов в реальном времени
+# View real-time logs
 heroku logs --tail
 
-# Просмотр логов за последний час
+# View logs from last hour
 heroku logs --since=1h
 
-# Мониторинг метрик
+# Monitor metrics
 heroku ps:scale web=1
 ```
 
-## 🚨 Устранение неполадок развертывания
+## 🚨 Deployment Troubleshooting
 
-### Распространенные проблемы
+### Common Issues
 
-#### 1. Ошибки сборки
+#### 1. Build Errors
 ```bash
-# Проверка логов сборки
+# Check build logs
 heroku logs --tail
 
-# Проверка зависимостей
+# Check dependencies
 pip check
 ```
 
-#### 2. Ошибки конфигурации
+#### 2. Configuration Errors
 ```bash
-# Проверка переменных окружения
+# Check environment variables
 heroku config
 
-# Проверка токена бота
+# Check bot token
 curl "https://api.telegram.org/bot<TOKEN>/getMe"
 ```
 
-#### 3. Проблемы с производительностью
+#### 3. Performance Issues
 ```bash
-# Масштабирование
+# Scale up
 heroku ps:scale web=2
 
-# Проверка использования ресурсов
+# Check resource usage
 heroku ps
 ```
 
-### Команды отладки
+### Debug Commands
 ```bash
-# Подключение к приложению
+# Connect to app
 heroku run bash
 
-# Проверка файловой системы
+# Check file system
 heroku run ls -la
 
-# Тестирование подключения к базе данных
+# Test database connection
 heroku run python -c "import sqlite3; print('DB OK')"
 ```
 
-## 🔄 Обновления и откаты
+## 🔄 Updates and Rollbacks
 
-### Обновление приложения
+### Application Updates
 ```bash
-# Развертывание новой версии
+# Deploy new version
 git push heroku main
 
-# Проверка статуса
+# Check status
 heroku ps
 ```
 
-### Откат к предыдущей версии
+### Rollback to Previous Version
 ```bash
-# Просмотр релизов
+# View releases
 heroku releases
 
-# Откат к предыдущему релизу
+# Rollback to previous release
 heroku rollback
 
-# Откат к конкретному релизу
+# Rollback to specific release
 heroku rollback v123
 ```
 
 ---
 
-**Последнее обновление:** 2025-09-03  
-**Поддерживается:** Команда разработки
+**Last Updated:** 2025-09-07  
+**Maintained by:** Development Team
