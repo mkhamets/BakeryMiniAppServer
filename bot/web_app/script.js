@@ -2921,6 +2921,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             console.error('❌ Submit button not found');
         }
+        
+        // Add event listener for privacy consent checkbox to clear error message
+        const privacyConsentCheckbox = document.getElementById('privacy-consent');
+        if (privacyConsentCheckbox) {
+            privacyConsentCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Clear error message when checkbox is checked
+                    const errorMessage = document.getElementById('privacyConsent-error');
+                    if (errorMessage) {
+                        errorMessage.classList.remove('show');
+                        errorMessage.style.display = 'none';
+                    }
+                    // Clear error styling from container
+                    const container = document.getElementById('privacy-consent-container');
+                    if (container) {
+                        container.classList.remove('error');
+                    }
+                }
+            });
+        }
     }
 
     function toggleDeliveryFields(method) {
