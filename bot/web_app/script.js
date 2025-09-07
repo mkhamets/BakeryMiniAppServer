@@ -1,4 +1,7 @@
-// Инициализация Telegram Web App
+
+
+
+ // Инициализация Telegram Web App
 // v1.3.108 - Добавлен кастомный цвет для MainButton
 Telegram.WebApp.ready();
 Telegram.WebApp.expand(); // Разворачиваем Web App на весь экран
@@ -1287,6 +1290,11 @@ function validatePrivacyConsentField(value) {
     // For checkbox, value is boolean
     return value === true;
 }
+
+
+
+
+
 
 function validateOrderForm(orderDetails) {
     
