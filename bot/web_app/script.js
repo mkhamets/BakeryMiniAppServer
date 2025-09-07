@@ -1288,7 +1288,10 @@ function validatePaymentMethodField(value) {
 
 function validatePrivacyConsentField(value) {
     // For checkbox, value is boolean
-    return value === true;
+    console.log('🔍 Privacy consent validation - value:', value, 'type:', typeof value);
+    const result = value === true;
+    console.log('🔍 Privacy consent validation result:', result);
+    return result;
 }
 
 
@@ -1489,7 +1492,12 @@ function collectFormData() {
         paymentMethodPickup: document.querySelector('input[name="paymentMethodPickup"]:checked')?.value || '',
         commentDelivery: document.getElementById('comment-delivery')?.value || '',
         commentPickup: document.getElementById('comment-pickup')?.value || '',
-        privacyConsent: document.getElementById('privacy-consent')?.checked || false
+        privacyConsent: (() => {
+            const checkbox = document.getElementById('privacy-consent');
+            const checked = checkbox?.checked || false;
+            console.log('🔍 Privacy consent checkbox found:', !!checkbox, 'checked:', checked);
+            return checked;
+        })()
     };
     
     return orderDetails;
