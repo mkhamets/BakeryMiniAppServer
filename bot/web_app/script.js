@@ -1392,7 +1392,7 @@ function validateOrderForm(orderDetails) {
             label: 'согласие на обработку персональных данных', 
             element: 'privacy-consent',
             elementType: 'checkbox',
-            errorElement: 'privacyConsent-error',
+            errorElement: 'privacy-consent-container',
             customValidation: validatePrivacyConsentField
         }
     ];

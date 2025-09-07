@@ -3144,20 +3144,35 @@ h1, .category-title, .category-title-with-icon {
     margin-right: 2px;
 }
 
-/* Error state for privacy consent */
+/* Error state for privacy consent - matching other form fields */
 .privacy-consent-container.error {
-    border: 2px solid #e74c3c;
-    border-radius: 4px;
-    padding: 8px;
-    background-color: #fdf2f2;
+    border: 2px solid #ff4444 !important;
+    border-radius: 8px;
+    padding: 10px !important;
+    background-color: #fff5f5 !important;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
 }
 
 .privacy-consent-container.error input[type="checkbox"] {
-    border-color: #e74c3c;
+    border-color: #ff4444 !important;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
 }
 
 .privacy-consent-container.error .privacy-consent-label {
-    color: #e74c3c;
+    color: #ff4444 !important;
+}
+
+/* Error message for privacy consent */
+#privacyConsent-error {
+    color: #ff4444;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: none;
+    font-family: Arial, sans-serif;
+}
+
+#privacyConsent-error.show {
+    display: block !important;
 }
 
 /* Mobile responsive adjustments */
