@@ -1,143 +1,96 @@
-# 🔒 Security Guide - Bakery Mini App Server
+# Security Policy
 
-## 🛡️ Реализованные меры безопасности
+## Supported Versions
 
-### 1. HMAC Signature Authentication
-- **Клиентская сторона:** Генерирует HMAC подписи используя Telegram WebApp initData
-- **Серверная сторона:** Валидирует подписи для предотвращения proxy атак
-- **Защита:** Блокирует Charles/Fiddler и другие proxy инструменты
+We release patches for security vulnerabilities. Which versions are eligible for receiving such patches depends on the CVSS v3.0 Rating:
 
-### 2. Rate Limiting
-- **IP-based:** 100 запросов в час на IP
-- **Token-based:** Отдельные лимиты для токенов аутентификации
-- **Защита:** Предотвращает злоупотребления и DoS атаки
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.3.x   | :white_check_mark: |
+| < 1.3   | :x:                |
 
-### 3. Telegram WebApp Validation
-- **Валидация initData:** Использует уникальные данные сессии Telegram
-- **Валидация timestamp:** Предотвращает replay атаки (5-минутное окно)
-- **Определение платформы:** Валидирует среду Telegram WebApp
+## Reporting a Vulnerability
 
-### 4. Security Headers
-- **Принуждение HTTPS:** Перенаправляет HTTP на HTTPS
-- **Контроль кеша:** Предотвращает кеширование чувствительных данных
-- **CORS защита:** Ограничивает cross-origin запросы
+We take the security of our Telegram bot and WebApp seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
-## ⚙️ Конфигурация безопасности
+**Please do not report security vulnerabilities through public GitHub issues.**
 
-```python
-# Rate limiting
-RATE_LIMIT_REQUESTS_PER_HOUR = 100
-RATE_LIMIT_BLOCK_DURATION = 3600
+Instead, please report them via email to **security@drazhin.by**.
 
-# HMAC настройки
-HMAC_SECRET = os.environ.get('HMAC_SECRET', 'default-secret')
-HMAC_ALGORITHM = 'sha256'
+You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 
-# Валидация timestamp
-TIMESTAMP_TOLERANCE = 300  # 5 минут
-```
+Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
-## 🔍 Мониторинг безопасности
+- Type of issue (buffer overflow, SQL injection, cross-site scripting, etc.)
+- Full paths of source file(s) related to the vulnerability
+- The location of the affected source code (tag/branch/commit or direct URL)
+- Any special configuration required to reproduce the issue
+- Step-by-step instructions to reproduce the issue
+- Proof-of-concept or exploit code (if possible)
+- Impact of the issue, including how an attacker might exploit it
 
-### Отслеживание безопасности
-- **Отслеживание rate limit:** Мониторинг паттернов злоупотреблений
-- **Неудачная аутентификация:** Отслеживание попыток недопустимого доступа
-- **События безопасности:** Логирование всех связанных с безопасностью активностей
+This information will help us triage your report more quickly.
 
-### Логирование
-```python
-# События безопасности
-logger.warning(f"Rate limit exceeded for IP {client_ip}")
-logger.warning(f"Invalid signature from {client_ip}")
+## Security Features
 
-# Метрики производительности
-logger.info(f"Request: {request.path} - {duration:.3f}s - {response.status}")
-```
+Our application includes the following security measures:
 
-## 🔧 Обслуживание безопасности
+### Bot Security
+- Environment-based configuration (no hardcoded secrets)
+- Rate limiting for bot interactions
+- Input validation and sanitization
+- Webhook security monitoring and automatic cleanup
+- Security event logging and monitoring
 
-### Регулярные задачи
+### WebApp Security
+- Content Security Policy (CSP) headers
+- X-Frame-Options, X-Content-Type-Options, and other security headers
+- CORS restrictions to known origins
+- Input validation for all user data
+- Secure session management
 
-#### 1. Обновления безопасности
-- **Обновления зависимостей:** Поддерживайте пакеты актуальными
-- **Сканирование безопасности:** Запускайте bandit и pip-audit
-- **Ротация токенов:** Регенерируйте токены бота ежеквартально
+### API Security
+- Rate limiting for API endpoints
+- Input validation for all API requests
+- Security headers on all responses
+- CORS restrictions
+- Content hash-based ETags
 
-#### 2. Управление данными
-- **Обновления продукции:** Обеспечивайте свежие данные о продукции
-- **Очистка заказов:** Архивируйте старые заказы
-- **Проверка резервных копий:** Тестируйте процедуры восстановления
+### Development Security
+- Automated security scanning (CodeQL, Bandit, pip-audit)
+- Pre-commit hooks for security checks
+- Secrets detection and prevention
+- Regular dependency vulnerability scanning
 
-### Автоматизированные задачи
-```bash
-# Аудит безопасности
-bandit -r . -f json -o bandit-report.json
-pip-audit --format=json --output=pip-audit-report.json
+## Security Best Practices
 
-# Тестирование производительности
-python -m pytest tests/performance/ -v
+### For Users
+- Never share your bot token or API keys
+- Use strong, unique passwords
+- Keep your Telegram app updated
+- Be cautious of suspicious messages or links
 
-# Резервное копирование данных
-python scripts/backup_data.py
-```
+### For Developers
+- Always use environment variables for sensitive data
+- Validate all user input
+- Keep dependencies updated
+- Follow secure coding practices
+- Run security scans regularly
 
-## 🚨 Устранение неполадок безопасности
+## Security Updates
 
-### Распространенные проблемы
+We regularly update our security measures and dependencies. Security updates are typically released as patch versions (e.g., 1.3.1, 1.3.2).
 
-#### 1. Бот не отвечает
-- Проверьте валидность токена бота
-- Убедитесь в правильности конфигурации webhook
-- Просмотрите логи приложения
+## Acknowledgments
 
-#### 2. Ошибки API
-- Проверьте переменные окружения
-- Убедитесь в правильности конфигурации HMAC secret
-- Просмотрите настройки rate limiting
+We would like to thank all security researchers who responsibly disclose vulnerabilities to us. Your contributions help make our application more secure for everyone.
 
-### Команды отладки
-```bash
-# Проверить статус бота
-curl "https://api.telegram.org/bot<TOKEN>/getWebhookInfo"
+## Contact
 
-# Тестировать API endpoints
-curl -H "X-Signature: <signature>" https://your-app.herokuapp.com/bot-app/api/products
-
-# Просмотреть логи приложения
-heroku logs --tail
-```
-
-## 📋 Политика безопасности
-
-### Отчетность об уязвимостях
-Если вы обнаружили уязвимость безопасности, пожалуйста:
-
-1. **НЕ** создавайте публичный issue
-2. Отправьте email на: security@drazhin.by
-3. Включите подробное описание уязвимости
-4. Укажите шаги для воспроизведения
-
-### Ответ на инциденты
-1. **Немедленное реагирование:** В течение 24 часов
-2. **Исправление:** В течение 72 часов для критических уязвимостей
-3. **Коммуникация:** Уведомление затронутых пользователей
-
-### Контрольные списки безопасности
-
-#### Перед развертыванием
-- [ ] Все зависимости обновлены
-- [ ] Переменные окружения настроены
-- [ ] HMAC secret сгенерирован
-- [ ] Rate limiting включен
-- [ ] HTTPS принудительно включен
-
-#### После развертывания
-- [ ] Тесты безопасности пройдены
-- [ ] Мониторинг настроен
-- [ ] Логирование активно
-- [ ] Резервные копии созданы
+- **Security Email**: security@drazhin.by
+- **Security Policy**: https://github.com/your-username/BakeryMiniAppServer/blob/main/SECURITY.md
+- **Security.txt**: https://bakery-mini-app-server-440955f475ad.herokuapp.com/.well-known/security.txt
 
 ---
 
-**Контакт по безопасности:** security@drazhin.by  
-**Последнее обновление:** 2025-09-03
+*This security policy is based on the [GitHub Security Policy template](https://github.com/github/securitylab/blob/main/SECURITY.md).*

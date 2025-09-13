@@ -1,162 +1,125 @@
-# 🥖 Bakery Mini App Server
+# Bakery Mini App Server
 
-Telegram WebApp for Drazhin Bakery with full bakery ordering functionality.
+Telegram бот с веб-приложением для заказов в пекарне.
 
-## 🎯 Overview
+## Деплой на Heroku
 
-This project is a fully functional Telegram WebApp for a bakery, including:
-- Product catalog with categories
-- Shopping cart
-- Order processing
-- Email notifications
-- Security system
+### 1. Подготовка
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.11+
+Убедитесь, что у вас установлены:
 - Git
 - Heroku CLI
-- Telegram Bot Token
+- Python 3.11+
 
-### Installation
+### 2. Создание приложения на Heroku
+
 ```bash
-git clone <repository-url>
-cd BakeryMiniAppServer
-pip install -r requirements.txt
-```
+# Войдите в Heroku CLI
+heroku login
 
-### Environment Setup
-Copy `env.example` to `.env` and configure:
-```bash
-cp env.example .env
-# Edit .env with your values
-```
-
-## 🔧 Configuration
-
-### Required Environment Variables
-```bash
-BOT_TOKEN=your_telegram_bot_token
-ADMIN_CHAT_ID=your_telegram_user_id
-ADMIN_EMAIL=your_email@example.com
-BASE_WEBAPP_URL=https://your-app.herokuapp.com/bot-app/
-```
-
-### Additional Environment Variables
-```bash
-ADMIN_EMAIL_PASSWORD=your_smtp_password
-SMTP_SERVER=smtp.gmail.com
-HMAC_SECRET=your_hmac_secret_key
-```
-
-## 🚀 Deployment
-
-### Heroku (Recommended)
-
-1. **Create Heroku app:**
-```bash
+# Создайте новое приложение
 heroku create your-app-name
+
+# Или подключитесь к существующему
+heroku git:remote -a your-app-name
 ```
 
-2. **Set environment variables:**
+### 3. Настройка переменных окружения
+
 ```bash
-heroku config:set BOT_TOKEN="your_token"
-heroku config:set ADMIN_CHAT_ID="your_id"
-heroku config:set ADMIN_EMAIL="your_email"
-heroku config:set BASE_WEBAPP_URL="https://your-app.herokuapp.com/bot-app/"
+# Установите переменные окружения
+heroku config:set BOT_TOKEN="ваш_токен_бота"
+heroku config:set BASE_WEBAPP_URL="https://your-app-name.herokuapp.com/bot-app/"
+heroku config:set ADMIN_CHAT_ID="ваш_id_администратора"
+heroku config:set ADMIN_EMAIL="ваш_email@example.com"
+heroku config:set ADMIN_EMAIL_PASSWORD="пароль_для_smtp"  # опционально
+heroku config:set SMTP_SERVER="smtp.gmail.com"  # опционально
 ```
 
-3. **Deploy:**
+### 4. Деплой
+
 ```bash
+# Добавьте все файлы в git
+git add .
+
+# Сделайте коммит
+git commit -m "Initial deployment"
+
+# Отправьте на Heroku
 git push heroku main
 ```
 
-## 🛠️ Project Structure
+### 5. Проверка статуса
+
+```bash
+# Проверьте логи
+heroku logs --tail
+
+# Откройте приложение
+heroku open
+```
+
+## Структура проекта
 
 ```
 BakeryMiniAppServer/
-├── bot/                    # Main application code
-│   ├── web_app/           # Web application files
-│   │   ├── index.html     # Main HTML file
-│   │   ├── script.js      # JavaScript application
-│   │   ├── style.css      # CSS styles
-│   │   └── images/        # Static images
-│   ├── api_server.py      # API server
-│   ├── main.py           # Main bot file
-│   ├── parser.py         # Product parser
-│   └── config.py         # Configuration
-├── data/                  # Data files
-│   ├── products_scraped.json
-│   └── order_counter.json
-├── tests/                 # Test files
-├── scripts/              # Utilities
-└── docs/                 # Documentation
+├── bot/
+│   ├── __init__.py
+│   ├── api_server.py      # API сервер для веб-приложения
+│   ├── config.py          # Конфигурация
+│   ├── handlers.py        # Обработчики команд бота
+│   ├── keyboards.py       # Клавиатуры
+│   ├── main.py           # Главный файл бота
+│   ├── parser.py         # Парсер данных
+│   └── web_app/          # Веб-приложение
+│       ├── index.html
+│       ├── style.css
+│       ├── script.js
+│       └── Hleb.jpg
+├── data/
+│   ├── order_counter.json
+│   └── products_scraped.json
+├── Procfile              # Конфигурация для Heroku
+├── requirements.txt      # Зависимости Python
+├── runtime.txt          # Версия Python
+└── app.json             # Описание приложения для Heroku
 ```
 
-## 🔑 Key Features
+## Переменные окружения
 
-### 1. Customer Data Management
-- **Form Auto-fill:** Remembers customer information
-- **1 Year Storage:** Data saved for returning customers
-- **Privacy:** Local storage only, no server-side storage
+- `BOT_TOKEN` - Токен вашего Telegram бота
+- `BASE_WEBAPP_URL` - Базовый URL для веб-приложения
+- `ADMIN_CHAT_ID` - ID чата администратора в Telegram
+- `ADMIN_EMAIL` - Email администратора для уведомлений
+- `ADMIN_EMAIL_PASSWORD` - Пароль для SMTP (опционально)
+- `SMTP_SERVER` - SMTP сервер (по умолчанию: smtp.gmail.com)
 
-### 2. Product Management
-- **Automatic Parsing:** Updates product data every hour
-- **Category Filtering:** Organized product display
-- **Image Optimization:** Lazy loading and compression
+## Возможные проблемы
 
-### 3. Order Processing
-- **Cart Management:** Add/remove items with quantity control
-- **Form Validation:** Comprehensive input validation
-- **Order Tracking:** Unique order numbers and status
+### 1. Ошибка "No web processes running"
 
-## 📊 API Endpoints
-
-```
-GET /bot-app/api/products          # Get all products
-GET /bot-app/api/products?category=bread  # Get products by category
-GET /bot-app/api/categories        # Get product categories
-GET /bot-app/api/auth/token        # Get authentication token
-```
-
-## 🧪 Testing
-
-### Running Tests
 ```bash
-# Run all tests
-python -m pytest tests/
-
-# Run specific test categories
-python -m pytest tests/unit/
-python -m pytest tests/integration/
-
-# Run with coverage
-python -m pytest --cov=bot tests/
+# Запустите веб-процесс
+heroku ps:scale web=1
 ```
 
-### Test Categories
-- **Unit Tests:** Individual function testing
-- **Integration Tests:** API endpoint testing
-- **Security Tests:** Security function validation
-- **Performance Tests:** Load and stress testing
+### 2. Ошибка с портом
 
-## 🔄 Version History
+Приложение автоматически использует переменную `PORT` от Heroku.
 
-### Current Version: 1.3.108
-- ✅ HMAC signature authentication
-- ✅ Rate limiting implementation
-- ✅ Telegram WebApp validation
-- ✅ Security improvements
+### 3. Проблемы с зависимостями
 
-### Previous Versions
-- **1.3.97:** Initial security implementation
-- **1.3.95:** Customer data storage
-- **1.3.90:** Basic functionality
-- **1.3.85:** Core functionality
+Убедитесь, что все зависимости указаны в `requirements.txt` с точными версиями.
 
----
+### 4. Проблемы с файлами данных
 
-**Last Updated:** 2025-09-07  
-**Maintained by:** Development Team  
-**Security Contact:** security@drazhin.by
+Файлы в папке `data/` должны быть включены в репозиторий для работы приложения.
+
+## Поддержка
+
+При возникновении проблем проверьте логи:
+
+```bash
+heroku logs --tail
+```
+# Security audit test
