@@ -52,7 +52,6 @@ Thumbs.db
 *.temp
 
 # Data files (exclude from Heroku deployment)
-data/products_scraped.json
 data/order_counter.json
 
 # Logs and reports
