@@ -1,46 +1,16 @@
 {
-  "timestamp": "2025-09-03T12:30:00Z",
-  "python_version": "3.11.13",
+  "timestamp": "2025-08-11T11:47:32.410836",
+  "python_version": "3.9.6",
   "environment_vars": {
     "BOT_TOKEN": "SET",
-    "ADMIN_CHAT_ID": "SET", 
+    "ADMIN_CHAT_ID": "SET",
     "ADMIN_EMAIL": "SET",
-    "ADMIN_EMAIL_PASSWORD": "SET",
-    "HMAC_SECRET": "SET"
+    "ADMIN_EMAIL_PASSWORD": "SET"
   },
   "security_features": {
     "rate_limiting": true,
     "security_monitoring": true,
     "webhooks_allowed": false,
-    "log_security_events": true,
-    "hmac_signature_validation": true,
-    "telegram_webapp_validation": true,
-    "https_enforcement": true,
-    "timestamp_validation": true
-  },
-  "security_implementations": {
-    "client_side": {
-      "hmac_signature_generation": true,
-      "telegram_initdata_validation": true,
-      "rate_limiting": true,
-      "https_enforcement": true
-    },
-    "server_side": {
-      "hmac_signature_verification": true,
-      "rate_limiting_by_ip": true,
-      "timestamp_validation": true,
-      "telegram_webapp_validation": true,
-      "security_headers": true
-    }
-  },
-  "vulnerability_status": {
-    "bandit_scan": "completed",
-    "pip_audit": "completed", 
-    "known_vulnerabilities": 4,
-    "high_severity": 0,
-    "medium_severity": 2,
-    "low_severity": 2
-  },
-  "protection_level": "high",
-  "last_updated": "2025-09-03T12:30:00Z"
+    "log_security_events": true
+  }
 }
