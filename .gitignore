@@ -76,4 +76,5 @@ mcp_playwright_server.py
 telegram-bot-mcp/
 
 # Setup scripts
-setup_env.sh 
+setup_env.sh
+setup_heroku_auth.sh 
