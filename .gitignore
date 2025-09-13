@@ -49,4 +49,31 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Data files (exclude from Heroku deployment)
+data/products_scraped.json
+data/order_counter.json
+
+# Logs and reports
+logs/
+*.log
+*_report.json
+performance_report.json
+security_report.json
+bandit-report.json
+pip-audit-report.json
+
+# Test files
+test_*.py
+check_*.py
+
+# Cursor IDE
+.cursor/
+
+# MCP and other tools
+mcp_playwright_server.py
+telegram-bot-mcp/
+
+# Setup scripts
+setup_env.sh 
