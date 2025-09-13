@@ -18,31 +18,7 @@ heroku config:set BASE_WEBAPP_URL="https://your-app.herokuapp.com/bot-app/"
 heroku config:set HMAC_SECRET="your_hmac_secret"
 ```
 
-#### 3. Authentication Setup
-
-**Option 1: Login through browser (recommended)**
-```bash
-heroku login
-# Press any key to open browser and login
-```
-
-**Option 2: Use API key**
-1. Get API key from [dashboard.heroku.com/account](https://dashboard.heroku.com/account)
-2. Scroll down to "API Key" section
-3. Copy your API key
-4. Set environment variable:
-```bash
-export HEROKU_API_KEY="your_api_key_here"
-```
-
-**Option 3: Add to shell profile (permanent)**
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-echo 'export HEROKU_API_KEY="your_api_key_here"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-#### 4. Deployment
+#### 3. Deployment
 ```bash
 git push heroku main
 ```
@@ -50,8 +26,6 @@ git push heroku main
 ### Alternative Deployment Methods
 
 #### GitHub Actions
-
-**1. Create workflow file** (`.github/workflows/deploy.yml`):
 ```yaml
 name: Deploy to Heroku
 on:
@@ -67,20 +41,7 @@ jobs:
       with:
         heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
         heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-        heroku_email: ${{ secrets.HEROKU_EMAIL }}
 ```
-
-**2. Configure GitHub Secrets:**
-1. Go to repository settings → Secrets and variables → Actions
-2. Add the following secrets:
-   - `HEROKU_API_KEY` - your Heroku API key
-   - `HEROKU_APP_NAME` - your app name (e.g., `bakery-mini-app-server`)
-   - `HEROKU_EMAIL` - your Heroku email
-
-**3. Get Heroku API Key:**
-1. Visit [dashboard.heroku.com/account](https://dashboard.heroku.com/account)
-2. Scroll down to "API Key" section
-3. Click "Reveal" and copy the key
 
 #### Web Interface
 1. Connect GitHub repository to Heroku
