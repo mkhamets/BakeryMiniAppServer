@@ -1,0 +1,217 @@
+openapi: 3.0.0
+info:
+  title: Bakery Mini App API
+  description: API for Bakery Mini App Server with Telegram WebApp integration
+  version: 1.0.0
+  contact:
+    name: Bakery Mini App Support
+    email: support@bakeryapp.com
+servers:
+  - url: https://your-heroku-app.herokuapp.com
+    description: Production server
+  - url: http://localhost:8000
+    description: Development server
+paths:
+  /api/products:
+    get:
+      summary: Get all products
+      description: Retrieve all bakery products with categories
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  category_bakery:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  category_croissants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  category_artisan_bread:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  category_desserts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+  /api/categories:
+    get:
+      summary: Get product categories
+      description: Retrieve all available product categories
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: string
+  /api/auth/token:
+    post:
+      summary: Generate authentication token
+      description: Generate HMAC authentication token for API access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                timestamp:
+                  type: integer
+                  description: Current timestamp
+              required:
+                - timestamp
+      responses:
+        '200':
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: HMAC authentication token
+                  timestamp:
+                    type: integer
+                    description: Token timestamp
+  /api/orders:
+    post:
+      summary: Create new order
+      description: Submit a new bakery order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '200':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                    description: Unique order identifier
+                  status:
+                    type: string
+                    description: Order status
+                  message:
+                    type: string
+                    description: Confirmation message
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Product name
+        url:
+          type: string
+          description: Product URL
+        image_url:
+          type: string
+          description: Product image URL
+        price:
+          type: string
+          description: Product price
+        short_description:
+          type: string
+          description: Short product description
+        weight:
+          type: string
+          description: Product weight
+        for_vegans:
+          type: string
+          description: Vegan-friendly indicator
+        availability_days:
+          type: string
+          description: Days when product is available
+        ingredients:
+          type: string
+          description: Product ingredients
+        calories:
+          type: string
+          description: Calorie information
+        energy_value:
+          type: string
+          description: Energy value breakdown
+        id:
+          type: string
+          description: Unique product identifier
+    Order:
+      type: object
+      properties:
+        customer_name:
+          type: string
+          description: Customer name
+        customer_phone:
+          type: string
+          description: Customer phone number
+        customer_email:
+          type: string
+          description: Customer email
+        delivery_address:
+          type: string
+          description: Delivery address
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                description: Product identifier
+              quantity:
+                type: integer
+                description: Quantity ordered
+              price:
+                type: string
+                description: Item price
+        total_amount:
+          type: string
+          description: Total order amount
+        privacy_consent:
+          type: boolean
+          description: Privacy consent given
+      required:
+        - customer_name
+        - customer_phone
+        - customer_email
+        - delivery_address
+        - items
+        - total_amount
+        - privacy_consent
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: integer
+          description: Error code
+        details:
+          type: string
+          description: Additional error details
