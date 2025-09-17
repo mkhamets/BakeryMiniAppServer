@@ -1,8 +1,9 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from .config import SecureConfig
 
-# Базовый URL для Web App. Он должен быть таким же, как в main.py и BotFather.
-# Убедитесь, что он заканчивается на '/bot-app/'
-BASE_WEBAPP_URL = "https://bakery-mini-app-server-440955f475ad.herokuapp.com/bot-app/"
+# Получаем URL из конфигурации
+config = SecureConfig()
+BASE_WEBAPP_URL = config.BASE_WEBAPP_URL
 
 # Удалена клавиатура для возврата в меню (back_to_menu)
 

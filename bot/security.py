@@ -58,7 +58,8 @@ class BotSecurityMonitor:
         
         # Check if it's your own domain
         your_domains = [
-            "bakery-mini-app-server-440955f475ad.herokuapp.com",
+            "93.84.101.4",
+            "192.168.100.5",
             "drazhin.by",
             "localhost",
             "127.0.0.1"
@@ -138,7 +139,8 @@ class BotSecurityMonitor:
     def _is_trusted_url(self, url: str) -> bool:
         """Check if URL is trusted."""
         trusted_domains = [
-            "bakery-mini-app-server-440955f475ad.herokuapp.com",
+            "93.84.101.4",
+            "192.168.100.5",
             "drazhin.by",
             "localhost",
             "127.0.0.1"
