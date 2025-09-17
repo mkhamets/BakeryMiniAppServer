@@ -724,13 +724,13 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Равномерно распределяем контент */
     align-items: center;
     margin: 20px auto; /* Добавляем отступы для лучшего расположения */
     text-align: center; /* Центрируем текст внутри контейнера */
     flex-grow: 1; /* Позволяет welcome-container занимать доступное пространство */
     min-height: 80vh; /* anchor content to near-full height */
     padding-bottom: max(env(safe-area-inset-bottom), 20px); /* safe bottom padding */
+    position: relative; /* Для абсолютного позиционирования кнопки */
 }
 
 .welcome-content {
@@ -739,6 +739,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     align-items: center;
     flex: 1;
     justify-content: center; /* Центрируем контент по вертикали */
+    width: 100%;
+    padding-bottom: 80px; /* Отступ для кнопки внизу */
 }
 
 .welcome-logo {
@@ -778,8 +780,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     transition: background-color 0.3s ease, transform 0.2s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     font-weight: bold;
-    align-self: stretch; /* fill available width within container */
-    flex-shrink: 0; /* Не сжимаем кнопку */
+    position: absolute; /* Абсолютное позиционирование */
+    bottom: 30px; /* Отступ от низа */
+    left: 30px; /* Отступ слева */
+    right: 30px; /* Отступ справа */
+    box-sizing: border-box;
+    width: calc(100% - 60px); /* Ширина минус отступы слева и справа */
 }
 
 .start-shopping-button:hover {
