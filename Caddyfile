@@ -1,4 +1,4 @@
-drazhinbakerybot.duckdns.org:8443 {
-    reverse_proxy localhost:5000
+miniapp.drazhin.by {
+    reverse_proxy localhost:80
 }
 

@@ -412,9 +412,9 @@ if __name__ == '__main__':
     import asyncio
     async def main_api():
         runner = await setup_api_server()
-        site = web.TCPSite(runner, '0.0.0.0', 8443)  # nosec B104 - Web server needs to bind to all interfaces
+        site = web.TCPSite(runner, '0.0.0.0', 80)  # nosec B104 - Web server needs to bind to all interfaces
         await site.start()
-        logger.info("API сервер запущен в автономном режиме на http://0.0.0.0:8443")
+        logger.info("API сервер запущен в автономном режиме на http://0.0.0.0:80")
         # Keep the server running indefinitely
         await asyncio.Event().wait() 
 

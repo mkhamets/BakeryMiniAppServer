@@ -57,7 +57,7 @@ class SecureConfig:
         # Web app configuration
         self.BASE_WEBAPP_URL = os.environ.get(
             'BASE_WEBAPP_URL', 
-            'https://drazhinbakerybot.duckdns.org/bot-app/'
+            'https://miniapp.drazhin.by/bot-app/'
         )
         
         # Admin configuration

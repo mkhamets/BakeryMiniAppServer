@@ -29,7 +29,7 @@ heroku git:remote -a your-app-name
 ```bash
 # Установите переменные окружения
 heroku config:set BOT_TOKEN="ваш_токен_бота"
-heroku config:set BASE_WEBAPP_URL="https://your-app-name.herokuapp.com/bot-app/"
+heroku config:set BASE_WEBAPP_URL="https://miniapp.drazhin.by/bot-app/"
 heroku config:set ADMIN_CHAT_ID="ваш_id_администратора"
 heroku config:set ADMIN_EMAIL="ваш_email@example.com"
 heroku config:set ADMIN_EMAIL_PASSWORD="пароль_для_smtp"  # опционально

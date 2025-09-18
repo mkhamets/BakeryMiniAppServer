@@ -9,7 +9,7 @@ info:
 servers:
   - url: https://ebeb32805dc33a1ae1d0070ff961ebaf.serveo.net
     description: Production server (Serveo)
-  - url: https://93.84.101.4:8443
+  - url: https://miniapp.drazhin.by
     description: Direct server access
   - url: http://localhost:8000
     description: Development server

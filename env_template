@@ -83,7 +83,7 @@ ENABLE_EMAIL_NOTIFICATIONS=true
 # SERVER SPECIFIC
 # ========================================
 # Порт для веб-сервера
-PORT=8080
+PORT=80
 
 # ========================================
 # SECURITY NOTES

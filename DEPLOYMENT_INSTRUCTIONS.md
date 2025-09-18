@@ -149,7 +149,7 @@ sudo tail -f /var/log/nginx/error.log
 
 ```bash
 # Локально
-curl http://localhost:8080/bot-app/
+curl http://localhost:80/bot-app/
 
 # Внешне (замените на ваш домен)
 curl https://your-domain.com/bot-app/
@@ -231,7 +231,7 @@ sudo systemctl start bakery-bot bakery-parser
 
 ### Проверка портов:
 ```bash
-sudo ss -tlnp | grep :8080
+sudo ss -tlnp | grep :80
 sudo ss -tlnp | grep :80
 sudo ss -tlnp | grep :443
 ```
