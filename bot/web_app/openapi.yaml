@@ -7,8 +7,10 @@ info:
     name: Bakery Mini App Support
     email: support@bakeryapp.com
 servers:
-  - url: https://93.84.101.4:32159
-    description: Production server
+  - url: https://ebeb32805dc33a1ae1d0070ff961ebaf.serveo.net
+    description: Production server (Serveo)
+  - url: https://93.84.101.4:8443
+    description: Direct server access
   - url: http://localhost:8000
     description: Development server
 paths:

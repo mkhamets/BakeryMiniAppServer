@@ -58,6 +58,7 @@ class BotSecurityMonitor:
         
         # Check if it's your own domain
         your_domains = [
+            "997fca6c4238c4.lhr.life",
             "93.84.101.4",
             "192.168.100.5",
             "drazhin.by",
@@ -139,6 +140,7 @@ class BotSecurityMonitor:
     def _is_trusted_url(self, url: str) -> bool:
         """Check if URL is trusted."""
         trusted_domains = [
+            "997fca6c4238c4.lhr.life",
             "93.84.101.4",
             "192.168.100.5",
             "drazhin.by",
