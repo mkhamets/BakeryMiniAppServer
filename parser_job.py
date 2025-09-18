@@ -245,3 +245,4 @@ if __name__ == "__main__":
         print(f"❌ Неизвестная команда: {command}")
         show_help()
         sys.exit(1)
+

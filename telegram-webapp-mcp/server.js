@@ -276,3 +276,4 @@ class TelegramWebAppMCPServer {
 
 const server = new TelegramWebAppMCPServer();
 server.run().catch(console.error);
+

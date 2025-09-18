@@ -1,0 +1,4 @@
+miniapp.drazhin.by {
+    reverse_proxy localhost:80
+}
+

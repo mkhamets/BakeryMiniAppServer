@@ -7,8 +7,10 @@ info:
     name: Bakery Mini App Support
     email: support@bakeryapp.com
 servers:
-  - url: https://your-heroku-app.herokuapp.com
-    description: Production server
+  - url: https://ebeb32805dc33a1ae1d0070ff961ebaf.serveo.net
+    description: Production server (Serveo)
+  - url: https://miniapp.drazhin.by
+    description: Direct server access
   - url: http://localhost:8000
     description: Development server
 paths:
