@@ -1,0 +1,9 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/drazhinb/miniapp/
+    - /bin/cp wsgi.py $DEPLOYPATH
+    - /bin/cp -R bot/ $DEPLOYPATH
+    - /bin/cp requirements.txt $DEPLOYPATH
+    - /bin/cp .env $DEPLOYPATH
+    - touch $DEPLOYPATH/tmp/restart.txt
