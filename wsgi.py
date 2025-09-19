@@ -471,18 +471,18 @@ def application(environ, start_response):
     # Получаем путь запроса
     path = environ.get('PATH_INFO', '/')
     
+    # Убираем /bot-app/ из пути для внутренней обработки
+    if path.startswith('/bot-app/'):
+        path = path[8:]  # Убираем '/bot-app'
+    if not path.startswith('/'):
+        path = '/' + path
+    
     # Обрабатываем перенаправление с корня на /bot-app/
     if path == '/':
         status = '302 Found'
         headers = [('Location', '/bot-app/')]
         start_response(status, headers)
         return []
-    
-    # Убираем /bot-app/ из пути для внутренней обработки
-    if path.startswith('/bot-app/'):
-        path = path[8:]  # Убираем '/bot-app'
-    if not path.startswith('/'):
-        path = '/' + path
     
     # Обрабатываем статические файлы с умным кешированием
     static_extensions = ('.css', '.js', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico')
