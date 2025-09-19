@@ -474,11 +474,13 @@ def application(environ, start_response):
     # Убираем /bot-app/ из пути для внутренней обработки
     if path.startswith('/bot-app/'):
         path = path[8:]  # Убираем '/bot-app'
+        if not path:  # Если путь стал пустым после удаления /bot-app/
+            path = '/'  # Устанавливаем корень для обработки
     if not path.startswith('/'):
         path = '/' + path
     
     # Обрабатываем перенаправление с корня на /bot-app/
-    if path == '/':
+    if path == '/' or path == '':
         status = '302 Found'
         headers = [('Location', '/bot-app/')]
         start_response(status, headers)
