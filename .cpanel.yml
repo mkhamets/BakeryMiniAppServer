@@ -7,8 +7,9 @@ deployment:
     - /bin/cp requirements.txt $DEPLOYPATH
     - /bin/cp .env $DEPLOYPATH
     - /bin/mkdir -p $DEPLOYPATH/bot-app
-    - /bin/cat > $DEPLOYPATH/bot-app/.htaccess << 'EOF'
-RewriteEngine On
-RewriteRule ^(.*)$ /wsgi.py [QSA,L]
-EOF
+    - echo "RewriteEngine On" > $DEPLOYPATH/bot-app/.htaccess
+    - echo "RewriteRule ^(.*)$ /wsgi.py [QSA,L]" >> $DEPLOYPATH/bot-app/.htaccess
+    - /bin/chmod 755 $DEPLOYPATH/bot-app
+    - /bin/chmod 644 $DEPLOYPATH/bot-app/.htaccess
+    - /bin/ls -la $DEPLOYPATH/bot-app/
     - touch $DEPLOYPATH/tmp/restart.txt
