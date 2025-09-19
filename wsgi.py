@@ -161,9 +161,11 @@ def get_auth_token_handler(environ, start_response):
     client_ip = environ.get('REMOTE_ADDR', '127.0.0.1')
     method = environ.get('REQUEST_METHOD', 'GET')
     
-    # Check if this is a webhook test request
+    # Check if this is a webhook test request (via query param or header)
     query_string = environ.get('QUERY_STRING', '')
-    if 'webhook_test=true' in query_string:
+    webhook_test_header = environ.get('HTTP_X_WEBHOOK_TEST', '')
+    
+    if 'webhook_test=true' in query_string or webhook_test_header == 'true':
         return webhook_test_handler(environ, start_response)
     
     # Basic rate limiting for token requests
