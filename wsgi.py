@@ -479,12 +479,12 @@ def application(environ, start_response):
     if not path.startswith('/'):
         path = '/' + path
     
-    # Обрабатываем перенаправление с корня на /bot-app/
-    if path == '/' or path == '':
-        status = '302 Found'
-        headers = [('Location', '/bot-app/')]
-        start_response(status, headers)
-        return []
+    # НЕ делаем редирект с корня - CloudLinux уже настроил /bot-app как базовый URI
+    # if path == '/' or path == '':
+    #     status = '302 Found'
+    #     headers = [('Location', '/bot-app/')]
+    #     start_response(status, headers)
+    #     return []
     
     # Обрабатываем статические файлы с умным кешированием
     static_extensions = ('.css', '.js', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico')
