@@ -21,6 +21,12 @@ function getHMACSecret() {
 
 // ===== HMAC SIGNATURE FUNCTIONS =====
 async function generateHMACSignature(data, secret) {
+    // Проверяем доступность crypto.subtle
+    if (!window.crypto || !window.crypto.subtle) {
+        console.warn('Crypto.subtle not available, using fallback');
+        return 'fallback-signature';
+    }
+    
     const encoder = new TextEncoder();
     const keyData = encoder.encode(secret);
     const messageData = encoder.encode(data);
@@ -225,7 +231,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.108';
+    const CACHE_VERSION = '1.3.109';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
