@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Разрешить все API запросы
+RewriteCond %{REQUEST_URI} ^/bot-app/api/
+RewriteRule ^(.*)$ /wsgi.py [QSA,L]
+
+# Разрешить webhook тест
+RewriteCond %{REQUEST_URI} ^/bot-app/api/test
+RewriteRule ^(.*)$ /wsgi.py [QSA,L]
+
+# Основное приложение
+RewriteCond %{REQUEST_URI} ^/bot-app/
+RewriteRule ^(.*)$ /wsgi.py [QSA,L]

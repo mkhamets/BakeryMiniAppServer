@@ -157,8 +157,14 @@ load_products_data()
 
 # ===== API HANDLERS =====
 def get_auth_token_handler(environ, start_response):
-    """Handle auth token requests"""
+    """Handle auth token requests and webhook test"""
     client_ip = environ.get('REMOTE_ADDR', '127.0.0.1')
+    method = environ.get('REQUEST_METHOD', 'GET')
+    
+    # Check if this is a webhook test request
+    query_string = environ.get('QUERY_STRING', '')
+    if 'webhook_test=true' in query_string:
+        return webhook_test_handler(environ, start_response)
     
     # Basic rate limiting for token requests
     if not check_rate_limit(f"{client_ip}:token"):

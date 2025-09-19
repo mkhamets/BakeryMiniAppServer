@@ -10,8 +10,8 @@ import time
 def test_webhook():
     """Тестирует webhook endpoint"""
     
-    # URL для тестирования
-    webhook_url = "https://miniapp.drazhin.by/bot-app/api/test"
+    # URL для тестирования (используем существующий endpoint с параметром)
+    webhook_url = "https://miniapp.drazhin.by/bot-app/api/auth/token?webhook_test=true"
     
     print("🔍 Тестирование webhook функциональности...")
     print(f"URL: {webhook_url}")

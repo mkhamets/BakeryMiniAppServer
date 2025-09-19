@@ -7,6 +7,7 @@ deployment:
     - /bin/cp requirements.txt $DEPLOYPATH
     - /bin/cp .env $DEPLOYPATH
     - /bin/cp test_webhook.py $DEPLOYPATH
+    - /bin/cp .htaccess $DEPLOYPATH
     - /bin/mkdir -p $DEPLOYPATH/bot-app
     - echo "RewriteEngine On" > $DEPLOYPATH/bot-app/.htaccess
     - echo "RewriteRule ^(.*)$ /wsgi.py [QSA,L]" >> $DEPLOYPATH/bot-app/.htaccess
