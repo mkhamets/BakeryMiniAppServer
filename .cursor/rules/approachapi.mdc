@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+мы должны:
+Объединить API с wsgi.py - весь API как обычные view/route внутри того же приложения
+Passenger будет обслуживать - единый процесс для всего
