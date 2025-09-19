@@ -573,7 +573,7 @@ def application(environ, start_response):
         return serve_security_txt(environ, start_response)
     
     # Webhook test endpoint
-    if path == '/api/webhook/test':
+    if path == '/api/test':
         return webhook_test_handler(environ, start_response)
     
     # 404 для неизвестных путей

@@ -11,7 +11,7 @@ def test_webhook():
     """Тестирует webhook endpoint"""
     
     # URL для тестирования
-    webhook_url = "https://miniapp.drazhin.by/bot-app/api/webhook/test"
+    webhook_url = "https://miniapp.drazhin.by/bot-app/api/test"
     
     print("🔍 Тестирование webhook функциональности...")
     print(f"URL: {webhook_url}")
