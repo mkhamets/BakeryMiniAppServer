@@ -455,6 +455,68 @@ def serve_security_txt(environ, start_response):
         start_response(status, headers)
         return [b'Security policy not found']
 
+def webhook_test_handler(environ, start_response):
+    """Test webhook functionality"""
+    try:
+        # Получаем метод запроса
+        method = environ.get('REQUEST_METHOD', 'GET')
+        
+        # Получаем заголовки
+        headers = {}
+        for key, value in environ.items():
+            if key.startswith('HTTP_'):
+                header_name = key[5:].replace('_', '-').title()
+                headers[header_name] = value
+        
+        # Получаем тело запроса
+        content_length = int(environ.get('CONTENT_LENGTH', 0))
+        body = ''
+        if content_length > 0:
+            body = environ['wsgi.input'].read(content_length).decode('utf-8')
+        
+        # Получаем query параметры
+        query_string = environ.get('QUERY_STRING', '')
+        
+        # Формируем ответ
+        response_data = {
+            "status": "webhook_test_success",
+            "method": method,
+            "headers": headers,
+            "body": body,
+            "query_string": query_string,
+            "timestamp": time.time(),
+            "server_info": {
+                "server_software": environ.get('SERVER_SOFTWARE', 'Unknown'),
+                "gateway_interface": environ.get('GATEWAY_INTERFACE', 'Unknown'),
+                "server_name": environ.get('SERVER_NAME', 'Unknown'),
+                "server_port": environ.get('SERVER_PORT', 'Unknown'),
+                "https": environ.get('HTTPS', 'off'),
+                "remote_addr": environ.get('REMOTE_ADDR', 'Unknown')
+            }
+        }
+        
+        logger.info(f"Webhook test: {method} request received")
+        logger.info(f"Headers: {headers}")
+        logger.info(f"Body: {body}")
+        
+        status = '200 OK'
+        response_headers = [
+            ('Content-Type', 'application/json; charset=utf-8'),
+            ('Cache-Control', 'no-cache, no-store, must-revalidate'),
+            ('Pragma', 'no-cache'),
+            ('Expires', '0'),
+        ] + get_cors_headers()
+        
+        start_response(status, response_headers)
+        return [json.dumps(response_data, indent=2, ensure_ascii=False).encode('utf-8')]
+        
+    except Exception as e:
+        logger.error(f"Webhook test error: {e}")
+        status = '500 Internal Server Error'
+        headers = [('Content-Type', 'application/json; charset=utf-8')] + get_cors_headers()
+        start_response(status, headers)
+        return [json.dumps({"error": f"Webhook test failed: {str(e)}"}, ensure_ascii=False).encode('utf-8')]
+
 def application(environ, start_response):
     """WSGI application entry point"""
     global bot_thread, api_server_thread
@@ -509,6 +571,10 @@ def application(environ, start_response):
     # Security.txt endpoint
     if path == '/.well-known/security.txt':
         return serve_security_txt(environ, start_response)
+    
+    # Webhook test endpoint
+    if path == '/api/webhook/test':
+        return webhook_test_handler(environ, start_response)
     
     # 404 для неизвестных путей
     status = '404 Not Found'
