@@ -32,6 +32,7 @@ from bot.security_headers import security_headers_middleware, create_content_has
 import asyncio
 import threading
 import logging
+import requests
 
 # Настраиваем логирование
 logger = logging.getLogger(__name__)
@@ -134,23 +135,48 @@ def generate_auth_token() -> dict:
         "expires_in": 3600
     }
 
+def load_products_from_modx_api():
+    """Загружает товары через MODX API"""
+    try:
+        response = requests.get('https://drazhin.by/api/products.php', timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            logger.info(f"WSGI: Загружено {len(data)} товаров из MODX API")
+            return data
+        else:
+            logger.error(f"WSGI: Ошибка MODX API: {response.status_code}")
+            return {}
+    except Exception as e:
+        logger.error(f"WSGI: Ошибка загрузки из MODX API: {e}")
+        return {}
+
+def load_categories_from_modx_api():
+    """Загружает категории через MODX API"""
+    try:
+        response = requests.get('https://drazhin.by/api/categories.php', timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            logger.info(f"WSGI: Загружено {len(data)} категорий из MODX API")
+            return data
+        else:
+            logger.error(f"WSGI: Ошибка MODX API: {response.status_code}")
+            return {}
+    except Exception as e:
+        logger.error(f"WSGI: Ошибка загрузки из MODX API: {e}")
+        return {}
+
 def load_products_data():
-    """Загружает данные о продуктах из JSON-файла"""
+    """Загружает данные о продуктах ТОЛЬКО из MODX API для тестирования"""
     global products_data
-    if PRODUCTS_DATA_FILE.exists():
-        try:
-            with open(PRODUCTS_DATA_FILE, 'r', encoding='utf-8') as f:
-                products_data = json.load(f)
-            logger.info(f"WSGI: Данные о продуктах успешно загружены из {PRODUCTS_DATA_FILE}")
-        except json.JSONDecodeError as e:
-            logger.error(f"WSGI: Ошибка при чтении JSON-файла '{PRODUCTS_DATA_FILE}': {e}")
-            products_data = {}
-        except Exception as e:
-            logger.error(f"WSGI: Неизвестная ошибка при загрузке данных о продуктах: {e}")
-            products_data = {}
-    else:
-        logger.warning(f"WSGI: Файл '{PRODUCTS_DATA_FILE}' не найден. WSGI не сможет отдавать данные о продуктах.")
+    
+    # Используем только MODX API для тестирования
+    products_data = load_products_from_modx_api()
+    
+    if not products_data:
+        logger.error("WSGI: MODX API недоступен! Парсер отключен для тестирования.")
         products_data = {}
+    else:
+        logger.info(f"WSGI: Загружено {len(products_data)} товаров из MODX API")
 
 # Загружаем данные о продуктах при инициализации
 load_products_data()
@@ -232,19 +258,40 @@ def get_products_handler(environ, start_response):
             start_response(status, headers)
             return [b'{"error": "Product data not loaded"}']
         
-        if category_key:
-            # Return products for specific category
-            products_in_category = products_data.get(category_key, [])
-            if not products_in_category:
-                status = '404 Not Found'
-                headers = [('Content-Type', 'application/json; charset=utf-8')]
-                start_response(status, headers)
-                return [b'{"error": "Category not found or empty"}']
-            
-            response_data = json.dumps(products_in_category)
+        # MODX API возвращает массив товаров, нужно преобразовать в формат для фронтенда
+        if isinstance(products_data, list):
+            # Данные из MODX API (массив товаров)
+            if category_key:
+                # Фильтруем по category_id
+                try:
+                    category_id = int(category_key)
+                    filtered_products = [p for p in products_data if p.get('category_id') == str(category_id)]
+                    if not filtered_products:
+                        status = '404 Not Found'
+                        headers = [('Content-Type', 'application/json; charset=utf-8')]
+                        start_response(status, headers)
+                        return [b'{"error": "Category not found or empty"}']
+                    response_data = json.dumps(filtered_products)
+                except ValueError:
+                    status = '400 Bad Request'
+                    headers = [('Content-Type', 'application/json; charset=utf-8')]
+                    start_response(status, headers)
+                    return [b'{"error": "Invalid category ID"}']
+            else:
+                # Возвращаем все товары
+                response_data = json.dumps(products_data)
         else:
-            # Return all products grouped by categories
-            response_data = json.dumps(products_data)
+            # Данные из парсера (объект с категориями) - fallback
+            if category_key:
+                products_in_category = products_data.get(category_key, [])
+                if not products_in_category:
+                    status = '404 Not Found'
+                    headers = [('Content-Type', 'application/json; charset=utf-8')]
+                    start_response(status, headers)
+                    return [b'{"error": "Category not found or empty"}']
+                response_data = json.dumps(products_in_category)
+            else:
+                response_data = json.dumps(products_data)
         
         status = '200 OK'
         headers = [
@@ -276,25 +323,38 @@ def get_categories_handler(environ, start_response):
         
         logger.info("WSGI: Запрос списка категорий.")
         
-        if not products_data:
+        # Используем только MODX API для тестирования
+        categories_data = load_categories_from_modx_api()
+        
+        if categories_data:
+            # Данные из MODX API
+            categories_list = []
+            for category in categories_data:
+                categories_list.append({
+                    "key": str(category['id']),
+                    "name": category['name'],
+                    "image": ""  # MODX API не возвращает изображения категорий
+                })
+            response_data = json.dumps(categories_list)
+        elif products_data and isinstance(products_data, list):
+            # Fallback: генерируем категории из товаров MODX API
+            categories_dict = {}
+            for product in products_data:
+                category_id = product.get('category_id')
+                if category_id and category_id not in categories_dict:
+                    categories_dict[category_id] = {
+                        "key": category_id,
+                        "name": f"Категория {category_id}",  # Временное название
+                        "image": product.get('image', '')
+                    }
+            categories_list = list(categories_dict.values())
+            response_data = json.dumps(categories_list)
+        else:
             logger.warning("WSGI: Данные о продуктах не загружены для категорий.")
             status = '500 Internal Server Error'
             headers = [('Content-Type', 'application/json; charset=utf-8')]
             start_response(status, headers)
             return [b'{"error": "Product data not loaded"}']
-        
-        categories_list = []
-        for key, products in products_data.items():
-            if products:  # Убедимся, что в категории есть продукты
-                # Берем первое изображение из первого продукта в категории как изображение для категории
-                category_image = products[0].get('image_url', '')
-                categories_list.append({
-                    "key": key,
-                    "name": products[0].get('category_name', key),  # Используем название категории из первого продукта
-                    "image": category_image
-                })
-        
-        response_data = json.dumps(categories_list)
         
         status = '200 OK'
         headers = [

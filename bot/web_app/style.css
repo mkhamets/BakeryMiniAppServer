@@ -172,6 +172,84 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     filter: brightness(1.1);
 }
 
+/* Стили для множественных изображений (только для экрана товара) */
+.image-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    transition: background 0.3s ease;
+    user-select: none;
+}
+
+.image-nav:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.image-nav.prev {
+    left: 8px;
+}
+
+.image-nav.next {
+    right: 8px;
+}
+
+.image-indicators {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.image-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.image-dot.active {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.image-dot:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Стили для контейнера изображений в экране товара */
+.product-screen-image-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.product-screen-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-screen-image:hover {
+    transform: scale(1.02);
+}
+
 .product-info {
     flex: 1; /* Занимает оставшееся пространство */
     display: flex;

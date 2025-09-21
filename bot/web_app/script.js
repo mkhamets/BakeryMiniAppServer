@@ -2099,7 +2099,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const categoryIcon = categoryInfo.icon;
 
                 const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
-                    ? productsData[category.key][0].image_url
+                    ? productsData[category.key][0].image
                     : 'https://placehold.co/300x200/cccccc/333333?text=No+Image';
 
                 const categoryCard = document.createElement('div');
@@ -2175,7 +2175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             productCard.innerHTML = `
                 <div class="product-image-container">
-                    <img src="${product.image_url || 'https://placehold.co/300x225/e0e0e0/555?text=Нет+фото'}" 
+                    <img src="${product.image || 'https://placehold.co/300x225/e0e0e0/555?text=Нет+фото'}" 
                          alt="${product.name}" 
                          class="product-image clickable-image" 
                          data-product-id="${product.id}"
@@ -2213,6 +2213,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             if (productListElement) productListElement.appendChild(productCard);
         });
+
+        // На странице категорий множественные изображения не показываем
+        // Они будут только на экране товара
 
         // Добавляем обработчики событий для кнопок +/-
         if (productListElement) {
@@ -2430,7 +2433,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="cart-item-image-container" 
                      style="cursor: ${isAvailable ? 'pointer' : 'default'};" 
                      onclick="${isAvailable ? `showProductScreen('${item.id}', '${productCategory}')` : 'return false;'}">
-                    <img src="${item.image_url || 'https://placehold.co/80x80/cccccc/333333?text=No+Image'}" 
+                    <img src="${item.image || 'https://placehold.co/80x80/cccccc/333333?text=No+Image'}" 
                          alt="${item.name}" class="cart-item-image"
                          onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/333333?text=No+Image';">
                     ${!isAvailable ? '<div class="unavailable-label">Недоступен</div>' : ''}
@@ -3457,10 +3460,20 @@ function addErrorClearingListeners() {
 
         // Формируем HTML для экрана продукта
         let screenHTML = `
-            <img src="${product.image_url || 'https://placehold.co/400x300/e0e0e0/555?text=Нет+фото'}" 
-                 alt="${product.name}" 
-                 class="product-screen-image" 
-                 onerror="this.onerror=null;this.src='https://placehold.co/400x300/e0e0e0/555?text=Нет+фото';">
+            <div class="product-screen-image-container">
+                <img src="${product.image || 'https://placehold.co/400x300/e0e0e0/555?text=Нет+фото'}" 
+                     alt="${product.name}" 
+                     class="product-screen-image" 
+                     id="product-screen-main-image"
+                     onerror="this.onerror=null;this.src='https://placehold.co/400x300/e0e0e0/555?text=Нет+фото';">
+                
+                <!-- Стрелки навигации для множественных изображений -->
+                <button class="image-nav prev" id="product-screen-prev" style="display: none;">‹</button>
+                <button class="image-nav next" id="product-screen-next" style="display: none;">›</button>
+                
+                <!-- Индикаторы точек -->
+                <div class="image-indicators" id="product-screen-indicators" style="display: none;"></div>
+            </div>
 
             <div class="product-screen-name">${product.name}</div>
             <div class="product-screen-price">${parseFloat(product.price).toFixed(2)} р.</div>
@@ -3558,6 +3571,11 @@ function addErrorClearingListeners() {
                 }
 
         screenBody.innerHTML = screenHTML;
+
+        // Инициализируем множественные изображения для экрана товара
+        if (product.images && product.images.length > 1) {
+            initProductScreenImages(product.id, product.images);
+        }
 
         // Обновляем счетчик количества в экране продукта
         const quantityDisplay = document.getElementById(`screen-quantity-${product.id}`);
@@ -3923,5 +3941,126 @@ function addErrorClearingListeners() {
     // Делаем функции доступными глобально для отладки
     window.dbg_findCartElements = dbg_findCartElements;
     window.watchCartNodeChanges = watchCartNodeChanges;
+
+    // ===== ФУНКЦИИ ДЛЯ МНОЖЕСТВЕННЫХ ИЗОБРАЖЕНИЙ (ТОЛЬКО ДЛЯ ЭКРАНА ТОВАРА) =====
+    // Функции для страницы категорий удалены - там показывается только первое изображение
+
+    // ===== ФУНКЦИИ ДЛЯ ЭКРАНА ТОВАРА =====
+    
+    // Инициализация множественных изображений для экрана товара
+    function initProductScreenImages(productId, images) {
+        const productImage = document.getElementById('product-screen-main-image');
+        const prevButton = document.getElementById('product-screen-prev');
+        const nextButton = document.getElementById('product-screen-next');
+        const indicators = document.getElementById('product-screen-indicators');
+        
+        if (!productImage) return;
+        
+        // Показываем элементы навигации
+        if (prevButton) prevButton.style.display = 'block';
+        if (nextButton) nextButton.style.display = 'block';
+        if (indicators) indicators.style.display = 'flex';
+        
+        // Создаем индикаторы
+        if (indicators) {
+            indicators.innerHTML = '';
+            for (let i = 0; i < images.length; i++) {
+                const dot = document.createElement('span');
+                dot.className = `image-dot ${i === 0 ? 'active' : ''}`;
+                dot.onclick = () => showProductScreenImage(productId, i);
+                indicators.appendChild(dot);
+            }
+        }
+        
+        // Добавляем обработчики для кнопок
+        if (prevButton) {
+            prevButton.onclick = () => showPrevProductScreenImage(productId);
+        }
+        if (nextButton) {
+            nextButton.onclick = () => showNextProductScreenImage(productId);
+        }
+        
+        // Добавляем обработчики свайпа для экрана товара
+        addProductScreenSwipeHandlers(productId);
+        
+        // Сохраняем данные о изображениях
+        window.currentProductImages = images;
+        window.currentProductImageIndex = 0;
+    }
+    
+    // Показать конкретное изображение в экране товара
+    function showProductScreenImage(productId, index) {
+        if (!window.currentProductImages || index < 0 || index >= window.currentProductImages.length) return;
+        
+        const productImage = document.getElementById('product-screen-main-image');
+        const indicators = document.getElementById('product-screen-indicators');
+        
+        if (productImage) {
+            productImage.src = window.currentProductImages[index];
+            productImage.alt = `Изображение ${index + 1}`;
+        }
+        
+        // Обновляем индикаторы
+        if (indicators) {
+            const dots = indicators.querySelectorAll('.image-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+        
+        window.currentProductImageIndex = index;
+    }
+    
+    // Следующее изображение в экране товара
+    function showNextProductScreenImage(productId) {
+        if (!window.currentProductImages) return;
+        const nextIndex = (window.currentProductImageIndex + 1) % window.currentProductImages.length;
+        showProductScreenImage(productId, nextIndex);
+    }
+    
+    // Предыдущее изображение в экране товара
+    function showPrevProductScreenImage(productId) {
+        if (!window.currentProductImages) return;
+        const prevIndex = window.currentProductImageIndex === 0 ? window.currentProductImages.length - 1 : window.currentProductImageIndex - 1;
+        showProductScreenImage(productId, prevIndex);
+    }
+    
+    // Добавление обработчиков свайпа для экрана товара
+    function addProductScreenSwipeHandlers(productId) {
+        const productImage = document.getElementById('product-screen-main-image');
+        if (!productImage) return;
+        
+        let startX = 0;
+        let startY = 0;
+        
+        productImage.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+        
+        productImage.addEventListener('touchend', (e) => {
+            if (!startX || !startY) return;
+            
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            
+            const diffX = startX - endX;
+            const diffY = startY - endY;
+            
+            // Проверяем, что это горизонтальный свайп
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Свайп влево - следующее изображение
+                    showNextProductScreenImage(productId);
+                } else {
+                    // Свайп вправо - предыдущее изображение
+                    showPrevProductScreenImage(productId);
+                }
+            }
+            
+            startX = 0;
+            startY = 0;
+        });
+    }
 
 });
