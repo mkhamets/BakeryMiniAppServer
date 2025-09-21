@@ -302,10 +302,10 @@ async def get_products_for_webapp(request):
                     images = product['images']
                 
                 # Создаем ключ категории в формате парсера
-                category_key = f"category_{category_id}"
+                category_key_modx = f"category_{category_id}"
                 
-                if category_key not in products_by_category:
-                    products_by_category[category_key] = []
+                if category_key_modx not in products_by_category:
+                    products_by_category[category_key_modx] = []
                 
                 # Преобразуем продукт в формат парсера
                 formatted_product = {
@@ -324,7 +324,7 @@ async def get_products_for_webapp(request):
                     "images": images  # Добавляем массив изображений
                 }
                 
-                products_by_category[category_key].append(formatted_product)
+                products_by_category[category_key_modx].append(formatted_product)
             
             # Если запрашивается конкретная категория, возвращаем только её
             if category_key:
@@ -350,7 +350,7 @@ async def get_products_for_webapp(request):
         else:
             logger.warning("API: MODX API не вернул данные о продуктах. Пробуем парсер...")
             
-            # FALLBACK: Пробуем загрузить из парсера (АКТИВИРОВАН)
+            # FALLBACK: Пробуем загрузить из парсера
             await load_products_data_for_api()
             if products_data:
                 if category_key:
@@ -430,7 +430,7 @@ async def get_categories_for_webapp(request):
         else:
             logger.warning("API: MODX API не вернул данные о категориях. Пробуем парсер...")
             
-            # FALLBACK: Пробуем загрузить из парсера (АКТИВИРОВАН)
+            # FALLBACK: Пробуем загрузить из парсера
             await load_products_data_for_api()
             if products_data:
                 categories_list = []
