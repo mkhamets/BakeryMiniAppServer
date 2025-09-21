@@ -231,7 +231,7 @@ function getAllAvailabilityAbbreviations() {
 
 // ===== PHASE 4: BROWSER CACHE API INTEGRATION =====
 // Cache versioning and management system
-    const CACHE_VERSION = '1.3.109';
+    const CACHE_VERSION = '1.3.110';
 const CACHE_NAME = `bakery-app-v${CACHE_VERSION}`;
 
 // Customer data constants (moved here for scope access)
@@ -2094,8 +2094,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             categoriesGrid.className = 'categories-grid';
 
             categoriesData.forEach(category => {
-                const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.key, icon: '' };
-                const categoryDisplayName = categoryInfo.name;
+                // Используем name из API, если есть, иначе fallback к CATEGORY_DISPLAY_MAP
+                const categoryInfo = CATEGORY_DISPLAY_MAP[category.key] || { name: category.name || category.key, icon: '' };
+                const categoryDisplayName = category.name || categoryInfo.name;
                 const categoryIcon = categoryInfo.icon;
 
                 const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
@@ -2156,8 +2157,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Create icon + title container
                 mainCategoryTitle.innerHTML = `
                     <div class="category-title-with-icon">
-                        <img src="${categoryInfo.image}" alt="${categoryInfo.name}" class="category-icon" onerror="this.style.display='none';">
-                        <span>${categoryInfo.name}</span>
+                        <img src="${categoryInfo.image}" alt="${categoryDisplayName}" class="category-icon" onerror="this.style.display='none';">
+                        <span>${categoryDisplayName}</span>
                     </div>
                 `;
             } else {
