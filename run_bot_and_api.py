@@ -49,13 +49,10 @@ async def run_api():
     port = int(os.environ.get('PORT', os.environ.get('API_PORT', '8080')))
     
     try:
-        # Настраиваем API сервер
-        app = await setup_api_server()
+        # Настраиваем API сервер (setup_api_server возвращает AppRunner)
+        runner = await setup_api_server()
         
         # Запускаем сервер
-        runner = web.AppRunner(app)
-        await runner.setup()
-        
         site = web.TCPSite(runner, host, port)
         await site.start()
         
