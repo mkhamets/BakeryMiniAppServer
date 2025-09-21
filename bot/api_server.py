@@ -59,7 +59,7 @@ def verify_hmac_signature(data: str, signature: str, secret: str) -> bool:
 async def load_products_from_modx_api(category_id: str = None) -> list:
     """Загружает товары через MODX API"""
     try:
-        url = f"{MODX_API_BASE_URL}/api-products"
+        url = f"{MODX_API_BASE_URL}/api-products.json"
         params = {'category': category_id} if category_id else {}
         
         # Настройка SSL для Heroku
@@ -91,7 +91,7 @@ async def load_products_from_modx_api(category_id: str = None) -> list:
 async def load_categories_from_modx_api() -> list:
     """Загружает категории через MODX API"""
     try:
-        url = f"{MODX_API_BASE_URL}/api-categories"
+        url = f"{MODX_API_BASE_URL}/api-categories.json"
         logger.info(f"API: Загружаем категории из MODX API: {url}")
         
         # Настройка SSL для Heroku
