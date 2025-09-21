@@ -322,14 +322,18 @@ async def get_products_for_webapp(request):
                     products_by_category[category_key_modx] = []
                 
                 # Преобразуем продукт в формат парсера
+                # Очищаем цену и вес от пробелов и запятых
+                clean_price = str(product['price']).replace(' ', '').replace(',', '.')
+                clean_weight = str(product['weight']).replace(' ', '').replace(',', '.')
+                
                 formatted_product = {
                     "id": product['id'],
                     "name": product['pagetitle'],
                     "url": f"https://drazhin.by/{product.get('alias', '')}",
                     "image_url": product.get('image', ''),
-                    "price": str(float(product['price'])),
+                    "price": str(float(clean_price)),
                     "short_description": product.get('product_description', 'N/A'),
-                    "weight": str(int(float(product['weight']))),
+                    "weight": str(int(float(clean_weight))),
                     "for_vegans": product.get('product_vegan', 'N/A'),
                     "availability_days": product.get('product_days_order', 'N/A'),
                     "ingredients": product.get('product_structure', 'N/A'),

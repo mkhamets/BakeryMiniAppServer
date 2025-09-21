@@ -15,18 +15,10 @@ if (!($miniShop2 instanceof miniShop2)) {
 }
 $miniShop2->initialize($modx->context->key);
 
-// Инициализируем pdoFetch
-$fqn = $modx->getOption('pdoFetch.class', null, 'pdotools.pdofetch', true);
-$path = $modx->getOption('pdofetch_class_path', null, MODX_CORE_PATH . 'components/pdotools/model/', true);
-
-if ($pdoClass = $modx->loadClass($fqn, $path, false, true)) {
-    $pdoFetch = new $pdoClass($modx, $scriptProperties);
-} else {
-    return json_encode(['error' => 'pdoFetch не найден'], JSON_UNESCAPED_UNICODE);
-}
+// Убираем pdoFetch полностью - используем только getCollection
 
 // Получаем параметры
-$limit = $modx->getOption('limit', $scriptProperties, 10);
+$limit = $modx->getOption('limit', $scriptProperties, 1000); // Большой лимит для всех продуктов
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 
 // Отладочная информация (можно убрать в продакшене)
@@ -36,41 +28,59 @@ $category = isset($_GET['category']) ? $_GET['category'] : '';
 //     'get_params' => $_GET
 // );
 
-// Получаем продукты
-$where = array(
-    'class_key' => 'msProduct',
-    'published' => 1,
-    'deleted' => 0
-);
-
+// Получаем продукты - если категория не указана, получаем все категории
 if (!empty($category)) {
-    $where['parent'] = $category;
+    // Запрос для конкретной категории
+    $sql = "SELECT 
+        p.id, p.pagetitle, p.alias, p.template, p.published, p.parent,
+        d.price, d.weight, d.source,
+        parent.pagetitle as category_name
+    FROM {$modx->getTableName('modResource')} p
+    LEFT JOIN {$modx->getTableName('msProductData')} d ON d.id = p.id
+    LEFT JOIN {$modx->getTableName('modResource')} parent ON parent.id = p.parent
+    WHERE p.class_key = 'msProduct' 
+        AND p.published = 1 
+        AND p.deleted = 0
+        AND p.parent = " . intval($category) . "
+    ORDER BY p.id ASC";
+    
+    if ($limit > 0) {
+        $sql .= " LIMIT " . intval($limit);
+    }
+    
+    $stmt = $modx->prepare($sql);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // Запрос для всех категорий - получаем по категориям
+    $rows = array();
+    $categories = array(16, 17, 18, 19); // Известные категории
+    
+    foreach ($categories as $cat_id) {
+        $sql = "SELECT 
+            p.id, p.pagetitle, p.alias, p.template, p.published, p.parent,
+            d.price, d.weight, d.source,
+            parent.pagetitle as category_name
+        FROM {$modx->getTableName('modResource')} p
+        LEFT JOIN {$modx->getTableName('msProductData')} d ON d.id = p.id
+        LEFT JOIN {$modx->getTableName('modResource')} parent ON parent.id = p.parent
+        WHERE p.class_key = 'msProduct' 
+            AND p.published = 1 
+            AND p.deleted = 0
+            AND p.parent = " . intval($cat_id) . "
+        ORDER BY p.id ASC";
+        
+        $stmt = $modx->prepare($sql);
+        $stmt->execute();
+        $cat_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = array_merge($rows, $cat_rows);
+    }
+    
+    // Применяем общий лимит если нужно
+    if ($limit > 0 && count($rows) > $limit) {
+        $rows = array_slice($rows, 0, $limit);
+    }
 }
-
-$leftJoin = array(
-    'Data' => array('class' => 'msProductData'),
-    'Parent' => array('class' => 'modResource', 'on' => 'Parent.id = msProduct.parent'),
-);
-
-$select = array(
-    'msProduct' => $modx->getSelectColumns('msProduct', 'msProduct', '', array('content'), true),
-    'Data' => $modx->getSelectColumns('msProductData', 'Data', '', array('id'), true),
-    'Parent' => $modx->getSelectColumns('modResource', 'Parent', 'category_', array('id'), true),
-);
-
-$default = array(
-    'class' => 'msProduct',
-    'where' => $where,
-    'leftJoin' => $leftJoin,
-    'select' => $select,
-    'sortby' => 'msProduct.id',
-    'sortdir' => 'ASC',
-    'limit' => $limit,
-    'return' => 'data',
-);
-
-$pdoFetch->setConfig(array_merge($default, $scriptProperties), false);
-$rows = $pdoFetch->run();
 
 // Обрабатываем результаты
 $output = array();
@@ -150,7 +160,8 @@ if (!empty($rows) && is_array($rows)) {
         $result = [
             'status' => 'success',
             'count' => count($output),
-            'products' => $output
+            'products' => $output,
+            'debug' => $debug_info
         ];
 
 return json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
