@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRODUCTS_DATA_FILE = os.path.join(BASE_DIR, 'data', 'products_scraped.json')
 
 # MODX API Configuration
-MODX_API_BASE_URL = os.environ.get('MODX_API_BASE_URL', 'https://drazhin.by/api')
+MODX_API_BASE_URL = os.environ.get('MODX_API_BASE_URL', 'https://drazhin.by')
 MODX_API_TIMEOUT = int(os.environ.get('MODX_API_TIMEOUT', '10'))
 
 # ===== SECURITY CONFIGURATION =====
@@ -59,7 +59,7 @@ def verify_hmac_signature(data: str, signature: str, secret: str) -> bool:
 async def load_products_from_modx_api(category_id: str = None) -> list:
     """Загружает товары через MODX API"""
     try:
-        url = f"{MODX_API_BASE_URL}/products.php"
+        url = f"{MODX_API_BASE_URL}/apiProducts"
         params = {'category': category_id} if category_id else {}
         
         # Настройка SSL для Heroku
@@ -78,8 +78,8 @@ async def load_products_from_modx_api(category_id: str = None) -> list:
                 logger.info(f"API: MODX API ответ: {response.status}")
                 if response.status == 200:
                     data = await response.json()
-                    logger.info(f"API: Загружено {len(data)} товаров из MODX API")
-                    return data
+                    logger.info(f"API: Загружено {data.get('count', 0)} товаров из MODX API")
+                    return data.get('products', [])
                 else:
                     text = await response.text()
                     logger.error(f"API: Ошибка MODX API: {response.status} - {text}")
@@ -91,7 +91,8 @@ async def load_products_from_modx_api(category_id: str = None) -> list:
 async def load_categories_from_modx_api() -> list:
     """Загружает категории через MODX API"""
     try:
-        url = f"{MODX_API_BASE_URL}/categories.php"
+        url = f"{MODX_API_BASE_URL}/apiCategories"
+        logger.info(f"API: Загружаем категории из MODX API: {url}")
         
         # Настройка SSL для Heroku
         ssl_context = ssl.create_default_context()
@@ -104,19 +105,22 @@ async def load_categories_from_modx_api() -> list:
             connector=connector,
             timeout=aiohttp.ClientTimeout(total=MODX_API_TIMEOUT)
         ) as session:
-            logger.info(f"API: Загружаем категории из MODX API: {url}")
+            logger.info(f"API: Отправляем GET запрос к {url}")
             async with session.get(url) as response:
                 logger.info(f"API: MODX API ответ: {response.status}")
                 if response.status == 200:
                     data = await response.json()
-                    logger.info(f"API: Загружено {len(data)} категорий из MODX API")
-                    return data
+                    logger.info(f"API: Загружено {data.get('count', 0)} категорий из MODX API")
+                    logger.info(f"API: Первая категория: {data.get('categories', [{}])[0] if data.get('categories') else 'None'}")
+                    return data.get('categories', [])
                 else:
                     text = await response.text()
                     logger.error(f"API: Ошибка MODX API: {response.status} - {text}")
                     return []
     except Exception as e:
         logger.error(f"API: Ошибка загрузки из MODX API: {e}")
+        import traceback
+        logger.error(f"API: Traceback: {traceback.format_exc()}")
         return []
 
 # ===== RATE LIMITING FUNCTIONS =====
@@ -300,18 +304,16 @@ async def get_products_for_webapp(request):
             
             for product in products:
                 try:
-                    category_id = product['category_id']
+                    category_id = product['parent_id']
                     logger.info(f"API: Обрабатываем продукт {product['id']} категории {category_id}")
                 except KeyError as e:
                     logger.error(f"API: Ошибка в структуре продукта: {e}, продукт: {product}")
                     continue
                 
-                # Преобразуем images из объекта в массив
-                images = []
-                if 'images' in product and isinstance(product['images'], dict):
-                    images = list(product['images'].values())
-                elif 'images' in product and isinstance(product['images'], list):
-                    images = product['images']
+                # Получаем изображения из массива
+                images = product.get('images', [])
+                if not isinstance(images, list):
+                    images = []
                 
                 # Создаем ключ категории в формате парсера
                 category_key_modx = f"category_{category_id}"
@@ -322,17 +324,17 @@ async def get_products_for_webapp(request):
                 # Преобразуем продукт в формат парсера
                 formatted_product = {
                     "id": product['id'],
-                    "name": product['name'],
-                    "url": f"https://drazhin.by/{product.get('uri', '')}",
+                    "name": product['pagetitle'],
+                    "url": f"https://drazhin.by/{product.get('alias', '')}",
                     "image_url": product.get('image', ''),
                     "price": str(float(product['price'])),
-                    "short_description": product.get('description', 'N/A'),
+                    "short_description": product.get('product_description', 'N/A'),
                     "weight": str(int(float(product['weight']))),
-                    "for_vegans": "N/A",
-                    "availability_days": "N/A",
-                    "ingredients": "N/A",
-                    "calories": "N/A",
-                    "energy_value": "N/A",
+                    "for_vegans": product.get('product_vegan', 'N/A'),
+                    "availability_days": product.get('product_days_order', 'N/A'),
+                    "ingredients": product.get('product_structure', 'N/A'),
+                    "calories": product.get('product_calories', 'N/A'),
+                    "energy_value": product.get('product_bgu', 'N/A'),
                     "images": images  # Добавляем массив изображений
                 }
                 
@@ -433,7 +435,7 @@ async def get_categories_for_webapp(request):
                 categories_list.append({
                     "key": category_key,
                     "name": category['name'],
-                    "image": ""  # Пока без изображений для упрощения
+                    "image": category.get('image', '')  # Используем изображение из MODX API
                 })
             
             return web.json_response(categories_list, headers={

@@ -78,3 +78,4 @@ pip3.11 list | grep aiogram
 - **Панель управления**: [Hoster.by Control Panel]
 - **Документация**: [hoster_by_deploy.md](./hoster_by_deploy.md)
 - **Чек-лист**: [deploy_checklist.md](./deploy_checklist.md)
+

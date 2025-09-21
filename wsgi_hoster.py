@@ -137,3 +137,4 @@ def debug_application(environ, start_response):
 - Files in root: {list(project_root.glob('*'))[:5]}
 """
     return [debug_info.encode('utf-8')]
+
