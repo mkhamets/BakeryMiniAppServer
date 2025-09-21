@@ -11,4 +11,4 @@ lxml==4.9.3
 # Additional production dependencies
 python-dotenv==1.0.0
 certifi==2023.11.17
-urllib3==2.1.0
+urllib3==2.5.0
