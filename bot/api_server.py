@@ -288,9 +288,12 @@ async def get_products_for_webapp(request):
         products = await load_products_from_modx_api(category_key)
         
         if products:
-            # Преобразуем формат MODX API в формат фронтенда
-            formatted_products = []
+            # Преобразуем MODX API данные в формат парсера (по категориям)
+            products_by_category = {}
+            
             for product in products:
+                category_id = product['category_id']
+                
                 # Преобразуем images из объекта в массив
                 images = []
                 if 'images' in product and isinstance(product['images'], dict):
@@ -298,24 +301,52 @@ async def get_products_for_webapp(request):
                 elif 'images' in product and isinstance(product['images'], list):
                     images = product['images']
                 
+                # Создаем ключ категории в формате парсера
+                category_key = f"category_{category_id}"
+                
+                if category_key not in products_by_category:
+                    products_by_category[category_key] = []
+                
+                # Преобразуем продукт в формат парсера
                 formatted_product = {
                     "id": product['id'],
                     "name": product['name'],
-                    "description": product.get('description', ''),
-                    "price": float(product['price']),
-                    "weight": float(product['weight']),
-                    "image": product.get('image', ''),
-                    "images": images,
-                    "category_id": product['category_id'],
-                    "uri": product.get('uri', '')
+                    "url": f"https://drazhin.by/{product.get('uri', '')}",
+                    "image_url": product.get('image', ''),
+                    "price": str(float(product['price'])),
+                    "short_description": product.get('description', 'N/A'),
+                    "weight": str(int(float(product['weight']))),
+                    "for_vegans": "N/A",
+                    "availability_days": "N/A",
+                    "ingredients": "N/A",
+                    "calories": "N/A",
+                    "energy_value": "N/A",
+                    "images": images  # Добавляем массив изображений
                 }
-                formatted_products.append(formatted_product)
+                
+                products_by_category[category_key].append(formatted_product)
             
-            return web.json_response(formatted_products, headers={
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            })
+            # Если запрашивается конкретная категория, возвращаем только её
+            if category_key:
+                if category_key in products_by_category:
+                    return web.json_response(products_by_category[category_key], headers={
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    })
+                else:
+                    return web.json_response([], headers={
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    })
+            else:
+                # Возвращаем все категории
+                return web.json_response(products_by_category, headers={
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                })
         else:
             logger.warning("API: MODX API не вернул данные о продуктах. Пробуем парсер...")
             
@@ -382,8 +413,11 @@ async def get_categories_for_webapp(request):
                 except Exception as e:
                     logger.warning(f"API: Не удалось получить изображение для категории {category['id']}: {e}")
                 
+                # Создаем ключ категории в формате парсера
+                category_key = f"category_{category['id']}"
+                
                 categories_list.append({
-                    "key": str(category['id']),
+                    "key": category_key,
                     "name": category['name'],
                     "image": category_image
                 })
