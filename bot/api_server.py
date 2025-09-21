@@ -261,7 +261,30 @@ async def get_products_for_webapp(request):
         products = await load_products_from_modx_api(category_key)
         
         if products:
-            return web.json_response(products, headers={
+            # Преобразуем формат MODX API в формат фронтенда
+            formatted_products = []
+            for product in products:
+                # Преобразуем images из объекта в массив
+                images = []
+                if 'images' in product and isinstance(product['images'], dict):
+                    images = list(product['images'].values())
+                elif 'images' in product and isinstance(product['images'], list):
+                    images = product['images']
+                
+                formatted_product = {
+                    "id": product['id'],
+                    "name": product['name'],
+                    "description": product.get('description', ''),
+                    "price": float(product['price']),
+                    "weight": float(product['weight']),
+                    "image": product.get('image', ''),
+                    "images": images,
+                    "category_id": product['category_id'],
+                    "uri": product.get('uri', '')
+                }
+                formatted_products.append(formatted_product)
+            
+            return web.json_response(formatted_products, headers={
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
                 'Expires': '0'
@@ -321,10 +344,21 @@ async def get_categories_for_webapp(request):
             # Преобразуем формат для фронтенда
             categories_list = []
             for category in categories:
+                # Получаем первое изображение первого продукта в категории
+                category_image = ""
+                try:
+                    category_products = await load_products_from_modx_api(category['id'])
+                    if category_products and len(category_products) > 0:
+                        first_product = category_products[0]
+                        if 'image' in first_product and first_product['image']:
+                            category_image = first_product['image']
+                except Exception as e:
+                    logger.warning(f"API: Не удалось получить изображение для категории {category['id']}: {e}")
+                
                 categories_list.append({
                     "key": str(category['id']),
                     "name": category['name'],
-                    "image": ""  # MODX API не возвращает изображения категорий
+                    "image": category_image
                 })
             
             return web.json_response(categories_list, headers={
