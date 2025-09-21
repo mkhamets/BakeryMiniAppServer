@@ -360,27 +360,38 @@ async def get_products_for_webapp(request):
                     'Expires': '0'
                 })
         else:
-            logger.warning("API: MODX API не вернул данные о продуктах. Пробуем парсер...")
+            logger.warning("API: MODX API не вернул данные о продуктах. Парсер отключен.")
             
-            # FALLBACK: Пробуем загрузить из парсера
-            await load_products_data_for_api()
-            if products_data:
-                if category_key:
-                    products_in_category = products_data.get(category_key, [])
-                    if products_in_category:
-                        return web.json_response(products_in_category, headers={
-                            'Cache-Control': 'no-cache, no-store, must-revalidate',
-                            'Pragma': 'no-cache',
-                            'Expires': '0'
-                        })
-                else:
-                    return web.json_response(products_data, headers={
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    })
+            # FALLBACK: Парсер отключен - закомментирован
+            # await load_products_data_for_api()
+            # if products_data:
+            #     if category_key:
+            #         # Маппинг ключей MODX API на ключи парсера
+            #         category_mapping = {
+            #             'category_17': 'category_bakery',      # Выпечка
+            #             'category_18': 'category_croissants',  # Круассаны
+            #             'category_16': 'category_artisan_bread', # Ремесленный хлеб
+            #             'category_19': 'category_desserts'     # Десерты
+            #         }
+            #         
+            #         parser_category_key = category_mapping.get(category_key, category_key)
+            #         products_in_category = products_data.get(parser_category_key, [])
+            #         logger.info(f"API: Ищем продукты в парсере для ключа '{parser_category_key}' (исходный: '{category_key}'), найдено: {len(products_in_category)}")
+            #         
+            #         if products_in_category:
+            #             return web.json_response(products_in_category, headers={
+            #                 'Cache-Control': 'no-cache, no-store, must-revalidate',
+            #                 'Pragma': 'no-cache',
+            #                 'Expires': '0'
+            #             })
+            #     else:
+            #         return web.json_response(products_data, headers={
+            #             'Cache-Control': 'no-cache, no-store, must-revalidate',
+            #             'Pragma': 'no-cache',
+            #             'Expires': '0'
+            #         })
             
-            return web.json_response({"error": "No products available"}, status=404, headers={
+            return web.json_response({"error": "No products available from MODX API"}, status=404, headers={
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
                 'Expires': '0'
@@ -388,6 +399,8 @@ async def get_products_for_webapp(request):
         
     except Exception as e:
         logger.error(f"API: Ошибка загрузки продуктов: {e}")
+        import traceback
+        logger.error(f"API: Traceback: {traceback.format_exc()}")
         return web.json_response({"error": "Failed to load products"}, status=500, headers={
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
@@ -440,28 +453,28 @@ async def get_categories_for_webapp(request):
                 'Expires': '0'
             })
         else:
-            logger.warning("API: MODX API не вернул данные о категориях. Пробуем парсер...")
+            logger.warning("API: MODX API не вернул данные о категориях. Парсер отключен.")
             
-            # FALLBACK: Пробуем загрузить из парсера
-            await load_products_data_for_api()
-            if products_data:
-                categories_list = []
-                for key, products in products_data.items():
-                    if products: # Убедимся, что в категории есть продукты
-                        # Берем первое изображение из первого продукта в категории как изображение для категории
-                        category_image = products[0].get('image_url', '')
-                        categories_list.append({
-                            "key": key,
-                            "name": products[0].get('category_name', key), # Используем название категории из первого продукта
-                            "image": category_image
-                        })
-                return web.json_response(categories_list, headers={
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                })
+            # FALLBACK: Парсер отключен - закомментирован
+            # await load_products_data_for_api()
+            # if products_data:
+            #     categories_list = []
+            #     for key, products in products_data.items():
+            #         if products: # Убедимся, что в категории есть продукты
+            #             # Берем первое изображение из первого продукта в категории как изображение для категории
+            #             category_image = products[0].get('image_url', '')
+            #             categories_list.append({
+            #                 "key": key,
+            #                 "name": products[0].get('category_name', key), # Используем название категории из первого продукта
+            #                 "image": category_image
+            #             })
+            #     return web.json_response(categories_list, headers={
+            #         'Cache-Control': 'no-cache, no-store, must-revalidate',
+            #         'Pragma': 'no-cache',
+            #         'Expires': '0'
+            #     })
             
-            return web.json_response({"error": "No categories available"}, status=404, headers={
+            return web.json_response({"error": "No categories available from MODX API"}, status=404, headers={
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
                 'Expires': '0'
@@ -488,7 +501,8 @@ async def setup_api_server():
     app.middlewares.append(security_headers_middleware)
 
     # Загружаем данные о продуктах при настройке сервера (ПАРСЕР - АКТИВИРОВАН КАК FALLBACK)
-    await load_products_data_for_api()
+    # Парсер отключен - используем только MODX API
+    # await load_products_data_for_api()
 
     # ДОБАВЛЕНО: Перенаправление с корневого пути на '/bot-app/'
     app.router.add_get('/', lambda r: web.HTTPFound('/bot-app/'))
