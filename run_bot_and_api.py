@@ -49,11 +49,11 @@ async def run_api():
     port = int(os.environ.get('PORT', os.environ.get('API_PORT', '8080')))
     
     try:
-        # Настраиваем API сервер (setup_api_server возвращает AppRunner)
-        runner = await setup_api_server()
+        # Настраиваем API сервер (setup_api_server возвращает Application)
+        app = await setup_api_server()
         
         # Запускаем сервер
-        site = web.TCPSite(runner.app, host, port)
+        site = web.TCPSite(app, host, port)
         await site.start()
         
         logger.info(f"✅ API сервер запущен на http://{host}:{port}")
@@ -64,7 +64,6 @@ async def run_api():
         except KeyboardInterrupt:
             logger.info("🛑 Получен сигнал остановки...")
         finally:
-            await runner.cleanup()
             logger.info("✅ API сервер остановлен")
             
     except Exception as e:
