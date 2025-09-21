@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Запуск только API сервера для VPS
+Запуск бота и API сервера вместе для VPS
 Использует MODX API для получения данных о продуктах и категориях
 """
 
@@ -19,6 +19,7 @@ load_dotenv(env_path)
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
+from bot.main import main as bot_main
 from bot.api_server import setup_api_server
 from bot.config import config
 from aiohttp import web
@@ -31,16 +32,21 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-async def main():
-    """Основная функция запуска API сервера"""
-    logger.info("🚀 Запуск API сервера с MODX интеграцией...")
+async def run_bot():
+    """Запуск Telegram бота"""
+    logger.info("🤖 Запуск Telegram бота...")
+    try:
+        await bot_main()
+    except Exception as e:
+        logger.error(f"❌ Ошибка в боте: {e}")
+
+async def run_api():
+    """Запуск API сервера"""
+    logger.info("🚀 Запуск API сервера...")
     
     # Получаем конфигурацию из переменных окружения
     host = os.environ.get('API_HOST', '0.0.0.0')
     port = int(os.environ.get('API_PORT', '8080'))
-    
-    logger.info(f"📡 API сервер будет запущен на {host}:{port}")
-    logger.info(f"🔗 MODX API: {os.environ.get('MODX_API_BASE_URL', 'https://drazhin.by/api')}")
     
     try:
         # Настраиваем API сервер
@@ -53,12 +59,7 @@ async def main():
         site = web.TCPSite(runner, host, port)
         await site.start()
         
-        logger.info(f"✅ API сервер успешно запущен на http://{host}:{port}")
-        logger.info("📋 Доступные эндпоинты:")
-        logger.info(f"   - http://{host}:{port}/bot-app/ - Web App")
-        logger.info(f"   - http://{host}:{port}/bot-app/api/products - Товары")
-        logger.info(f"   - http://{host}:{port}/bot-app/api/categories - Категории")
-        logger.info(f"   - http://{host}:{port}/bot-app/api/auth/token - Токен авторизации")
+        logger.info(f"✅ API сервер запущен на http://{host}:{port}")
         
         # Ждем завершения
         try:
@@ -71,6 +72,36 @@ async def main():
             
     except Exception as e:
         logger.error(f"❌ Ошибка запуска API сервера: {e}")
+        raise
+
+async def main():
+    """Основная функция запуска бота и API"""
+    logger.info("🚀 Запуск бота и API сервера с MODX интеграцией...")
+    logger.info(f"🔗 MODX API: {os.environ.get('MODX_API_BASE_URL', 'https://drazhin.by/api')}")
+    
+    # Создаем задачи для параллельного запуска
+    bot_task = asyncio.create_task(run_bot())
+    api_task = asyncio.create_task(run_api())
+    
+    try:
+        # Запускаем обе задачи параллельно
+        await asyncio.gather(bot_task, api_task)
+    except KeyboardInterrupt:
+        logger.info("🛑 Получен сигнал остановки...")
+        
+        # Отменяем задачи
+        bot_task.cancel()
+        api_task.cancel()
+        
+        # Ждем завершения задач
+        try:
+            await asyncio.gather(bot_task, api_task, return_exceptions=True)
+        except Exception as e:
+            logger.error(f"❌ Ошибка при остановке: {e}")
+        
+        logger.info("✅ Бот и API сервер остановлены")
+    except Exception as e:
+        logger.error(f"❌ Критическая ошибка: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -138,7 +138,9 @@ def generate_auth_token() -> dict:
 def load_products_from_modx_api():
     """Загружает товары через MODX API"""
     try:
-        response = requests.get('https://drazhin.by/api/products.php', timeout=10)
+        api_base_url = os.environ.get('MODX_API_BASE_URL', 'https://drazhin.by/api')
+        api_timeout = int(os.environ.get('MODX_API_TIMEOUT', '10'))
+        response = requests.get(f'{api_base_url}/products.php', timeout=api_timeout)
         if response.status_code == 200:
             data = response.json()
             logger.info(f"WSGI: Загружено {len(data)} товаров из MODX API")
@@ -153,7 +155,9 @@ def load_products_from_modx_api():
 def load_categories_from_modx_api():
     """Загружает категории через MODX API"""
     try:
-        response = requests.get('https://drazhin.by/api/categories.php', timeout=10)
+        api_base_url = os.environ.get('MODX_API_BASE_URL', 'https://drazhin.by/api')
+        api_timeout = int(os.environ.get('MODX_API_TIMEOUT', '10'))
+        response = requests.get(f'{api_base_url}/categories.php', timeout=api_timeout)
         if response.status_code == 200:
             data = response.json()
             logger.info(f"WSGI: Загружено {len(data)} категорий из MODX API")
