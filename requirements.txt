@@ -12,3 +12,12 @@ lxml==4.9.3
 python-dotenv==1.0.0
 certifi==2023.11.17
 urllib3==2.1.0
+aiogram
+aiohttp
+aiohttp-cors
+aiosqlite
+beautifulsoup4
+certifi
+lxml
+python-dotenv
+urllib3
