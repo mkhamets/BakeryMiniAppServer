@@ -1390,25 +1390,48 @@ async def main():
         logger.info("🔒 Security monitoring запущен")
 
     web_server_task = asyncio.create_task(site.start())
-    bot_polling_task = asyncio.create_task(dp.start_polling(bot))
+    
+    # Check if we have a valid bot token
+    is_demo_mode = config.BOT_TOKEN == '123456789:demo_token_for_replit_testing'
+    
+    if is_demo_mode:
+        logger.info("🚀 Running in DEMO mode - Web server only (no Telegram bot)")
+        logger.info(f"🌐 Web app available at http://0.0.0.0:{port}")
+        logger.info("📝 To enable Telegram bot, set proper environment variables")
+        
+        # Only run web server and security monitoring in demo mode
+        try:
+            tasks = [web_server_task]
+            if security_task:
+                tasks.append(security_task)
+            await asyncio.gather(*tasks)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            logger.info("Остановка API сервера...")
+            await runner.cleanup()
+            logger.info("API сервер остановлен.")
+    else:
+        # Full mode with Telegram bot
+        bot_polling_task = asyncio.create_task(dp.start_polling(bot))
 
-    logger.info(f"API сервер запущен на http://0.0.0.0:{port}")
-    logger.info("Бот начал опрос...")
+        logger.info(f"API сервер запущен на http://0.0.0.0:{port}")
+        logger.info("Бот начал опрос...")
 
-    try:
-        tasks = [bot_polling_task, web_server_task]
-        if security_task:
-            tasks.append(security_task)
-        await asyncio.gather(*tasks)
-    except asyncio.CancelledError:
-        pass
-    finally:
-        logger.info("Остановка API сервера...")
-        await runner.cleanup()
-        logger.info("API сервер остановлен.")
-        logger.info("Закрытие сессии бота...")
-        await bot.session.close()
-        logger.info("Сессия бота закрыта.")
+        try:
+            tasks = [bot_polling_task, web_server_task]
+            if security_task:
+                tasks.append(security_task)
+            await asyncio.gather(*tasks)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            logger.info("Остановка API сервера...")
+            await runner.cleanup()
+            logger.info("API сервер остановлен.")
+            logger.info("Закрытие сессии бота...")
+            await bot.session.close()
+            logger.info("Сессия бота закрыта.")
 
 
 async def security_monitoring_loop():
