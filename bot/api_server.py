@@ -109,11 +109,7 @@ async def load_categories_from_modx_api() -> list:
             async with session.get(url) as response:
                 logger.info(f"API: MODX API ответ: {response.status}")
                 if response.status == 200:
-                    text = await response.text()
-                    # Убираем HTML обертку, если есть
-                    if text.startswith('<p>') and text.endswith('</p>'):
-                        text = text[3:-4]  # Убираем <p> и </p>
-                    data = json.loads(text)
+                    data = await response.json()
                     logger.info(f"API: Загружено {data.get('count', 0)} категорий из MODX API")
                     logger.info(f"API: Первая категория: {data.get('categories', [{}])[0] if data.get('categories') else 'None'}")
                     return data.get('categories', [])

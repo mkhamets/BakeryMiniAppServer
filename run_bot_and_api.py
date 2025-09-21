@@ -53,7 +53,7 @@ async def run_api():
         runner = await setup_api_server()
         
         # Запускаем сервер
-        site = web.TCPSite(runner, host, port)
+        site = web.TCPSite(runner.app, host, port)
         await site.start()
         
         logger.info(f"✅ API сервер запущен на http://{host}:{port}")
