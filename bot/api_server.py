@@ -427,24 +427,13 @@ async def get_categories_for_webapp(request):
             # Преобразуем формат для фронтенда
             categories_list = []
             for category in categories:
-                # Получаем первое изображение первого продукта в категории
-                category_image = ""
-                try:
-                    category_products = await load_products_from_modx_api(category['id'])
-                    if category_products and len(category_products) > 0:
-                        first_product = category_products[0]
-                        if 'image' in first_product and first_product['image']:
-                            category_image = first_product['image']
-                except Exception as e:
-                    logger.warning(f"API: Не удалось получить изображение для категории {category['id']}: {e}")
-                
                 # Создаем ключ категории в формате парсера
                 category_key = f"category_{category['id']}"
                 
                 categories_list.append({
                     "key": category_key,
                     "name": category['name'],
-                    "image": category_image
+                    "image": ""  # Пока без изображений для упрощения
                 })
             
             return web.json_response(categories_list, headers={
