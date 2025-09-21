@@ -289,15 +289,22 @@ async def get_products_for_webapp(request):
         category_id = None
         if category_key and category_key.startswith('category_'):
             category_id = category_key.replace('category_', '')
+            logger.info(f"API: Преобразуем category_key '{category_key}' в category_id '{category_id}'")
         
         products = await load_products_from_modx_api(category_id)
         
         if products:
+            logger.info(f"API: Получено {len(products)} продуктов из MODX API")
             # Преобразуем MODX API данные в формат парсера (по категориям)
             products_by_category = {}
             
             for product in products:
-                category_id = product['category_id']
+                try:
+                    category_id = product['category_id']
+                    logger.info(f"API: Обрабатываем продукт {product['id']} категории {category_id}")
+                except KeyError as e:
+                    logger.error(f"API: Ошибка в структуре продукта: {e}, продукт: {product}")
+                    continue
                 
                 # Преобразуем images из объекта в массив
                 images = []
