@@ -1380,7 +1380,7 @@ async def main():
 
     # Настраиваем API сервер
     runner = await setup_api_server()
-    port = int(os.environ.get("PORT", 80))
+    port = int(os.environ.get("PORT", 5000))
     site = web.TCPSite(runner, '0.0.0.0', port)  # nosec B104 - Web server needs to bind to all interfaces
 
     # Запускаем security monitoring если включено
