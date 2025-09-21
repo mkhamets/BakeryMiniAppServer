@@ -1,1 +1,1 @@
-web: gunicorn wsgi:application --bind 0.0.0.0:$PORT
+web: python run_bot_and_api.py

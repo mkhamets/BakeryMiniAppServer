@@ -46,7 +46,7 @@ async def run_api():
     
     # Получаем конфигурацию из переменных окружения
     host = os.environ.get('API_HOST', '0.0.0.0')
-    port = int(os.environ.get('API_PORT', '8080'))
+    port = int(os.environ.get('PORT', os.environ.get('API_PORT', '8080')))
     
     try:
         # Настраиваем API сервер
