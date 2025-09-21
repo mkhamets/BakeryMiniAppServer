@@ -425,7 +425,9 @@ async def get_categories_for_webapp(request):
     try:
         categories = await load_categories_from_modx_api()
         
+        logger.info(f"API: Получено {len(categories) if categories else 0} категорий из MODX API")
         if categories:
+            logger.info(f"API: Первая категория: {categories[0] if categories else 'None'}")
             # Преобразуем формат для фронтенда
             categories_list = []
             for category in categories:
@@ -438,6 +440,7 @@ async def get_categories_for_webapp(request):
                     "image": category.get('image', '')  # Используем изображение из MODX API
                 })
             
+            logger.info(f"API: Отправляем {len(categories_list)} категорий фронтенду")
             return web.json_response(categories_list, headers={
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
