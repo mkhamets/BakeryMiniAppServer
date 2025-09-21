@@ -285,7 +285,12 @@ async def get_products_for_webapp(request):
 
     # Загружаем данные из MODX API
     try:
-        products = await load_products_from_modx_api(category_key)
+        # Преобразуем category_key в category_id для MODX API
+        category_id = None
+        if category_key and category_key.startswith('category_'):
+            category_id = category_key.replace('category_', '')
+        
+        products = await load_products_from_modx_api(category_id)
         
         if products:
             # Преобразуем MODX API данные в формат парсера (по категориям)
