@@ -5,6 +5,7 @@ import time
 import hmac
 import hashlib
 import base64
+import ssl
 import aiohttp
 from aiohttp import web
 import aiohttp_cors
@@ -61,14 +62,27 @@ async def load_products_from_modx_api(category_id: str = None) -> list:
         url = f"{MODX_API_BASE_URL}/products.php"
         params = {'category': category_id} if category_id else {}
         
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=MODX_API_TIMEOUT)) as session:
+        # Настройка SSL для Heroku
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        
+        async with aiohttp.ClientSession(
+            connector=connector,
+            timeout=aiohttp.ClientTimeout(total=MODX_API_TIMEOUT)
+        ) as session:
+            logger.info(f"API: Загружаем товары из MODX API: {url}")
             async with session.get(url, params=params) as response:
+                logger.info(f"API: MODX API ответ: {response.status}")
                 if response.status == 200:
                     data = await response.json()
                     logger.info(f"API: Загружено {len(data)} товаров из MODX API")
                     return data
                 else:
-                    logger.error(f"API: Ошибка MODX API: {response.status}")
+                    text = await response.text()
+                    logger.error(f"API: Ошибка MODX API: {response.status} - {text}")
                     return []
     except Exception as e:
         logger.error(f"API: Ошибка загрузки из MODX API: {e}")
@@ -79,14 +93,27 @@ async def load_categories_from_modx_api() -> list:
     try:
         url = f"{MODX_API_BASE_URL}/categories.php"
         
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=MODX_API_TIMEOUT)) as session:
+        # Настройка SSL для Heroku
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        
+        async with aiohttp.ClientSession(
+            connector=connector,
+            timeout=aiohttp.ClientTimeout(total=MODX_API_TIMEOUT)
+        ) as session:
+            logger.info(f"API: Загружаем категории из MODX API: {url}")
             async with session.get(url) as response:
+                logger.info(f"API: MODX API ответ: {response.status}")
                 if response.status == 200:
                     data = await response.json()
                     logger.info(f"API: Загружено {len(data)} категорий из MODX API")
                     return data
                 else:
-                    logger.error(f"API: Ошибка MODX API: {response.status}")
+                    text = await response.text()
+                    logger.error(f"API: Ошибка MODX API: {response.status} - {text}")
                     return []
     except Exception as e:
         logger.error(f"API: Ошибка загрузки из MODX API: {e}")
