@@ -12,3 +12,7 @@ lxml==4.9.3
 python-dotenv==1.0.0
 certifi==2023.11.17
 urllib3==2.1.0
+
+# Heroku specific dependencies
+gunicorn==21.2.0
+requests==2.31.0
