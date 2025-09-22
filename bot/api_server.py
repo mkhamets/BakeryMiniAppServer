@@ -284,16 +284,16 @@ async def get_products_for_webapp(request):
             'Expires': '0'
         })
     
-    category_key = request.query.get('category')
-    logger.info(f"API: Запрос продуктов для категории: {category_key}")
+    requested_category = request.query.get('category')
+    logger.info(f"API: Запрос продуктов для категории: {requested_category}")
 
     # Загружаем данные из MODX API
     try:
-        # Преобразуем category_key в category_id для MODX API
+        # Преобразуем requested_category в category_id для MODX API
         category_id = None
-        if category_key and category_key.startswith('category_'):
-            category_id = category_key.replace('category_', '')
-            logger.info(f"API: Преобразуем category_key '{category_key}' в category_id '{category_id}'")
+        if requested_category and requested_category.startswith('category_'):
+            category_id = requested_category.replace('category_', '')
+            logger.info(f"API: Преобразуем requested_category '{requested_category}' в category_id '{category_id}'")
         
         products = await load_products_from_modx_api(category_id)
         
@@ -350,17 +350,17 @@ async def get_products_for_webapp(request):
                 logger.info(f"API: Категория {cat_key}: {len(products_list)} продуктов")
             
             # Если запрашивается конкретная категория, возвращаем только её
-            if category_key:
-                logger.info(f"API: Запрашивается категория: {category_key}")
-                if category_key in products_by_category:
-                    logger.info(f"API: Найдена категория {category_key}, возвращаем {len(products_by_category[category_key])} продуктов")
-                    return web.json_response(products_by_category[category_key], headers={
+            if requested_category:
+                logger.info(f"API: Запрашивается категория: {requested_category}")
+                if requested_category in products_by_category:
+                    logger.info(f"API: Найдена категория {requested_category}, возвращаем {len(products_by_category[requested_category])} продуктов")
+                    return web.json_response(products_by_category[requested_category], headers={
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
                         'Expires': '0'
                     })
                 else:
-                    logger.warning(f"API: Категория {category_key} не найдена в products_by_category")
+                    logger.warning(f"API: Категория {requested_category} не найдена в products_by_category")
                     return web.json_response([], headers={
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
