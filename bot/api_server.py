@@ -439,13 +439,15 @@ async def get_categories_for_webapp(request):
                 })
             
             # Логируем порядок до сортировки
-            logger.info(f"API: Порядок категорий до сортировки: {[f\"{cat['name']}({cat['menuindex']})\" for cat in categories_list]}")
+            before_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
+            logger.info(f"API: Порядок категорий до сортировки: {before_sort}")
             
             # Сортируем категории по menuindex
             categories_list.sort(key=lambda x: x.get('menuindex', 0))
             
             # Логируем порядок после сортировки
-            logger.info(f"API: Порядок категорий после сортировки: {[f\"{cat['name']}({cat['menuindex']})\" for cat in categories_list]}")
+            after_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
+            logger.info(f"API: Порядок категорий после сортировки: {after_sort}")
             
             logger.info(f"API: Отправляем {len(categories_list)} категорий фронтенду")
             return web.json_response(categories_list, headers={
