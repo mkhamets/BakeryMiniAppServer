@@ -362,42 +362,42 @@ async def get_products_for_webapp(request):
                 logger.info(f"API: Категория {cat_key}: {len(products_list)} продуктов")
             
             # Если запрашивается конкретная категория, возвращаем только её
-                    if requested_category:
-                        logger.info(f"API: Запрашивается категория: {requested_category}")
-                        if requested_category in products_by_category:
-                            # Получаем информацию о категории
-                            categories = await load_categories_from_modx_api()
-                            category_info = None
-                            if categories:
-                                for cat in categories:
-                                    if cat['id'] == category_id:
-                                        category_info = {
-                                            "id": cat['id'],
-                                            "name": cat['name'],
-                                            "key": requested_category
-                                        }
-                                        break
-                            
-                            logger.info(f"API: Найдена категория {requested_category}, возвращаем {len(products_by_category[requested_category])} продуктов")
-                            
-                            # Возвращаем объект с информацией о категории и продуктами
-                            response_data = {
-                                "category": category_info,
-                                "products": products_by_category[requested_category]
-                            }
-                            
-                            return web.json_response(response_data, headers={
-                                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                                'Pragma': 'no-cache',
-                                'Expires': '0'
-                            })
-                        else:
-                            logger.warning(f"API: Категория {requested_category} не найдена в products_by_category")
-                            return web.json_response({"error": "Category not found"}, status=404, headers={
-                                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                                'Pragma': 'no-cache',
-                                'Expires': '0'
-                            })
+            if requested_category:
+                logger.info(f"API: Запрашивается категория: {requested_category}")
+                if requested_category in products_by_category:
+                    # Получаем информацию о категории
+                    categories = await load_categories_from_modx_api()
+                    category_info = None
+                    if categories:
+                        for cat in categories:
+                            if cat['id'] == category_id:
+                                category_info = {
+                                    "id": cat['id'],
+                                    "name": cat['name'],
+                                    "key": requested_category
+                                }
+                                break
+                    
+                    logger.info(f"API: Найдена категория {requested_category}, возвращаем {len(products_by_category[requested_category])} продуктов")
+                    
+                    # Возвращаем объект с информацией о категории и продуктами
+                    response_data = {
+                        "category": category_info,
+                        "products": products_by_category[requested_category]
+                    }
+                    
+                    return web.json_response(response_data, headers={
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    })
+                else:
+                    logger.warning(f"API: Категория {requested_category} не найдена в products_by_category")
+                    return web.json_response({"error": "Category not found"}, status=404, headers={
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    })
             else:
                 # Возвращаем все категории
                 logger.info(f"API: Возвращаем все категории: {len(products_by_category)} категорий")
