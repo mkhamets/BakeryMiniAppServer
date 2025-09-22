@@ -547,8 +547,8 @@ async def setup_api_server():
     # Загружаем данные о продуктах при настройке сервера (ПАРСЕР - ЗАКОММЕНТИРОВАН)
     # await load_products_data_for_api()
 
-    # ДОБАВЛЕНО: Перенаправление с корневого пути на '/bot-app/'
-    app.router.add_get('/', lambda r: web.HTTPFound('/bot-app/'))
+    # ДОБАВЛЕНО: Корневой путь сразу отдает WebApp (без редиректа для Telegram WebApp)
+    app.router.add_get('/', serve_main_app_page)
 
     # 1. Маршрут для получения всех продуктов (или по категории)
     # ИЗМЕНЕНО: Добавлен префикс '/bot-app'
