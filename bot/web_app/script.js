@@ -1605,10 +1605,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.109&t=1758518052", image: "images/bakery.svg?v=1.3.109&t=1758518052" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.109&t=1758518052", image: "images/crouasan.svg?v=1.3.109&t=1758518052" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.109&t=1758518052", image: "images/bread1.svg?v=1.3.109&t=1758518052" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.109&t=1758518052", image: "images/cookie.svg?v=1.3.109&t=1758518052" }
+        "category_16": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.109&t=1758518052", image: "images/bread1.svg?v=1.3.109&t=1758518052" },
+        "category_17": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.109&t=1758518052", image: "images/bakery.svg?v=1.3.109&t=1758518052" },
+        "category_18": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.109&t=1758518052", image: "images/crouasan.svg?v=1.3.109&t=1758518052" },
+        "category_19": { name: "Десерты", icon: "images/cookie.svg?v=1.3.109&t=1758518052", image: "images/cookie.svg?v=1.3.109&t=1758518052" }
     };
 
     await fetchProductsData();
@@ -2177,18 +2177,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const products = productsData[categoryKey];
         console.log(`API: Загружаем продукты для категории ${categoryKey}:`, products);
         
-        // Update category title - используем информацию из API или fallback на статический мап
+        // Update category title - используем информацию из API для названия, но SVG иконки из статического мапа
         if (mainCategoryTitle) {
-            const categoryInfo = productsData[`${categoryKey}_info`] || CATEGORY_DISPLAY_MAP[categoryKey];
-            console.log(`Category info for ${categoryKey}:`, categoryInfo);
-            if (categoryInfo) {
-                const categoryName = categoryInfo.name || categoryInfo.displayName;
+            const apiCategoryInfo = productsData[`${categoryKey}_info`];
+            const staticCategoryInfo = CATEGORY_DISPLAY_MAP[categoryKey];
+            console.log(`API Category info for ${categoryKey}:`, apiCategoryInfo);
+            console.log(`Static Category info for ${categoryKey}:`, staticCategoryInfo);
+            
+            if (apiCategoryInfo || staticCategoryInfo) {
+                const categoryName = apiCategoryInfo?.name || staticCategoryInfo?.name || 'Продукты';
                 console.log(`Setting category title to: ${categoryName}`);
-                if (categoryInfo.image) {
+                
+                // Используем SVG иконку из статического мапа, если она есть
+                if (staticCategoryInfo && staticCategoryInfo.image) {
                     // Create icon + title container
                     mainCategoryTitle.innerHTML = `
                         <div class="category-title-with-icon">
-                            <img src="${categoryInfo.image}" alt="${categoryName}" class="category-icon" onerror="this.style.display='none';">
+                            <img src="${staticCategoryInfo.image}" alt="${categoryName}" class="category-icon" onerror="this.style.display='none';">
                             <span>${categoryName}</span>
                         </div>
                     `;
