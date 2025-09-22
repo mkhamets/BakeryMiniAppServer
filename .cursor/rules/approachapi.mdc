@@ -3,6 +3,5 @@ description:
 globs:
 alwaysApply: true
 ---
-мы должны:
-Объединить API с wsgi.py - весь API как обычные view/route внутри того же приложения
-Passenger будет обслуживать - единый процесс для всего
+Never switch on to main without user's approve
+Never add code to main without user's approve
