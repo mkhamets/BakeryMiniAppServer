@@ -330,7 +330,7 @@ async def get_products_for_webapp(request):
                     "id": product['id'],
                     "name": product['pagetitle'],
                     "url": f"https://drazhin.by/{product.get('alias', '')}",
-                    "image_url": product.get('image', ''),
+                    "image": product.get('image', ''),  # Исправлено: image вместо image_url
                     "price": str(float(clean_price)),
                     "short_description": product.get('product_description', 'N/A'),
                     "weight": str(int(float(clean_weight))),
@@ -460,7 +460,7 @@ async def get_categories_for_webapp(request):
             #     for key, products in products_data.items():
             #         if products: # Убедимся, что в категории есть продукты
             #             # Берем первое изображение из первого продукта в категории как изображение для категории
-            #             category_image = products[0].get('image_url', '')
+            #             category_image = products[0].get('image', '')
             #             categories_list.append({
             #                 "key": key,
             #                 "name": products[0].get('category_name', key), # Используем название категории из первого продукта

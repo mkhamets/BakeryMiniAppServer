@@ -1605,10 +1605,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProductCategory = null; // Для отслеживания категории продукта
 
     const CATEGORY_DISPLAY_MAP = {
-        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.108&t=1758294725", image: "images/bakery.svg?v=1.3.108&t=1758294725" },
-        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.108&t=1758294725", image: "images/crouasan.svg?v=1.3.108&t=1758294725" },
-        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.108&t=1758294725", image: "images/bread1.svg?v=1.3.108&t=1758294725" },
-        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.108&t=1758294725", image: "images/cookie.svg?v=1.3.108&t=1758294725" }
+        "category_bakery": { name: "Выпечка", icon: "images/bakery.svg?v=1.3.109&t=1758518052", image: "images/bakery.svg?v=1.3.109&t=1758518052" },
+        "category_croissants": { name: "Круассаны", icon: "images/crouasan.svg?v=1.3.109&t=1758518052", image: "images/crouasan.svg?v=1.3.109&t=1758518052" },
+        "category_artisan_bread": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.109&t=1758518052", image: "images/bread1.svg?v=1.3.109&t=1758518052" },
+        "category_desserts": { name: "Десерты", icon: "images/cookie.svg?v=1.3.109&t=1758518052", image: "images/cookie.svg?v=1.3.109&t=1758518052" }
     };
 
     await fetchProductsData();
@@ -2044,6 +2044,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            console.log('API: Получены данные продуктов:', data);
             productsData = data;
             
             // 🔄 AUTO-REFRESH CART WHEN PRODUCTS CHANGE
@@ -2087,6 +2088,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const categoriesData = await response.json();
+            console.log('API: Получены данные категорий:', categoriesData);
 
             if (categoriesContainer) categoriesContainer.innerHTML = '';
 
@@ -2099,9 +2101,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const categoryDisplayName = category.name || categoryInfo.name;
                 const categoryIcon = categoryInfo.icon;
 
-                const categoryImageUrl = (productsData[category.key] && productsData[category.key].length > 0)
-                    ? productsData[category.key][0].image
-                    : 'https://placehold.co/300x200/cccccc/333333?text=No+Image';
+                // Используем изображение из API категорий, если есть, иначе из первого продукта
+                const categoryImageUrl = category.image || 
+                    (productsData[category.key] && productsData[category.key].length > 0
+                        ? productsData[category.key][0].image
+                        : 'images/logo.svg?v=1.3.109&t=1758518052');
 
                 const categoryCard = document.createElement('div');
                 categoryCard.className = 'category-card-item';
@@ -2111,7 +2115,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <img src="${categoryImageUrl}"
                          alt="${categoryDisplayName}"
                          class="category-image"
-                         onerror="this.onerror=null;this.src='https://placehold.co/300x200/cccccc/333333?text=No+Image';">
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                         onload="console.log('Изображение категории загружено:', this.src);">
                     <div class="category-text-wrapper">
                         <h3 class="category-title-text">${categoryDisplayName}</h3>
                         <div class="category-link-text">
@@ -2149,6 +2154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const products = productsData[categoryKey];
+        console.log(`API: Загружаем продукты для категории ${categoryKey}:`, products);
         
         // Update category title with icon for category screens (not main menu)
         if (mainCategoryTitle) {
@@ -2176,12 +2182,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             productCard.innerHTML = `
                 <div class="product-image-container">
-                    <img src="${product.image || 'https://placehold.co/300x225/e0e0e0/555?text=Нет+фото'}" 
+                    <img src="${product.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
                          alt="${product.name}" 
                          class="product-image clickable-image" 
                          data-product-id="${product.id}"
                          loading="lazy" decoding="async"
-                         onerror="this.onerror=null;this.src='https://placehold.co/300x225/e0e0e0/555?text=Нет+фото';">
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                         onload="console.log('Изображение загружено:', this.src);">
                     <div class="product-vegan-icon" style="display: ${product.for_vegans && product.for_vegans !== 'N/A' ? 'block' : 'none'};">
                         <svg class="svg svg-vegan">
                             <use xlink:href="sprite.svg#vegan"></use>
@@ -2434,9 +2441,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="cart-item-image-container" 
                      style="cursor: ${isAvailable ? 'pointer' : 'default'};" 
                      onclick="${isAvailable ? `showProductScreen('${item.id}', '${productCategory}')` : 'return false;'}">
-                    <img src="${item.image || 'https://placehold.co/80x80/cccccc/333333?text=No+Image'}" 
+                    <img src="${item.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
                          alt="${item.name}" class="cart-item-image"
-                         onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/333333?text=No+Image';">
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
                     ${!isAvailable ? '<div class="unavailable-label">Недоступен</div>' : ''}
                 </div>
                 <div class="cart-item-details">
@@ -3354,7 +3361,7 @@ function addErrorClearingListeners() {
 
     // Wait for background image to load
     const img = new Image();
-            img.src = '/bot-app/images/Hleb.jpg?v=1.3.108&t=1758294725';
+            img.src = '/bot-app/images/Hleb.jpg?v=1.3.109&t=1758518052';
     // Safety timeout in case onload never fires
     const loadingSafetyTimeout = setTimeout(() => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
@@ -3462,11 +3469,11 @@ function addErrorClearingListeners() {
         // Формируем HTML для экрана продукта
         let screenHTML = `
             <div class="product-screen-image-container">
-                <img src="${product.image || 'https://placehold.co/400x300/e0e0e0/555?text=Нет+фото'}" 
+                <img src="${product.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
                      alt="${product.name}" 
                      class="product-screen-image" 
                      id="product-screen-main-image"
-                     onerror="this.onerror=null;this.src='https://placehold.co/400x300/e0e0e0/555?text=Нет+фото';">
+                     onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
                 
                 <!-- Стрелки навигации для множественных изображений -->
                 <button class="image-nav prev" id="product-screen-prev" style="display: none;">‹</button>
