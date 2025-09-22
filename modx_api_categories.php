@@ -38,7 +38,6 @@ $leftJoin = array(
 
 $select = array(
     'modResource' => $modx->getSelectColumns('modResource', 'modResource', '', array('content'), true),
-    'modResource.menuindex' => 'menuindex',
 );
 
 $default = array(
@@ -98,6 +97,11 @@ if (!empty($rows) && is_array($rows)) {
         ];
     }
 }
+
+// Сортируем категории по menuindex
+usort($output, function($a, $b) {
+    return $a['menuindex'] - $b['menuindex'];
+});
 
 $result = [
     'status' => 'success',
