@@ -93,7 +93,7 @@ if (!empty($rows) && is_array($rows)) {
             'uri' => $row['uri'],
             'image' => $category_image,
             'key' => 'category_' . $category_id,
-            'menuindex' => $row['menuindex']
+            'menuindex' => (int)$row['menuindex']
         ];
     }
 }
