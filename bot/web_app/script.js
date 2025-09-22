@@ -2029,16 +2029,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Generate timestamp and signature
             const timestamp = Math.floor(Date.now() / 1000);
             let path = '/bot-app/api/products';
+            let fullPath = path;
             if (categoryKey) {
-                path += `?category=${categoryKey}`;
-                console.log(`Making API request to: ${path}`);
+                fullPath += `?category=${categoryKey}`;
+                console.log(`Making API request to: ${fullPath}`);
             } else {
                 console.log('Making API request for all products');
             }
+            // Sign only the base path without query parameters
             const signature = await signRequest('GET', path, timestamp);
             
             // Make signed request
-            const response = await fetch(path, {
+            const response = await fetch(fullPath, {
                 headers: {
                     'X-Signature': signature,
                     'X-Timestamp': timestamp.toString(),

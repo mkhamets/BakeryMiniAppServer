@@ -274,8 +274,8 @@ async def get_products_for_webapp(request):
     # Use Telegram initData as secret (unique per session)
     hmac_secret = init_data if init_data else HMAC_SECRET
     
-    # Verify signature
-    request_data = f"{request.method}:{request.path}:{timestamp}"
+    # Verify signature - use only path without query parameters
+    request_data = f"{request.method}:{request.url.path}:{timestamp}"
     if not verify_hmac_signature(request_data, signature, hmac_secret):
         logger.warning(f"API: Invalid signature from {client_ip}")
         return web.json_response({"error": "Invalid signature"}, status=403, headers={
