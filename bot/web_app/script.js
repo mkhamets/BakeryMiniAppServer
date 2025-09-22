@@ -2163,14 +2163,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadProducts(categoryKey) {
         console.log(`loadProducts called with categoryKey: ${categoryKey}`);
+        // Всегда загружаем продукты для конкретной категории, чтобы получить информацию о категории
+        console.log(`Loading products for category: ${categoryKey}`);
+        await fetchProductsData(categoryKey);
         if (!productsData[categoryKey]) {
-            console.log(`Loading products for category: ${categoryKey}`);
-            await fetchProductsData(categoryKey);
-            if (!productsData[categoryKey]) {
-                console.warn('No products found for this category.');
-                displayView('categories');
-                return;
-            }
+            console.warn('No products found for this category.');
+            displayView('categories');
+            return;
         }
 
         const products = productsData[categoryKey];
@@ -2179,8 +2178,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update category title - используем информацию из API или fallback на статический мап
         if (mainCategoryTitle) {
             const categoryInfo = productsData[`${categoryKey}_info`] || CATEGORY_DISPLAY_MAP[categoryKey];
+            console.log(`Category info for ${categoryKey}:`, categoryInfo);
             if (categoryInfo) {
                 const categoryName = categoryInfo.name || categoryInfo.displayName;
+                console.log(`Setting category title to: ${categoryName}`);
                 if (categoryInfo.image) {
                     // Create icon + title container
                     mainCategoryTitle.innerHTML = `
@@ -2193,6 +2194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.textContent = categoryName;
                 }
             } else {
+                console.log('No category info found, using fallback "Продукты"');
                 mainCategoryTitle.textContent = 'Продукты';
             }
         }
