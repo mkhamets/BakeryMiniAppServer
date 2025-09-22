@@ -2018,6 +2018,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function fetchProductsData(categoryKey = null) {
+        console.log(`fetchProductsData called with categoryKey: ${categoryKey}`);
         try {
             // Get authentication token
             const token = await getAuthToken();
@@ -2030,6 +2031,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             let path = '/bot-app/api/products';
             if (categoryKey) {
                 path += `?category=${categoryKey}`;
+                console.log(`Making API request to: ${path}`);
+            } else {
+                console.log('Making API request for all products');
             }
             const signature = await signRequest('GET', path, timestamp);
             
@@ -2158,7 +2162,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadProducts(categoryKey) {
+        console.log(`loadProducts called with categoryKey: ${categoryKey}`);
         if (!productsData[categoryKey]) {
+            console.log(`Loading products for category: ${categoryKey}`);
             await fetchProductsData(categoryKey);
             if (!productsData[categoryKey]) {
                 console.warn('No products found for this category.');
