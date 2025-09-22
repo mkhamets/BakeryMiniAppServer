@@ -359,8 +359,16 @@ async def get_products_for_webapp(request):
                     'Expires': '0'
                 })
             else:
-                # Возвращаем все продукты, сгруппированные по категориям
-                return web.json_response(products_by_category, headers={
+                # Возвращаем все продукты как плоский массив
+                all_products = []
+                for category_products in products_by_category.values():
+                    all_products.extend(category_products)
+                
+                # Сортируем все продукты по menuindex
+                all_products.sort(key=lambda x: x.get('menuindex', 0))
+                
+                logger.info(f"API: Отправляем {len(all_products)} продуктов как плоский массив")
+                return web.json_response(all_products, headers={
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
                     'Expires': '0'
