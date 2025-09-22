@@ -343,32 +343,23 @@ async def get_products_for_webapp(request):
             for category_key in products_by_category:
                 products_by_category[category_key].sort(key=lambda x: x.get('menuindex', 0))
             
+            # Если запрашивается конкретная категория, возвращаем только её
             if category_key:
-                # Возвращаем продукты конкретной категории
-                products_in_category = products_by_category.get(category_key, [])
-                if not products_in_category:
-                    logger.warning(f"API: Категория '{category_key}' не найдена или пуста.")
-                    return web.json_response({"error": "Category not found or empty"}, status=404, headers={
+                if category_key in products_by_category:
+                    return web.json_response(products_by_category[category_key], headers={
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
                         'Expires': '0'
                     })
-                return web.json_response(products_in_category, headers={
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                })
+                else:
+                    return web.json_response([], headers={
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    })
             else:
-                # Возвращаем все продукты как плоский массив
-                all_products = []
-                for category_products in products_by_category.values():
-                    all_products.extend(category_products)
-                
-                # Сортируем все продукты по menuindex
-                all_products.sort(key=lambda x: x.get('menuindex', 0))
-                
-                logger.info(f"API: Отправляем {len(all_products)} продуктов как плоский массив")
-                return web.json_response(all_products, headers={
+                # Возвращаем все категории
+                return web.json_response(products_by_category, headers={
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
                     'Expires': '0'
