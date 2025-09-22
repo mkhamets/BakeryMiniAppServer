@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+Never delete prser logic. add parser code to comments to keep it
