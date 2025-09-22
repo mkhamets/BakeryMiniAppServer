@@ -299,6 +299,7 @@ async def get_products_for_webapp(request):
         
         if products:
             logger.info(f"API: Получено {len(products)} продуктов из MODX API")
+            logger.info(f"API: Первый продукт: {products[0] if products else 'None'}")
             # Преобразуем MODX API данные в формат парсера (по категориям)
             products_by_category = {}
             
@@ -343,15 +344,23 @@ async def get_products_for_webapp(request):
             for category_key in products_by_category:
                 products_by_category[category_key].sort(key=lambda x: x.get('menuindex', 0))
             
+            # Логируем структуру products_by_category
+            logger.info(f"API: Структура products_by_category: {list(products_by_category.keys())}")
+            for cat_key, products_list in products_by_category.items():
+                logger.info(f"API: Категория {cat_key}: {len(products_list)} продуктов")
+            
             # Если запрашивается конкретная категория, возвращаем только её
             if category_key:
+                logger.info(f"API: Запрашивается категория: {category_key}")
                 if category_key in products_by_category:
+                    logger.info(f"API: Найдена категория {category_key}, возвращаем {len(products_by_category[category_key])} продуктов")
                     return web.json_response(products_by_category[category_key], headers={
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
                         'Expires': '0'
                     })
                 else:
+                    logger.warning(f"API: Категория {category_key} не найдена в products_by_category")
                     return web.json_response([], headers={
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
@@ -359,6 +368,7 @@ async def get_products_for_webapp(request):
                     })
             else:
                 # Возвращаем все категории
+                logger.info(f"API: Возвращаем все категории: {len(products_by_category)} категорий")
                 return web.json_response(products_by_category, headers={
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
