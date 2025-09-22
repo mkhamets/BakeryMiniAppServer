@@ -38,6 +38,7 @@ $leftJoin = array(
 
 $select = array(
     'modResource' => $modx->getSelectColumns('modResource', 'modResource', '', array('content'), true),
+    'modResource.menuindex' => 'menuindex',
 );
 
 $default = array(
@@ -45,7 +46,7 @@ $default = array(
     'where' => $where,
     'leftJoin' => $leftJoin,
     'select' => $select,
-    'sortby' => 'modResource.id',
+    'sortby' => 'modResource.menuindex',
     'sortdir' => 'ASC',
     'groupby' => 'modResource.id',
     'return' => 'data',
@@ -92,7 +93,8 @@ if (!empty($rows) && is_array($rows)) {
             'description' => $row['description'],
             'uri' => $row['uri'],
             'image' => $category_image,
-            'key' => 'category_' . $category_id
+            'key' => 'category_' . $category_id,
+            'menuindex' => $row['menuindex']
         ];
     }
 }

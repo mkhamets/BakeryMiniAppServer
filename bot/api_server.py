@@ -434,11 +434,12 @@ async def get_categories_for_webapp(request):
                 categories_list.append({
                     "key": category_key,
                     "name": category['name'],
-                    "image": category.get('image', '')  # Используем изображение из MODX API
+                    "image": category.get('image', ''),  # Используем изображение из MODX API
+                    "menuindex": category.get('menuindex', 0)  # Добавляем menuindex для сортировки
                 })
             
             # Сортируем категории по menuindex
-            categories_list.sort(key=lambda x: int(x['key'].replace('category_', '')))
+            categories_list.sort(key=lambda x: x.get('menuindex', 0))
             
             logger.info(f"API: Отправляем {len(categories_list)} категорий фронтенду")
             return web.json_response(categories_list, headers={
