@@ -320,18 +320,23 @@ async def get_products_for_webapp(request):
                 # Преобразуем продукт в формат парсера
                 try:
                     # Очищаем цену и вес от пробелов и запятых
-                    price_str = str(product.get('price', '0')).replace(' ', '').replace(',', '.')
-                    weight_str = str(product.get('weight', '0')).replace(' ', '').replace(',', '.')
+                    clean_price = str(product['price']).replace(' ', '').replace(',', '.')
+                    clean_weight = str(product['weight']).replace(' ', '').replace(',', '.')
                     
                     formatted_product = {
                         "id": product['id'],
                         "name": product['pagetitle'],
-                        "price": float(price_str) if price_str.replace('.', '').isdigit() else 0.0,
-                        "weight": float(weight_str) if weight_str.replace('.', '').isdigit() else 0.0,
+                        "url": f"https://drazhin.by/{product.get('alias', '')}",
                         "image": product.get('image', ''),
-                        "description": product.get('product_description', ''),
-                        "category_name": product.get('category_name', ''),
-                        "parent_id": product['parent_id'],
+                        "price": str(float(clean_price)),
+                        "short_description": product.get('product_description', 'N/A'),
+                        "weight": str(int(float(clean_weight))),
+                        "for_vegans": product.get('product_vegan', 'N/A'),
+                        "availability_days": product.get('product_days_order', 'N/A'),
+                        "ingredients": product.get('product_structure', 'N/A'),
+                        "calories": product.get('product_calories', 'N/A'),
+                        "energy_value": product.get('product_bgu', 'N/A'),
+                        "images": product.get('images', []),
                         "menuindex": product.get('menuindex', 0)
                     }
                     
@@ -342,7 +347,7 @@ async def get_products_for_webapp(request):
             
             # Сортируем продукты по menuindex
             for category_key in products_by_category:
-                products_by_category[category_key].sort(key=lambda x: x.get('menuindex', 0))
+                products_by_category[category_key].sort(key=lambda x: int(x.get('menuindex', 0)))
             
             # Логируем структуру products_by_category
             logger.info(f"API: Структура products_by_category: {list(products_by_category.keys())}")
