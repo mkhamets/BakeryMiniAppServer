@@ -300,19 +300,26 @@ async def get_products_for_webapp(request):
         if products:
             logger.info(f"API: Получено {len(products)} продуктов из MODX API")
             logger.info(f"API: Первый продукт: {products[0] if products else 'None'}")
+            
+            # Если запрашивается конкретная категория, фильтруем продукты по parent_id
+            if requested_category and category_id:
+                filtered_products = [p for p in products if p.get('parent_id') == category_id]
+                logger.info(f"API: Отфильтровано {len(filtered_products)} продуктов для категории {category_id}")
+                products = filtered_products
+            
             # Преобразуем MODX API данные в формат парсера (по категориям)
             products_by_category = {}
             
             for product in products:
                 try:
-                    category_id = product['parent_id']
-                    logger.info(f"API: Обрабатываем продукт {product['id']} категории {category_id}")
+                    product_category_id = product['parent_id']
+                    logger.info(f"API: Обрабатываем продукт {product['id']} категории {product_category_id}")
                 except KeyError as e:
                     logger.error(f"API: Ошибка в структуре продукта: {e}, продукт: {product}")
                     continue
                 
                 # Создаем ключ категории в формате парсера
-                category_key = f"category_{category_id}"
+                category_key = f"category_{product_category_id}"
                 
                 if category_key not in products_by_category:
                     products_by_category[category_key] = []
