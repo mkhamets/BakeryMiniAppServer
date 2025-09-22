@@ -57,7 +57,7 @@ class SecureConfig:
         # Web app configuration
         self.BASE_WEBAPP_URL = os.environ.get(
             'BASE_WEBAPP_URL', 
-            'https://bakery-miniapp-f23f8ce37e50.herokuapp.com/bot-app/'
+            'https://bakery-miniapp-f23f8ce37e50.herokuapp.com/'
         )
         
         # Admin configuration

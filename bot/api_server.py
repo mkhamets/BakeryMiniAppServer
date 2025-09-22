@@ -547,8 +547,13 @@ async def setup_api_server():
     # Загружаем данные о продуктах при настройке сервера (ПАРСЕР - ЗАКОММЕНТИРОВАН)
     # await load_products_data_for_api()
 
-    # ДОБАВЛЕНО: Перенаправление с корневого пути на '/bot-app/'
-    app.router.add_get('/', lambda r: web.HTTPFound('/bot-app/'))
+    # ДОБАВЛЕНО: Перенаправление с корневого пути на '/bot-app/' с сохранением query параметров
+    async def redirect_to_bot_app(request):
+        query_string = request.query_string
+        redirect_url = f'/bot-app/{f"?{query_string}" if query_string else ""}'
+        return web.HTTPFound(redirect_url)
+    
+    app.router.add_get('/', redirect_to_bot_app)
 
     # 1. Маршрут для получения всех продуктов (или по категории)
     # ИЗМЕНЕНО: Добавлен префикс '/bot-app'
