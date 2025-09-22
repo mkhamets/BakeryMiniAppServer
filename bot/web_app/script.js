@@ -2017,7 +2017,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
-    async function fetchProductsData() {
+    async function fetchProductsData(categoryKey = null) {
         try {
             // Get authentication token
             const token = await getAuthToken();
@@ -2027,7 +2027,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Generate timestamp and signature
             const timestamp = Math.floor(Date.now() / 1000);
-            const path = '/bot-app/api/products';
+            let path = '/bot-app/api/products';
+            if (categoryKey) {
+                path += `?category=${categoryKey}`;
+            }
             const signature = await signRequest('GET', path, timestamp);
             
             // Make signed request
@@ -2045,7 +2048,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             console.log('API: Получены данные продуктов:', data);
-            productsData = data;
+            
+            if (categoryKey) {
+                // Если запрашивается конкретная категория, сохраняем данные в специальном формате
+                productsData[categoryKey] = data.products || data;
+                // Сохраняем информацию о категории для использования в loadProducts
+                if (data.category) {
+                    productsData[`${categoryKey}_info`] = data.category;
+                }
+            } else {
+                // Если запрашиваются все продукты, сохраняем как раньше
+                productsData = data;
+            }
             
             // 🔄 AUTO-REFRESH CART WHEN PRODUCTS CHANGE
             if (Object.keys(cart).length > 0) {
@@ -2145,7 +2159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadProducts(categoryKey) {
         if (!productsData[categoryKey]) {
-            await fetchProductsData();
+            await fetchProductsData(categoryKey);
             if (!productsData[categoryKey]) {
                 console.warn('No products found for this category.');
                 displayView('categories');
@@ -2156,17 +2170,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const products = productsData[categoryKey];
         console.log(`API: Загружаем продукты для категории ${categoryKey}:`, products);
         
-        // Update category title with icon for category screens (not main menu)
+        // Update category title - используем информацию из API или fallback на статический мап
         if (mainCategoryTitle) {
-            const categoryInfo = CATEGORY_DISPLAY_MAP[categoryKey];
-            if (categoryInfo && categoryInfo.image) {
-                // Create icon + title container
-                mainCategoryTitle.innerHTML = `
-                    <div class="category-title-with-icon">
-                        <img src="${categoryInfo.image}" alt="${categoryDisplayName}" class="category-icon" onerror="this.style.display='none';">
-                        <span>${categoryDisplayName}</span>
-                    </div>
-                `;
+            const categoryInfo = productsData[`${categoryKey}_info`] || CATEGORY_DISPLAY_MAP[categoryKey];
+            if (categoryInfo) {
+                const categoryName = categoryInfo.name || categoryInfo.displayName;
+                if (categoryInfo.image) {
+                    // Create icon + title container
+                    mainCategoryTitle.innerHTML = `
+                        <div class="category-title-with-icon">
+                            <img src="${categoryInfo.image}" alt="${categoryName}" class="category-icon" onerror="this.style.display='none';">
+                            <span>${categoryName}</span>
+                        </div>
+                    `;
+                } else {
+                    mainCategoryTitle.textContent = categoryName;
+                }
             } else {
                 mainCategoryTitle.textContent = 'Продукты';
             }
