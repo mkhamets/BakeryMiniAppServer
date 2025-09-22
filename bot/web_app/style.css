@@ -8,6 +8,19 @@ html, body {
     touch-action: manipulation; /* Запрещает двойное нажатие для масштабирования */
 }
 
+/* Скрываем весь контент до загрузки стилей и JavaScript */
+body:not(.loaded) .container,
+body:not(.loaded) .welcome-container {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Показываем loading overlay по умолчанию */
+.loading-overlay {
+    display: flex !important;
+    visibility: visible !important;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     background-color: #fff; /* Start with white background */
@@ -2084,10 +2097,16 @@ body a {
     bottom: 0;
     background-color: #fff;
     z-index: 9999;
-    display: flex;
+    display: flex !important;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    visibility: visible !important;
+}
+
+.loading-overlay.hidden {
+    display: none !important;
+    visibility: hidden !important;
 }
 
 .loading-logo-container {

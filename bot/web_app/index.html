@@ -49,6 +49,29 @@
         </div>
     </head>
     <body>
+        <!-- Inline styles to prevent FOUC (Flash of Unstyled Content) -->
+        <style>
+            /* Critical CSS to prevent FOUC */
+            body:not(.loaded) .container,
+            body:not(.loaded) .welcome-container {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #fff;
+                z-index: 9999;
+                display: flex !important;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                visibility: visible !important;
+            }
+        </style>
         <!-- Loading Overlay -->
         <div class="loading-overlay" id="loading-overlay">
             <div class="loading-logo-container" id="loading-logo-container">

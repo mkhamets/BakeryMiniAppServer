@@ -3347,25 +3347,19 @@ function addErrorClearingListeners() {
     const initialCategory = getUrlParameter('category');
     const initialView = getUrlParameter('view');
 
-    // Show loading overlay first - critical for Android
+    // Show loading overlay first - critical for preventing FOUC (Flash of Unstyled Content)
     const loadingOverlay = document.getElementById('loading-overlay');
     if (loadingOverlay) {
         loadingOverlay.classList.remove('hidden');
-        loadingOverlay.style.display = 'flex'; // Force display for Android
+        loadingOverlay.style.display = 'flex'; // Force display
     }
 
-    // Hide all content initially - Android-specific fixes
+    // Hide all content initially - CSS will handle this, but ensure it's hidden
     if (mainPageContainer) {
         mainPageContainer.classList.add('hidden');
-        if (isAndroidDevice) {
-            mainPageContainer.style.display = 'none'; // Force hide for Android
-        }
     }
     if (welcomeContainer) {
         welcomeContainer.classList.add('hidden');
-        if (isAndroidDevice) {
-            welcomeContainer.style.display = 'none'; // Force hide for Android
-        }
     }
 
     // Hide Telegram Web App buttons during loading
@@ -3378,8 +3372,15 @@ function addErrorClearingListeners() {
 
     // Helper to proceed to initial view and hide loading overlay
     function proceedToInitialView() {
-        try { document.body.classList.add('loaded'); } catch {}
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        // Add loaded class to body to show content and hide loading overlay
+        document.body.classList.add('loaded');
+        
+        // Hide loading overlay
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
+        
+        // Show appropriate view
         if (initialView === 'checkout') {
             displayView('checkout');
         } else if (initialView === 'cart' || initialCategory === 'cart') {
@@ -3403,8 +3404,6 @@ function addErrorClearingListeners() {
     }, 2500);
     img.onload = () => {
         clearTimeout(loadingSafetyTimeout);
-        // Add loaded class to body to show background
-        document.body.classList.add('loaded');
         // Hide loading overlay and show appropriate view after a short delay
         setTimeout(() => {
             proceedToInitialView();
