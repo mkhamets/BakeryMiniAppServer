@@ -32,7 +32,7 @@ $category = isset($_GET['category']) ? $_GET['category'] : '';
 if (!empty($category)) {
     // Запрос для конкретной категории
     $sql = "SELECT 
-        p.id, p.pagetitle, p.alias, p.template, p.published, p.parent,
+        p.id, p.menuindex, p.pagetitle, p.template, p.published, p.parent,
         d.price, d.weight, d.source,
         parent.pagetitle as category_name
     FROM {$modx->getTableName('modResource')} p
@@ -42,7 +42,7 @@ if (!empty($category)) {
         AND p.published = 1 
         AND p.deleted = 0
         AND p.parent = " . intval($category) . "
-    ORDER BY p.id ASC";
+    ORDER BY p.menuindex ASC";
     
     if ($limit > 0) {
         $sql .= " LIMIT " . intval($limit);
@@ -58,7 +58,7 @@ if (!empty($category)) {
     
     foreach ($categories as $cat_id) {
         $sql = "SELECT 
-            p.id, p.pagetitle, p.alias, p.template, p.published, p.parent,
+            p.id, p.menuindex, p.pagetitle, p.template, p.published, p.parent,
             d.price, d.weight, d.source,
             parent.pagetitle as category_name
         FROM {$modx->getTableName('modResource')} p
@@ -68,7 +68,7 @@ if (!empty($category)) {
             AND p.published = 1 
             AND p.deleted = 0
             AND p.parent = " . intval($cat_id) . "
-        ORDER BY p.id ASC";
+        ORDER BY p.menuindex ASC";
         
         $stmt = $modx->prepare($sql);
         $stmt->execute();
@@ -137,11 +137,10 @@ if (!empty($rows) && is_array($rows)) {
         // Формируем результат
         $result_item = array(
             'id' => $row['id'],
+            'menuindex' => $row['menuindex'],
             'pagetitle' => $row['pagetitle'],
-            'alias' => $row['alias'],
             'template' => $row['template'],
             'published' => $row['published'] ? 'yes' : 'no',
-            'parent' => $row['category_pagetitle'] ?? '',
             'parent_id' => $row['parent'],
             'price' => $miniShop2->formatPrice($row['price']),
             'weight' => $miniShop2->formatWeight($row['weight']),
