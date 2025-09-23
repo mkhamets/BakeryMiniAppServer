@@ -3507,7 +3507,10 @@ function addErrorClearingListeners() {
         // Формируем HTML для экрана продукта
         let screenHTML = `
             <div class="product-screen-image-container">
-                <div class="product-screen-carousel">
+                <div class="product-screen-carousel" 
+                     ontouchstart="handleProductScreenTouchStart(event)" 
+                     ontouchmove="handleProductScreenTouchMove(event)" 
+                     ontouchend="handleProductScreenTouchEnd(event)">
                     ${productImages.map((img, index) => `
                         <img src="${img}" 
                              alt="${product.name}" 
@@ -4180,7 +4183,46 @@ function addErrorClearingListeners() {
     }
     
     // Добавляем функции в глобальную область видимости
+    // Переменные для свайпа
+    let productScreenTouchStartX = 0;
+    let productScreenTouchStartY = 0;
+    let productScreenTouchEndX = 0;
+    let productScreenTouchEndY = 0;
+
+    // Обработчики свайпа для экрана товара
+    function handleProductScreenTouchStart(event) {
+        productScreenTouchStartX = event.touches[0].clientX;
+        productScreenTouchStartY = event.touches[0].clientY;
+    }
+
+    function handleProductScreenTouchMove(event) {
+        // Предотвращаем скролл страницы при свайпе
+        event.preventDefault();
+    }
+
+    function handleProductScreenTouchEnd(event) {
+        productScreenTouchEndX = event.changedTouches[0].clientX;
+        productScreenTouchEndY = event.changedTouches[0].clientY;
+        
+        const deltaX = productScreenTouchEndX - productScreenTouchStartX;
+        const deltaY = productScreenTouchEndY - productScreenTouchStartY;
+        
+        // Проверяем, что это горизонтальный свайп (не вертикальный скролл)
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+            if (deltaX > 0) {
+                // Свайп вправо - предыдущее изображение
+                navigateProductScreenCarousel(-1);
+            } else {
+                // Свайп влево - следующее изображение
+                navigateProductScreenCarousel(1);
+            }
+        }
+    }
+
     window.navigateProductScreenCarousel = navigateProductScreenCarousel;
     window.goToProductScreenImage = goToProductScreenImage;
+    window.handleProductScreenTouchStart = handleProductScreenTouchStart;
+    window.handleProductScreenTouchMove = handleProductScreenTouchMove;
+    window.handleProductScreenTouchEnd = handleProductScreenTouchEnd;
 
 });
