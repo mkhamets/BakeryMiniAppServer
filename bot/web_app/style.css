@@ -244,7 +244,8 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 }
 
 /* Стили для контейнера изображений в экране товара */
-.product-screen-image-container {
+.product-screen-image-container,
+.product-screen-carousel {
     position: relative;
     width: 100%;
     height: 300px;
@@ -253,19 +254,14 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     margin-bottom: 20px;
 }
 
-.product-screen-carousel {
-    position: relative;
-    width: 100%;
-    height: 300px;
-    overflow: hidden;
-}
-
 .product-screen-image {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    object-position: center top;
-    transition: transform 0.3s ease;
+    height: 100%;        /* заполняет высоту */
+    width: auto;         /* ширина по пропорциям */
+    max-width: none;     /* чтобы не ограничивалось */
+    position: absolute;  
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* центрируем */
 }
 
 .product-screen-image:hover {
