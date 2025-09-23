@@ -2214,15 +2214,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const quantityInCart = cart[product.id] ? cart[product.id].quantity : 0;
 
+            // Подготавливаем изображения для карусели
+            const images = [];
+            if (product.image) {
+                images.push(product.image);
+            }
+            // Добавляем дополнительные изображения если есть
+            if (product.images && Array.isArray(product.images)) {
+                images.push(...product.images);
+            }
+            // Если нет изображений, используем логотип
+            if (images.length === 0) {
+                images.push('images/logo.svg?v=1.3.109&t=1758518052');
+            }
+
             productCard.innerHTML = `
-                <div class="product-image-container">
-                    <img src="${product.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
-                         alt="${product.name}" 
-                         class="product-image clickable-image" 
-                         data-product-id="${product.id}"
-                         loading="lazy" decoding="async"
-                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
-                         onload="console.log('Изображение загружено:', this.src);">
+                <div class="product-image-container ${images.length === 1 ? 'single-image' : ''}">
+                    <div class="product-image-carousel" data-product-id="${product.id}">
+                        ${images.map((img, index) => `
+                            <img src="${img}" 
+                                 alt="${product.name}" 
+                                 class="product-image clickable-image ${index === 0 ? 'active' : ''}" 
+                                 data-product-id="${product.id}"
+                                 data-image-index="${index}"
+                                 loading="lazy" decoding="async"
+                                 onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                                 onload="console.log('Изображение загружено:', this.src);"
+                                 style="display: ${index === 0 ? 'block' : 'none'};">
+                        `).join('')}
+                        
+                        ${images.length > 1 ? `
+                            <button class="carousel-nav prev" onclick="navigateCarousel('${product.id}', -1)">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                                </svg>
+                            </button>
+                            <button class="carousel-nav next" onclick="navigateCarousel('${product.id}', 1)">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                                </svg>
+                            </button>
+                            <div class="carousel-indicators">
+                                ${images.map((_, index) => `
+                                    <div class="carousel-indicator ${index === 0 ? 'active' : ''}" 
+                                         onclick="goToCarouselImage('${product.id}', ${index})"></div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
                     <div class="product-vegan-icon" style="display: ${product.for_vegans && product.for_vegans !== 'N/A' ? 'block' : 'none'};">
                         <svg class="svg svg-vegan">
                             <use xlink:href="sprite.svg#vegan"></use>
@@ -4103,5 +4142,66 @@ function addErrorClearingListeners() {
             startY = 0;
         });
     }
+
+    // ===== ФУНКЦИИ КАРУСЕЛИ ИЗОБРАЖЕНИЙ =====
+    
+    // Навигация по карусели (стрелки)
+    function navigateCarousel(productId, direction) {
+        const carousel = document.querySelector(`[data-product-id="${productId}"] .product-image-carousel`);
+        if (!carousel) return;
+        
+        const images = carousel.querySelectorAll('.product-image');
+        const indicators = carousel.querySelectorAll('.carousel-indicator');
+        
+        if (images.length <= 1) return;
+        
+        let currentIndex = 0;
+        images.forEach((img, index) => {
+            if (img.classList.contains('active')) {
+                currentIndex = index;
+            }
+        });
+        
+        let newIndex = currentIndex + direction;
+        if (newIndex < 0) newIndex = images.length - 1;
+        if (newIndex >= images.length) newIndex = 0;
+        
+        // Скрываем текущее изображение
+        images[currentIndex].style.display = 'none';
+        images[currentIndex].classList.remove('active');
+        indicators[currentIndex].classList.remove('active');
+        
+        // Показываем новое изображение
+        images[newIndex].style.display = 'block';
+        images[newIndex].classList.add('active');
+        indicators[newIndex].classList.add('active');
+    }
+    
+    // Переход к конкретному изображению (индикаторы)
+    function goToCarouselImage(productId, imageIndex) {
+        const carousel = document.querySelector(`[data-product-id="${productId}"] .product-image-carousel`);
+        if (!carousel) return;
+        
+        const images = carousel.querySelectorAll('.product-image');
+        const indicators = carousel.querySelectorAll('.carousel-indicator');
+        
+        if (imageIndex < 0 || imageIndex >= images.length) return;
+        
+        // Скрываем все изображения
+        images.forEach((img, index) => {
+            img.style.display = 'none';
+            img.classList.remove('active');
+            indicators[index].classList.remove('active');
+        });
+        
+        // Показываем выбранное изображение
+        images[imageIndex].style.display = 'block';
+        images[imageIndex].classList.add('active');
+        indicators[imageIndex].classList.add('active');
+    }
+    
+    // Добавляем функции в глобальную область видимости
+    window.navigateCarousel = navigateCarousel;
+    window.goToCarouselImage = goToCarouselImage;
 
 });
