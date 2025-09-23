@@ -2042,7 +2042,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <img src="${categoryImageUrl}"
                          alt="${categoryDisplayName}"
                          class="category-image"
-                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
                     <div class="category-text-wrapper">
                         <h3 class="category-title-text">${categoryDisplayName}</h3>
                         <div class="category-link-text">
@@ -2120,7 +2120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          class="product-image clickable-image" 
                          data-product-id="${product.id}"
                          loading="lazy" decoding="async"
-                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
                     <div class="product-vegan-icon" style="display: ${product.for_vegans && product.for_vegans !== 'N/A' ? 'block' : 'none'};">
                         <svg class="svg svg-vegan">
                             <use xlink:href="sprite.svg#vegan"></use>
