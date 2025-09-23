@@ -3635,14 +3635,42 @@ function addErrorClearingListeners() {
                         effect: "cards",
                         grabCursor: true,
                         cardsEffect: {
-                            perSlideOffset: 8,
-                            perSlideRotate: 2,
-                            rotate: true,
-                            slideShadows: true,
+                            perSlideOffset: 15,        // Увеличиваем смещение для лучшей видимости
+                            perSlideRotate: 1,         // Уменьшаем поворот для стабильности
+                            rotate: false,             // Отключаем поворот для предсказуемости
+                            slideShadows: true,        // Оставляем тени
+                            transformEl: '.swiper-slide', // Применяем трансформацию к слайду
                         },
                         autoplay: false,
-                        loop: true,
+                        loop: false,                   // Отключаем loop для предсказуемой навигации
                         speed: 300,
+                        allowTouchMove: true,
+                        resistance: true,
+                        resistanceRatio: 0.25,
+                        watchSlidesProgress: true,
+                        watchSlidesVisibility: true,
+                        // Настройки для лучшего контроля
+                        threshold: 10,                 // Минимальное расстояние для свайпа
+                        touchRatio: 1,
+                        touchAngle: 45,
+                        simulateTouch: true,
+                        shortSwipes: true,
+                        longSwipes: true,
+                        longSwipesRatio: 0.5,
+                        longSwipesMs: 300,
+                        followFinger: true,
+                        // Обработчики для отладки
+                        on: {
+                            slideChange: function() {
+                                console.log('Slide changed to:', this.activeIndex);
+                            },
+                            touchStart: function() {
+                                console.log('Touch start');
+                            },
+                            touchEnd: function() {
+                                console.log('Touch end');
+                            }
+                        }
                     });
                 }
             }, 100);
