@@ -3635,7 +3635,7 @@ function addErrorClearingListeners() {
                         effect: "cards",
                         grabCursor: true,
                         cardsEffect: {
-                            perSlideOffset: 25,        // Увеличиваем смещение для лучшей видимости
+                            perSlideOffset: 6,         // Уменьшаем смещение на 3/4 (было 25, стало 6)
                             perSlideRotate: 0,         // Убираем поворот полностью
                             rotate: false,             // Отключаем поворот для предсказуемости
                             slideShadows: true,        // Оставляем тени

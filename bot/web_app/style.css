@@ -324,7 +324,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     height: 400px;
     position: relative;
     border-radius: 12px;
-    padding: 20px 40px;
+    padding: 20px 15px;
     overflow: visible;
 }
 
