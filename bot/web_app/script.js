@@ -3641,6 +3641,11 @@ function addErrorClearingListeners() {
 
         screenBody.innerHTML = screenHTML;
 
+        // Инициализируем таймер скрытия кнопок для карусели
+        if (productImages.length > 1) {
+            resetCarouselHideTimer();
+        }
+
         // Инициализируем множественные изображения для экрана товара
         if (product.images && product.images.length > 1) {
             initProductScreenImages(product.id, product.images);
@@ -4135,6 +4140,41 @@ function addErrorClearingListeners() {
     
     // ===== ФУНКЦИИ КАРУСЕЛИ ЭКРАНА ТОВАРА =====
     
+    // Переменные для управления таймером скрытия кнопок
+    let carouselHideTimer = null;
+    
+    // Функция для сброса таймера скрытия кнопок
+    function resetCarouselHideTimer() {
+        const carousel = document.querySelector('.product-screen-carousel');
+        if (!carousel) return;
+        
+        const prevButton = carousel.querySelector('.carousel-nav.prev');
+        const nextButton = carousel.querySelector('.carousel-nav.next');
+        
+        if (prevButton && nextButton) {
+            // Показываем кнопки
+            prevButton.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+            prevButton.style.opacity = '1';
+            nextButton.style.opacity = '1';
+            prevButton.style.visibility = 'visible';
+            nextButton.style.visibility = 'visible';
+        }
+        
+        // Очищаем предыдущий таймер
+        if (carouselHideTimer) {
+            clearTimeout(carouselHideTimer);
+        }
+        
+        // Устанавливаем новый таймер на 3 секунды
+        carouselHideTimer = setTimeout(() => {
+            if (prevButton && nextButton) {
+                prevButton.classList.add('hidden');
+                nextButton.classList.add('hidden');
+            }
+        }, 3000);
+    }
+    
     // Навигация по карусели экрана товара (стрелки)
     function navigateProductScreenCarousel(direction) {
         const carousel = document.querySelector('.product-screen-carousel');
@@ -4174,6 +4214,9 @@ function addErrorClearingListeners() {
         newImage.style.display = 'block';
         newImage.classList.add('active');
         indicators[newIndex].classList.add('active');
+        
+        // Сбрасываем таймер скрытия кнопок
+        resetCarouselHideTimer();
         
         // Убираем классы анимации после завершения
         setTimeout(() => {
@@ -4223,6 +4266,9 @@ function addErrorClearingListeners() {
         newImage.classList.add('active');
         indicators[imageIndex].classList.add('active');
         
+        // Сбрасываем таймер скрытия кнопок
+        resetCarouselHideTimer();
+        
         // Убираем классы анимации после завершения
         setTimeout(() => {
             currentImage.classList.remove('active', 'slide-out-left', 'slide-out-right');
@@ -4266,6 +4312,9 @@ function addErrorClearingListeners() {
                 // Свайп влево - следующее изображение
                 navigateProductScreenCarousel(1);
             }
+        } else {
+            // Если это не свайп, но было касание - сбрасываем таймер
+            resetCarouselHideTimer();
         }
     }
 

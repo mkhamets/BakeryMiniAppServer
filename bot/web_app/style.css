@@ -323,7 +323,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.8);
     border: none;
     width: 40px;
     height: 40px;
@@ -333,7 +333,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     z-index: 10;
     opacity: 0;
     visibility: hidden;
@@ -343,6 +343,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     width: 16px;
     height: 16px;
     fill: #333;
+}
+
+.product-screen-carousel .carousel-nav.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 3s ease, visibility 3s ease;
 }
 
 .product-screen-image-container:hover .carousel-nav {
