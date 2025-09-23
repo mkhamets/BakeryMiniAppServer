@@ -3520,16 +3520,24 @@ function addErrorClearingListeners() {
                              style="display: ${index === 0 ? 'block' : 'none'};">
                     `).join('')}
                     
-                    ${productImages.length > 1 ? `
-                        <button class="carousel-nav prev" onclick="navigateProductScreenCarousel(-1)">‹</button>
-                        <button class="carousel-nav next" onclick="navigateProductScreenCarousel(1)">›</button>
-                        <div class="carousel-indicators">
-                            ${productImages.map((_, index) => `
-                                <div class="carousel-indicator ${index === 0 ? 'active' : ''}" 
-                                     onclick="goToProductScreenImage(${index})"></div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
+                       ${productImages.length > 1 ? `
+                           <button class="carousel-nav prev" onclick="navigateProductScreenCarousel(-1)">
+                               <svg class="svg svg-arrow-left">
+                                   <use xlink:href="sprite.svg#arrow-left"></use>
+                               </svg>
+                           </button>
+                           <button class="carousel-nav next" onclick="navigateProductScreenCarousel(1)">
+                               <svg class="svg svg-arrow-right">
+                                   <use xlink:href="sprite.svg#arrow-right"></use>
+                               </svg>
+                           </button>
+                           <div class="carousel-indicators">
+                               ${productImages.map((_, index) => `
+                                   <div class="carousel-indicator ${index === 0 ? 'active' : ''}" 
+                                        onclick="goToProductScreenImage(${index})"></div>
+                               `).join('')}
+                           </div>
+                       ` : ''}
                 </div>
                 
                 <!-- Индикаторы точек -->

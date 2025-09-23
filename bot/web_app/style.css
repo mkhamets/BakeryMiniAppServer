@@ -337,9 +337,12 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     z-index: 10;
     opacity: 0;
     visibility: hidden;
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
+}
+
+.product-screen-carousel .carousel-nav .svg {
+    width: 16px;
+    height: 16px;
+    fill: #333;
 }
 
 .product-screen-image-container:hover .carousel-nav {
@@ -670,7 +673,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .cart-item-image {
     width: 80px;
-    height: 80px;
+    height: 110px;
     object-fit: cover;
     border-radius: 8px;
     flex-shrink: 0; /* Изображение не сжимается */
