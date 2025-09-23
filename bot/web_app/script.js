@@ -2214,19 +2214,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const quantityInCart = cart[product.id] ? cart[product.id].quantity : 0;
 
-            // Подготавливаем изображения для карусели
-            const images = [];
-            if (product.image) {
-                images.push(product.image);
-            }
-            // Добавляем дополнительные изображения если есть
-            if (product.images && Array.isArray(product.images)) {
-                images.push(...product.images);
-            }
-            // Если нет изображений, используем логотип
-            if (images.length === 0) {
-                images.push('images/logo.svg?v=1.3.109&t=1758518052');
-            }
+            // Подготавливаем изображения для карусели (используем только массив images)
+            const images = product.images && Array.isArray(product.images) && product.images.length > 0 
+                ? product.images 
+                : ['images/logo.svg?v=1.3.109&t=1758518052'];
 
             productCard.innerHTML = `
                 <div class="product-image-container ${images.length === 1 ? 'single-image' : ''}">
@@ -3538,18 +3529,43 @@ function addErrorClearingListeners() {
             return;
         }
 
+        // Подготавливаем изображения для карусели (используем только массив images)
+        const productImages = product.images && Array.isArray(product.images) && product.images.length > 0 
+            ? product.images 
+            : ['images/logo.svg?v=1.3.109&t=1758518052'];
+
         // Формируем HTML для экрана продукта
         let screenHTML = `
             <div class="product-screen-image-container">
-                <img src="${product.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
-                     alt="${product.name}" 
-                     class="product-screen-image" 
-                     id="product-screen-main-image"
-                     onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
-                
-                <!-- Стрелки навигации для множественных изображений -->
-                <button class="image-nav prev" id="product-screen-prev" style="display: none;">‹</button>
-                <button class="image-nav next" id="product-screen-next" style="display: none;">›</button>
+                <div class="product-screen-carousel">
+                    ${productImages.map((img, index) => `
+                        <img src="${img}" 
+                             alt="${product.name}" 
+                             class="product-screen-image ${index === 0 ? 'active' : ''}" 
+                             data-image-index="${index}"
+                             onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                             style="display: ${index === 0 ? 'block' : 'none'};">
+                    `).join('')}
+                    
+                    ${productImages.length > 1 ? `
+                        <button class="carousel-nav prev" onclick="navigateProductScreenCarousel(-1)">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                            </svg>
+                        </button>
+                        <button class="carousel-nav next" onclick="navigateProductScreenCarousel(1)">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                            </svg>
+                        </button>
+                        <div class="carousel-indicators">
+                            ${productImages.map((_, index) => `
+                                <div class="carousel-indicator ${index === 0 ? 'active' : ''}" 
+                                     onclick="goToProductScreenImage(${index})"></div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
                 
                 <!-- Индикаторы точек -->
                 <div class="image-indicators" id="product-screen-indicators" style="display: none;"></div>
@@ -4200,8 +4216,67 @@ function addErrorClearingListeners() {
         indicators[imageIndex].classList.add('active');
     }
     
+    // ===== ФУНКЦИИ КАРУСЕЛИ ЭКРАНА ТОВАРА =====
+    
+    // Навигация по карусели экрана товара (стрелки)
+    function navigateProductScreenCarousel(direction) {
+        const carousel = document.querySelector('.product-screen-carousel');
+        if (!carousel) return;
+        
+        const images = carousel.querySelectorAll('.product-screen-image');
+        const indicators = carousel.querySelectorAll('.carousel-indicator');
+        
+        if (images.length <= 1) return;
+        
+        let currentIndex = 0;
+        images.forEach((img, index) => {
+            if (img.classList.contains('active')) {
+                currentIndex = index;
+            }
+        });
+        
+        let newIndex = currentIndex + direction;
+        if (newIndex < 0) newIndex = images.length - 1;
+        if (newIndex >= images.length) newIndex = 0;
+        
+        // Скрываем текущее изображение
+        images[currentIndex].style.display = 'none';
+        images[currentIndex].classList.remove('active');
+        indicators[currentIndex].classList.remove('active');
+        
+        // Показываем новое изображение
+        images[newIndex].style.display = 'block';
+        images[newIndex].classList.add('active');
+        indicators[newIndex].classList.add('active');
+    }
+    
+    // Переход к конкретному изображению экрана товара (индикаторы)
+    function goToProductScreenImage(imageIndex) {
+        const carousel = document.querySelector('.product-screen-carousel');
+        if (!carousel) return;
+        
+        const images = carousel.querySelectorAll('.product-screen-image');
+        const indicators = carousel.querySelectorAll('.carousel-indicator');
+        
+        if (imageIndex < 0 || imageIndex >= images.length) return;
+        
+        // Скрываем все изображения
+        images.forEach((img, index) => {
+            img.style.display = 'none';
+            img.classList.remove('active');
+            indicators[index].classList.remove('active');
+        });
+        
+        // Показываем выбранное изображение
+        images[imageIndex].style.display = 'block';
+        images[imageIndex].classList.add('active');
+        indicators[imageIndex].classList.add('active');
+    }
+    
     // Добавляем функции в глобальную область видимости
     window.navigateCarousel = navigateCarousel;
     window.goToCarouselImage = goToCarouselImage;
+    window.navigateProductScreenCarousel = navigateProductScreenCarousel;
+    window.goToProductScreenImage = goToProductScreenImage;
 
 });
