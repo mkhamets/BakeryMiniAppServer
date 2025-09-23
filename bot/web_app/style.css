@@ -1409,15 +1409,6 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     padding: 0px 0; /* Reduced from 20px */
 }
 
-.product-screen-image {
-    width: 100%;
-    max-width: 400px;
-    height: auto;
-    border-radius: 12px;
-    margin: 0 auto 10px; /* Reduced bottom margin from 0px to 10px */
-    display: block;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
 
 .product-screen-name {
     font-family: 'Yeseva One', serif;
