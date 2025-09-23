@@ -265,7 +265,53 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.product-screen-image.slide-out-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.product-screen-image.slide-out-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.product-screen-image.slide-in-left {
+    transform: translateX(-100%);
+    opacity: 0;
+    animation: slideInFromLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.product-screen-image.slide-in-right {
+    transform: translateX(100%);
+    opacity: 0;
+    animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .product-screen-image:hover {

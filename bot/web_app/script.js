@@ -4148,15 +4148,32 @@ function addErrorClearingListeners() {
         if (newIndex < 0) newIndex = images.length - 1;
         if (newIndex >= images.length) newIndex = 0;
         
-        // Скрываем текущее изображение
-        images[currentIndex].style.display = 'none';
-        images[currentIndex].classList.remove('active');
-        indicators[currentIndex].classList.remove('active');
+        const currentImage = images[currentIndex];
+        const newImage = images[newIndex];
+        
+        // Добавляем классы для анимации
+        if (direction > 0) {
+            // Свайп влево - текущее изображение уходит влево, новое приходит справа
+            currentImage.classList.add('slide-out-left');
+            newImage.classList.add('slide-in-left');
+        } else {
+            // Свайп вправо - текущее изображение уходит вправо, новое приходит слева
+            currentImage.classList.add('slide-out-right');
+            newImage.classList.add('slide-in-right');
+        }
         
         // Показываем новое изображение
-        images[newIndex].style.display = 'block';
-        images[newIndex].classList.add('active');
+        newImage.style.display = 'block';
+        newImage.classList.add('active');
         indicators[newIndex].classList.add('active');
+        
+        // Убираем классы анимации после завершения
+        setTimeout(() => {
+            currentImage.classList.remove('active', 'slide-out-left', 'slide-out-right');
+            currentImage.style.display = 'none';
+            indicators[currentIndex].classList.remove('active');
+            newImage.classList.remove('slide-in-left', 'slide-in-right');
+        }, 400);
     }
     
     // Переход к конкретному изображению экрана товара (индикаторы)
@@ -4169,17 +4186,42 @@ function addErrorClearingListeners() {
         
         if (imageIndex < 0 || imageIndex >= images.length) return;
         
-        // Скрываем все изображения
+        let currentIndex = 0;
         images.forEach((img, index) => {
-            img.style.display = 'none';
-            img.classList.remove('active');
-            indicators[index].classList.remove('active');
+            if (img.classList.contains('active')) {
+                currentIndex = index;
+            }
         });
         
-        // Показываем выбранное изображение
-        images[imageIndex].style.display = 'block';
-        images[imageIndex].classList.add('active');
+        if (currentIndex === imageIndex) return;
+        
+        const currentImage = images[currentIndex];
+        const newImage = images[imageIndex];
+        
+        // Определяем направление анимации
+        const direction = imageIndex > currentIndex ? 1 : -1;
+        
+        // Добавляем классы для анимации
+        if (direction > 0) {
+            currentImage.classList.add('slide-out-left');
+            newImage.classList.add('slide-in-left');
+        } else {
+            currentImage.classList.add('slide-out-right');
+            newImage.classList.add('slide-in-right');
+        }
+        
+        // Показываем новое изображение
+        newImage.style.display = 'block';
+        newImage.classList.add('active');
         indicators[imageIndex].classList.add('active');
+        
+        // Убираем классы анимации после завершения
+        setTimeout(() => {
+            currentImage.classList.remove('active', 'slide-out-left', 'slide-out-right');
+            currentImage.style.display = 'none';
+            indicators[currentIndex].classList.remove('active');
+            newImage.classList.remove('slide-in-left', 'slide-in-right');
+        }, 400);
     }
     
     // Добавляем функции в глобальную область видимости
