@@ -4152,13 +4152,21 @@ function addErrorClearingListeners() {
         const nextButton = carousel.querySelector('.carousel-nav.next');
         
         if (prevButton && nextButton) {
-            // Показываем кнопки
+            // Показываем кнопки с плавной анимацией
             prevButton.classList.remove('hidden');
             nextButton.classList.remove('hidden');
-            prevButton.style.opacity = '1';
-            nextButton.style.opacity = '1';
-            prevButton.style.visibility = 'visible';
-            nextButton.style.visibility = 'visible';
+            
+            // Принудительно устанавливаем opacity для плавного перехода
+            prevButton.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+            nextButton.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+            
+            // Небольшая задержка для плавного появления
+            setTimeout(() => {
+                prevButton.style.opacity = '1';
+                nextButton.style.opacity = '1';
+                prevButton.style.visibility = 'visible';
+                nextButton.style.visibility = 'visible';
+            }, 10);
         }
         
         // Очищаем предыдущий таймер
@@ -4166,9 +4174,14 @@ function addErrorClearingListeners() {
             clearTimeout(carouselHideTimer);
         }
         
-        // Устанавливаем новый таймер на 3 секунды
+        // Устанавливаем новый таймер на 3 секунды (кнопки начнут затухать)
         carouselHideTimer = setTimeout(() => {
             if (prevButton && nextButton) {
+                // Устанавливаем переход для плавного затухания на 4 секунды
+                prevButton.style.transition = 'opacity 4s ease-out, visibility 4s ease-out';
+                nextButton.style.transition = 'opacity 4s ease-out, visibility 4s ease-out';
+                
+                // Начинаем затухание
                 prevButton.classList.add('hidden');
                 nextButton.classList.add('hidden');
             }

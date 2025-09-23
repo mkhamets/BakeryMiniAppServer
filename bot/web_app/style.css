@@ -323,7 +323,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.6);
     border: none;
     width: 40px;
     height: 40px;
@@ -348,7 +348,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .product-screen-carousel .carousel-nav.hidden {
     opacity: 0;
     visibility: hidden;
-    transition: opacity 3s ease, visibility 3s ease;
+    transition: opacity 4s ease-out, visibility 4s ease-out;
 }
 
 .product-screen-image-container:hover .carousel-nav {
