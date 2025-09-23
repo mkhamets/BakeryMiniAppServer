@@ -73,12 +73,9 @@ async def load_products_from_modx_api(category_id: str = None) -> list:
             connector=connector,
             timeout=aiohttp.ClientTimeout(total=MODX_API_TIMEOUT)
         ) as session:
-            logger.info(f"API: Загружаем товары из MODX API: {url}")
             async with session.get(url, params=params) as response:
-                logger.info(f"API: MODX API ответ: {response.status}")
                 if response.status == 200:
                     data = await response.json()
-                    logger.info(f"API: Загружено {data.get('count', 0)} товаров из MODX API")
                     return data.get('products', [])
                 else:
                     text = await response.text()
@@ -92,7 +89,6 @@ async def load_categories_from_modx_api() -> list:
     """Загружает категории через MODX API"""
     try:
         url = f"{MODX_API_BASE_URL}/api-categories.json"
-        logger.info(f"API: Загружаем категории из MODX API: {url}")
         
         # Настройка SSL для Heroku
         ssl_context = ssl.create_default_context()
@@ -105,13 +101,9 @@ async def load_categories_from_modx_api() -> list:
             connector=connector,
             timeout=aiohttp.ClientTimeout(total=MODX_API_TIMEOUT)
         ) as session:
-            logger.info(f"API: Отправляем GET запрос к {url}")
             async with session.get(url) as response:
-                logger.info(f"API: MODX API ответ: {response.status}")
                 if response.status == 200:
                     data = await response.json()
-                    logger.info(f"API: Загружено {data.get('count', 0)} категорий из MODX API")
-                    logger.info(f"API: Первая категория: {data.get('categories', [{}])[0] if data.get('categories') else 'None'}")
                     return data.get('categories', [])
                 else:
                     text = await response.text()
@@ -165,7 +157,6 @@ async def get_auth_token(request):
         return web.json_response({"error": "Token rate limit exceeded"}, status=429)
     
     token_data = generate_auth_token()
-    logger.info(f"API: Generated auth token for IP {client_ip}")
     
     return web.json_response(token_data, headers={
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -175,7 +166,6 @@ async def get_auth_token(request):
 
 # Путь к директории с файлами Web App
 WEB_APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web_app')
-logger.info(f"API: Директория Web App: {WEB_APP_DIR}")
 
 # Глобальная переменная для хранения данных о продуктах
 products_data = {}
@@ -190,7 +180,6 @@ async def load_products_data_for_api():
         try:
             with open(PRODUCTS_DATA_FILE, 'r', encoding='utf-8') as f:
                 products_data = json.load(f)
-            logger.info(f"API: Данные о продуктах успешно загружены из {PRODUCTS_DATA_FILE}.")
         except json.JSONDecodeError as e:
             logger.error(f"API: Ошибка при чтении JSON-файла '{PRODUCTS_DATA_FILE}': {e}")
             products_data = {} # Сброс данных, если файл поврежден
@@ -285,7 +274,6 @@ async def get_products_for_webapp(request):
         })
     
     requested_category = request.query.get('category')
-    logger.info(f"API: Запрос продуктов для категории: {requested_category}")
 
     # Загружаем данные из MODX API
     try:
@@ -293,18 +281,14 @@ async def get_products_for_webapp(request):
         category_id = None
         if requested_category and requested_category.startswith('category_'):
             category_id = requested_category.replace('category_', '')
-            logger.info(f"API: Преобразуем requested_category '{requested_category}' в category_id '{category_id}'")
         
         products = await load_products_from_modx_api(category_id)
         
         if products:
-            logger.info(f"API: Получено {len(products)} продуктов из MODX API")
-            logger.info(f"API: Первый продукт: {products[0] if products else 'None'}")
             
             # Если запрашивается конкретная категория, фильтруем продукты по parent_id
             if requested_category and category_id:
                 filtered_products = [p for p in products if p.get('parent_id') == category_id]
-                logger.info(f"API: Отфильтровано {len(filtered_products)} продуктов для категории {category_id}")
                 products = filtered_products
             
             # Преобразуем MODX API данные в формат парсера (по категориям)
@@ -313,7 +297,6 @@ async def get_products_for_webapp(request):
             for product in products:
                 try:
                     product_category_id = product['parent_id']
-                    logger.info(f"API: Обрабатываем продукт {product['id']} категории {product_category_id}")
                 except KeyError as e:
                     logger.error(f"API: Ошибка в структуре продукта: {e}, продукт: {product}")
                     continue
@@ -356,14 +339,8 @@ async def get_products_for_webapp(request):
             for category_key in products_by_category:
                 products_by_category[category_key].sort(key=lambda x: int(x.get('menuindex', 0)))
             
-            # Логируем структуру products_by_category
-            logger.info(f"API: Структура products_by_category: {list(products_by_category.keys())}")
-            for cat_key, products_list in products_by_category.items():
-                logger.info(f"API: Категория {cat_key}: {len(products_list)} продуктов")
-            
             # Если запрашивается конкретная категория, возвращаем только её
             if requested_category:
-                logger.info(f"API: Запрашивается категория: {requested_category}")
                 if requested_category in products_by_category:
                     # Получаем информацию о категории
                     categories = await load_categories_from_modx_api()
@@ -378,7 +355,6 @@ async def get_products_for_webapp(request):
                                 }
                                 break
                     
-                    logger.info(f"API: Найдена категория {requested_category}, возвращаем {len(products_by_category[requested_category])} продуктов")
                     
                     # Возвращаем объект с информацией о категории и продуктами
                     response_data = {
@@ -400,7 +376,6 @@ async def get_products_for_webapp(request):
                     })
             else:
                 # Возвращаем все категории
-                logger.info(f"API: Возвращаем все категории: {len(products_by_category)} категорий")
                 return web.json_response(products_by_category, headers={
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
@@ -458,15 +433,12 @@ async def get_categories_for_webapp(request):
             'Expires': '0'
         })
     
-    logger.info("API: Запрос списка категорий.")
     
     # Загружаем категории из MODX API
     try:
         categories = await load_categories_from_modx_api()
         
-        logger.info(f"API: Получено {len(categories) if categories else 0} категорий из MODX API")
         if categories:
-            logger.info(f"API: Первая категория: {categories[0] if categories else 'None'}")
             # Преобразуем формат для фронтенда
             categories_list = []
             for category in categories:
@@ -482,16 +454,13 @@ async def get_categories_for_webapp(request):
             
             # Логируем порядок до сортировки
             before_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
-            logger.info(f"API: Порядок категорий до сортировки: {before_sort}")
             
             # Сортируем категории по menuindex
             categories_list.sort(key=lambda x: x.get('menuindex', 0))
             
             # Логируем порядок после сортировки
             after_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
-            logger.info(f"API: Порядок категорий после сортировки: {after_sort}")
             
-            logger.info(f"API: Отправляем {len(categories_list)} категорий фронтенду")
             return web.json_response(categories_list, headers={
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
@@ -534,7 +503,6 @@ async def get_categories_for_webapp(request):
 
 async def serve_main_app_page(request):
     """Отдает главный HTML файл Web App."""
-    logger.info(f"API: Serving index.html for Web App entry point: {request.path}")
     return web.FileResponse(os.path.join(WEB_APP_DIR, 'index.html'))
 
 async def setup_api_server():
@@ -659,7 +627,6 @@ async def setup_api_server():
     runner = web.AppRunner(app)
     await runner.setup()
 
-    logger.info("API сервер настроен.")
     return runner
 
 if __name__ == '__main__':
@@ -668,7 +635,6 @@ if __name__ == '__main__':
         runner = await setup_api_server()
         site = web.TCPSite(runner, '0.0.0.0', 8080)  # nosec B104 - Web server needs to bind to all interfaces
         await site.start()
-        logger.info("API сервер запущен в автономном режиме на http://0.0.0.0:8080")
         # Keep the server running indefinitely
         await asyncio.Event().wait() 
 

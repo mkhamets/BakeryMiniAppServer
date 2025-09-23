@@ -49,8 +49,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRODUCTS_DATA_FILE = os.path.join(BASE_DIR, 'data', 'products_scraped.json')
 ORDER_COUNTER_FILE = os.path.join(BASE_DIR, 'data', 'order_counter.json')  # ИЗМЕНЕНИЕ: Путь к файлу счетчика
 
-logger.info(f"Ожидаемый путь к файлу данных: {PRODUCTS_DATA_FILE}")
-logger.info(f"Ожидаемый путь к файлу счетчика: {ORDER_COUNTER_FILE}")
 
 
 # Глобальные переменные
@@ -87,10 +85,6 @@ async def load_products_data():
         try:
             with open(PRODUCTS_DATA_FILE, 'r', encoding='utf-8') as f:
                 products_data = json.load(f)
-            logger.info(f"Данные о продуктах успешно загружены из {PRODUCTS_DATA_FILE}. "
-                       f"Найдено категорий: {len(products_data)}")
-            for category, products in products_data.items():
-                logger.info(f"Категория '{category}': найдено {len(products)} продуктов.")
         except json.JSONDecodeError as e:
             logger.error(f"Ошибка при чтении JSON-файла '{PRODUCTS_DATA_FILE}': {e}")
             products_data = {}  # Сброс данных, если файл поврежден
@@ -133,8 +127,6 @@ async def load_order_counter():
                             # last_reset_month остается старым до первого заказа
                             # Это позволяет сохранить последний счетчик предыдущего месяца
 
-                        logger.info(f"Счетчик заказов успешно загружен из {ORDER_COUNTER_FILE}: "
-                                   f"{order_counter}, Месяц: {last_reset_month}")
             except (json.JSONDecodeError, FileNotFoundError) as e:
                 logger.warning(f"Файл счетчика заказов не найден или поврежден: {e}. "
                               f"Начинаем с 0.")
@@ -182,38 +174,30 @@ async def generate_order_number():
     try:
         now = datetime.datetime.now()
         current_month = now.month
-        logger.info(f"Начинаем генерацию номера заказа. Текущий месяц: {current_month}, "
-                   f"последний сброс: {last_reset_month}, счетчик: {order_counter}")
 
         # Защита от одновременной записи
         async with order_counter_lock:
             # Проверяем, если месяц сменился
             if current_month != last_reset_month:
-                logger.info(f"Сменился месяц. Сбрасываем счетчик заказов с {order_counter} на 0.")
                 order_counter = 0
                 last_reset_month = current_month
                 # Сохраняем обновленный счетчик с новым месяцем
                 try:
                     await save_order_counter({'counter': order_counter, 'month': last_reset_month})
-                    logger.info(f"Счетчик сброшен и сохранен для нового месяца: {last_reset_month}")
                 except Exception as e:
                     logger.error(f"Ошибка при сохранении сброшенного счетчика: {e}")
 
             # Увеличиваем счетчик для нового заказа
             order_counter += 1
-            logger.info(f"Счетчик увеличен до: {order_counter}")
 
             # Сохраняем обновленный счетчик в файл
             try:
-                logger.info("Начинаем сохранение счетчика в файл...")
                 # Убираем таймаут - на Heroku операции могут быть медленными
                 await save_order_counter({'counter': order_counter, 'month': last_reset_month})
-                logger.info(f"Счетчик успешно сохранен в файл: {order_counter}")
             except Exception as save_error:
                 logger.error(f"Ошибка при сохранении счетчика: {save_error}")
                 logger.error(f"Тип ошибки: {type(save_error).__name__}")
                 # Продолжаем выполнение даже при ошибке сохранения
-                logger.warning("Продолжаем выполнение без сохранения счетчика")
 
         # Форматируем дату и счетчик
         day = now.strftime("%d")
@@ -224,8 +208,6 @@ async def generate_order_number():
         order_sequence = str(order_counter).zfill(3)
         order_number = f"#{day}{month}{year}/{order_sequence}"
 
-        logger.info(f"Сгенерирован номер заказа: {order_number}")
-        logger.info("Функция generate_order_number завершена успешно")
         return order_number
 
     except Exception as e:
@@ -263,21 +245,18 @@ def update_cart_item_quantity(user_id: int, product_id: str, quantity: int):
             del cart[product_id]
     else:
         cart[product_id] = quantity
-    logger.info(f"Корзина пользователя {user_id} обновлена: {cart}")
 
 
 def clear_user_cart(user_id: int):
     """Очищает корзину пользователя."""
     if user_id in user_carts:
         del user_carts[user_id]
-    logger.info(f"Корзина пользователя {user_id} очищена.")
 
 
 # ЗАГЛУШКА: Функция для очистки сообщений корзины (если она нужна)
 # Если у тебя есть конкретная реализация этой функции, замени ее.
 async def clear_user_cart_messages(chat_id: int):
     """Очищает сообщения корзины (заглушка)."""
-    logger.info(f"Функция clear_user_cart_messages вызвана для чата {chat_id}. (ЗАГЛУШКА)")
     # Здесь может быть логика удаления предыдущих сообщений корбины
     pass
 
@@ -286,11 +265,9 @@ async def clear_user_cart_messages(chat_id: int):
 async def send_email_notification(recipient_email: str, subject: str, body: str, sender_name: str = "Пекарня Дражина"):
     """Отправляет email уведомление."""
     if not config.ENABLE_EMAIL_NOTIFICATIONS:
-        logger.info("Email уведомления отключены")
         return
     
     try:
-        logger.info(f"Начинаем отправку email на {recipient_email}")
 
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
@@ -299,17 +276,12 @@ async def send_email_notification(recipient_email: str, subject: str, body: str,
 
         msg.attach(MIMEText(body, 'html', 'utf-8'))
 
-        logger.info("Подключаемся к SMTP серверу...")
         with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as server:
             if config.SMTP_USE_TLS:
-                logger.info("Запускаем TLS...")
                 server.starttls()
-            logger.info("Авторизуемся на сервере...")
             server.login(ADMIN_EMAIL, config.ADMIN_EMAIL_PASSWORD)
-            logger.info("Отправляем сообщение...")
             server.send_message(msg)
 
-        logger.info(f"Email успешно отправлен на {recipient_email} с темой '{subject}'.")
         
         # Log security event
         security_manager._log_security_event("email_sent", {
@@ -463,7 +435,6 @@ async def cb_about(callback: CallbackQuery):
 @dp.callback_query(F.data == "info:addresses")
 async def cb_addresses(callback: CallbackQuery):
     try:
-        logger.info(f"Inline callback received: {callback.data} from user {callback.from_user.id}")
         await callback.answer("📍 Адреса отправлены", show_alert=False)
     except Exception as e:
         logger.warning(f"Failed to answer callback: {e}")
@@ -476,7 +447,6 @@ async def cb_addresses(callback: CallbackQuery):
             disable_web_page_preview=True,
             reply_markup=reply_main_menu_for(callback.from_user.id)
         )
-        logger.info("Addresses message sent successfully")
     except Exception as e:
         logger.error(f"Failed to send addresses message: {e}")
 
@@ -561,12 +531,10 @@ async def handle_web_app_data(message: Message):
     """Обработчик данных из Web App."""
     user_id = message.from_user.id
     web_app_data_raw = message.web_app_data.data
-    logger.info(f"Получены данные из Web App для пользователя {user_id}: {web_app_data_raw}")
 
     try:
         data = json.loads(web_app_data_raw)
         action = data.get('action')
-        logger.info(f"Действие Web App: {action}")
 
         if action == 'update_cart':
             await _handle_update_cart(message, data, user_id)
@@ -619,7 +587,6 @@ async def _handle_update_cart(message: Message, data: dict, user_id: int):
 async def _handle_checkout_order(message: Message, data: dict, user_id: int):
     """Обрабатывает оформление заказа из Web App."""
     try:
-        logger.info(f"Начинаем обработку заказа для пользователя {user_id}")
 
         order_details = data.get('order_details')
         cart_items = data.get('cart_items')
@@ -663,39 +630,27 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
             )
             return
 
-        logger.info(f"Данные заказа валидны. Очищаем корзину пользователя {user_id} перед обработкой...")
         
         # Очищаем корзину ПЕРЕД обработкой заказа, чтобы избежать дублирования
         try:
             clear_user_cart(user_id)
-            logger.info(f"Корзина пользователя {user_id} очищена перед обработкой заказа.")
         except Exception as e:
             logger.error(f"Ошибка при очистке корзины: {e}")
         
-        logger.info(f"Количество товаров в заказе: {len(cart_items)}")
-        logger.info(f"Сумма заказа: {total_amount}")
-        logger.info(f"Способ доставки: {order_details.get('deliveryMethod')}")
         if order_details.get('deliveryMethod') == 'pickup':
-            logger.info(f"Адрес самовывоза: {order_details.get('pickupAddress')}")
-            logger.info(f"Комментарий к самовывозу: {order_details.get('commentPickup')}")
+            pass
         elif order_details.get('deliveryMethod') == 'courier':
-            logger.info(f"Город: {order_details.get('city')}, Адрес: {order_details.get('addressLine')}")
-            logger.info(f"Комментарий к доставке: {order_details.get('comment')}")
+            pass
 
         order_number = await generate_order_number()
-        logger.info(f"Номер заказа сгенерирован: {order_number}")
-        logger.info("Переходим к отправке уведомлений...")
 
         # Отправляем уведомления
-        logger.info("Начинаем отправку уведомлений...")
         try:
             await _send_order_notifications(order_details, cart_items, total_amount, order_number, user_id)
-            logger.info("Уведомления отправлены успешно")
         except Exception as notification_error:
             logger.error(f"Ошибка при отправке уведомлений: {notification_error}")
             logger.error(f"Тип ошибки: {type(notification_error).__name__}")
             # Продолжаем выполнение даже если уведомления не отправились
-            logger.info("Продолжаем обработку заказа без уведомлений")
 
         # Отправляем краткое подтверждение пользователю
         try:
@@ -703,7 +658,6 @@ async def _handle_checkout_order(message: Message, data: dict, user_id: int):
                 f"✅ Заказ оформлен! Детали отправлены вам в личные сообщения.",
                 reply_markup=generate_main_menu(sum(get_user_cart(user_id).values()))
             )
-            logger.info(f"Краткий ответ пользователю {user_id} отправлен успешно")
         except Exception as e:
             logger.error(f"Ошибка при отправке ответа пользователю: {e}")
             # Пытаемся отправить простой ответ без форматирования
@@ -724,8 +678,6 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
                                   total_amount: float, order_number: str, user_id: int):
     """Отправляет уведомления о новом заказе."""
     try:
-        logger.info(f"Начинаем формирование уведомлений для заказа {order_number}")
-        logger.info(f"Параметры: cart_items={len(cart_items)}, total_amount={total_amount}, user_id={user_id}")
 
 
         # Валидация входных данных
@@ -739,13 +691,11 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         formatted_phone = format_phone_telegram(phone_number)
 
         # Формируем сообщение для Telegram
-        logger.info("Формируем сообщение для Telegram...")
         try:
             telegram_order_summary = _format_telegram_order_summary(
                 order_number, order_details, cart_items, total_amount, 
                 formatted_phone, delivery_text, user_id
             )
-            logger.info("Сообщение для Telegram сформировано")
         except Exception as e:
             logger.error(f"Ошибка при формировании сообщения для Telegram: {e}")
             # Создаем простое сообщение как fallback
@@ -755,14 +705,11 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         # ИЗМЕНЕНИЕ: Отправка сообщения администратору в Telegram
         if ADMIN_CHAT_ID:
             try:
-                logger.info(f"Отправляем сообщение администратору в Telegram. Chat ID: {ADMIN_CHAT_ID}")
                 await bot.send_message(
                     chat_id=int(ADMIN_CHAT_ID),
                     text=telegram_order_summary,
                     parse_mode=ParseMode.MARKDOWN
                 )
-                logger.info(f"Заказ {order_number} от пользователя {user_id} "
-                           f"успешно отправлен администратору в Telegram.")
             except Exception as e:
                 logger.error(f"Ошибка при отправке заказа {order_number} "
                             f"администратору в Telegram. ID чата: {ADMIN_CHAT_ID}. Ошибка: {e}")
@@ -771,14 +718,12 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
                           "Заказ не будет отправлен администратору в Telegram.")
 
         # ИЗМЕНЕНИЕ: Формируем тело email и отправляем его
-        logger.info("Формируем email уведомление...")
         try:
             email_subject = (f"Новый заказ {order_number} от "
                             f"{order_details.get('firstName', '')} {order_details.get('lastName', '')} - "
                             f"{total_amount:.2f} р.")
             email_body = _format_email_body(order_number, order_details, cart_items, 
                                            total_amount, delivery_text)
-            logger.info("Email уведомление сформировано")
         except Exception as e:
             logger.error(f"Ошибка при формировании email уведомления: {e}")
             # Создаем простое email как fallback
@@ -797,11 +742,9 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         if ADMIN_EMAIL:
             admin_email_password = os.environ.get("ADMIN_EMAIL_PASSWORD")
             if admin_email_password:
-                logger.info(f"Отправляем email уведомление на {ADMIN_EMAIL}")
                 # Отправляем email синхронно, чтобы дождаться результата
                 try:
                     await send_email_notification(ADMIN_EMAIL, email_subject, email_body, "Пекарня Дражина")
-                    logger.info("Email администратору отправлен успешно")
                 except Exception as e:
                     logger.error(f"Ошибка при отправке email администратору: {e}")
             else:
@@ -813,7 +756,6 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         # Отправляем подтверждение заказа клиенту в Telegram
         if user_id:
             try:
-                logger.info(f"Отправляем подтверждение заказа клиенту {user_id} в Telegram")
                 customer_message = _format_customer_telegram_message(
                     order_number, order_details, cart_items, total_amount, delivery_text
                 )
@@ -822,7 +764,6 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
                     text=customer_message,
                     parse_mode=ParseMode.MARKDOWN
                 )
-                logger.info(f"Подтверждение заказа {order_number} успешно отправлено клиенту {user_id} в Telegram")
             except Exception as e:
                 logger.error(f"Ошибка при отправке подтверждения заказа клиенту {user_id} в Telegram: {e}")
         else:
@@ -832,17 +773,14 @@ async def _send_order_notifications(order_details: dict, cart_items: list,
         user_email = order_details.get('email')
         if user_email:
             try:
-                logger.info(f"Отправляем письмо пользователю на {user_email}")
                 user_email_subject = f"Вы сделали заказ {order_number} в Telegram боте Пекарни Дражина"
                 user_email_body = _format_user_email_body(order_number, order_details, cart_items, total_amount)
                 asyncio.create_task(send_email_notification(user_email, user_email_subject, user_email_body, "Пекарня Дражина"))
-                logger.info("Задача отправки письма пользователю создана")
             except Exception as e:
                 logger.error(f"Ошибка при отправке письма пользователю: {e}")
         else:
             logger.warning("Email пользователя не указан. Письмо пользователю не будет отправлено.")
 
-        logger.info(f"Все уведомления для заказа {order_number} обработаны")
 
     except Exception as e:
         logger.error(f"Критическая ошибка при отправке уведомлений для заказа {order_number}: {e}")
@@ -1370,7 +1308,6 @@ async def block_text_input(message: Message):
 
 async def main():
     """Главная функция для запуска бота."""
-    logger.info("Загрузка данных о продуктах при запуске бота...")
     await load_products_data()
     # Загружаем счетчик заказов
     await load_order_counter()
