@@ -3504,44 +3504,29 @@ function addErrorClearingListeners() {
             ? product.images 
             : ['images/logo.svg?v=1.3.109&t=1758518052'];
 
-        // Формируем HTML для экрана продукта
+        // Формируем HTML для экрана продукта с Swiper
         let screenHTML = `
             <div class="product-screen-image-container">
-                <div class="product-screen-carousel" 
-                     ontouchstart="handleProductScreenTouchStart(event)" 
-                     ontouchmove="handleProductScreenTouchMove(event)" 
-                     ontouchend="handleProductScreenTouchEnd(event)">
-                    ${productImages.map((img, index) => `
-                        <img src="${img}" 
+                ${productImages.length > 1 ? `
+                    <div class="swiper product-screen-swiper" id="product-swiper-${product.id}">
+                        <div class="swiper-wrapper">
+                            ${productImages.map((img, index) => `
+                                <div class="swiper-slide">
+                                    <img src="${img}" 
+                                         alt="${product.name}" 
+                                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="product-screen-single-image">
+                        <img src="${productImages[0]}" 
                              alt="${product.name}" 
-                             class="product-screen-image ${index === 0 ? 'active' : ''}" 
-                             data-image-index="${index}"
-                             onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
-                             style="display: ${index === 0 ? 'block' : 'none'};">
-                    `).join('')}
-                    
-                       ${productImages.length > 1 ? `
-                           <button class="carousel-nav prev" onclick="navigateProductScreenCarousel(-1)">
-                               <svg class="svg svg-arrow-left">
-                                   <use xlink:href="sprite.svg#arrow-left"></use>
-                               </svg>
-                           </button>
-                           <button class="carousel-nav next" onclick="navigateProductScreenCarousel(1)">
-                               <svg class="svg svg-arrow-right">
-                                   <use xlink:href="sprite.svg#arrow-right"></use>
-                               </svg>
-                           </button>
-                           <div class="carousel-indicators">
-                               ${productImages.map((_, index) => `
-                                   <div class="carousel-indicator ${index === 0 ? 'active' : ''}" 
-                                        onclick="goToProductScreenImage(${index})"></div>
-                               `).join('')}
-                           </div>
-                       ` : ''}
-                </div>
-                
-                <!-- Индикаторы точек -->
-                <div class="image-indicators" id="product-screen-indicators" style="display: none;"></div>
+                             class="product-screen-image"
+                             onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
+                    </div>
+                `}
             </div>
 
             <div class="product-screen-name">${product.name}</div>
@@ -3641,14 +3626,26 @@ function addErrorClearingListeners() {
 
         screenBody.innerHTML = screenHTML;
 
-        // Инициализируем таймер скрытия кнопок для карусели
+        // Инициализируем Swiper для множественных изображений
         if (productImages.length > 1) {
-            resetCarouselHideTimer();
-        }
-
-        // Инициализируем множественные изображения для экрана товара
-        if (product.images && product.images.length > 1) {
-            initProductScreenImages(product.id, product.images);
+            setTimeout(() => {
+                const swiperElement = document.getElementById(`product-swiper-${product.id}`);
+                if (swiperElement && typeof Swiper !== 'undefined') {
+                    new Swiper(swiperElement, {
+                        effect: "cards",
+                        grabCursor: true,
+                        cardsEffect: {
+                            perSlideOffset: 8,
+                            perSlideRotate: 2,
+                            rotate: true,
+                            slideShadows: true,
+                        },
+                        autoplay: false,
+                        loop: true,
+                        speed: 300,
+                    });
+                }
+            }, 100);
         }
 
         // Обновляем счетчик количества в экране продукта
@@ -4138,203 +4135,12 @@ function addErrorClearingListeners() {
     }
 
     
-    // ===== ФУНКЦИИ КАРУСЕЛИ ЭКРАНА ТОВАРА =====
+    // ===== ФУНКЦИИ SWIPER КАРУСЕЛИ ЭКРАНА ТОВАРА =====
     
-    // Переменные для управления таймером скрытия кнопок
-    let carouselHideTimer = null;
+    // Swiper теперь управляется автоматически через библиотеку
     
-    // Функция для сброса таймера скрытия кнопок
-    function resetCarouselHideTimer() {
-        const carousel = document.querySelector('.product-screen-carousel');
-        if (!carousel) return;
-        
-        const prevButton = carousel.querySelector('.carousel-nav.prev');
-        const nextButton = carousel.querySelector('.carousel-nav.next');
-        
-        if (prevButton && nextButton) {
-            // Показываем кнопки с плавной анимацией
-            prevButton.classList.remove('hidden');
-            nextButton.classList.remove('hidden');
-            
-            // Принудительно устанавливаем opacity для плавного перехода
-            prevButton.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
-            nextButton.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
-            
-            // Небольшая задержка для плавного появления
-            setTimeout(() => {
-                prevButton.style.opacity = '1';
-                nextButton.style.opacity = '1';
-                prevButton.style.visibility = 'visible';
-                nextButton.style.visibility = 'visible';
-            }, 10);
-        }
-        
-        // Очищаем предыдущий таймер
-        if (carouselHideTimer) {
-            clearTimeout(carouselHideTimer);
-        }
-        
-        // Устанавливаем новый таймер на 3 секунды (кнопки начнут затухать)
-        carouselHideTimer = setTimeout(() => {
-            if (prevButton && nextButton) {
-                // Устанавливаем переход для плавного затухания на 4 секунды
-                prevButton.style.transition = 'opacity 4s ease-out, visibility 4s ease-out';
-                nextButton.style.transition = 'opacity 4s ease-out, visibility 4s ease-out';
-                
-                // Начинаем затухание
-                prevButton.classList.add('hidden');
-                nextButton.classList.add('hidden');
-            }
-        }, 3000);
-    }
+    // Старые функции карусели удалены - теперь используется Swiper
     
-    // Навигация по карусели экрана товара (стрелки)
-    function navigateProductScreenCarousel(direction) {
-        const carousel = document.querySelector('.product-screen-carousel');
-        if (!carousel) return;
-        
-        const images = carousel.querySelectorAll('.product-screen-image');
-        const indicators = carousel.querySelectorAll('.carousel-indicator');
-        
-        if (images.length <= 1) return;
-        
-        let currentIndex = 0;
-        images.forEach((img, index) => {
-            if (img.classList.contains('active')) {
-                currentIndex = index;
-            }
-        });
-        
-        let newIndex = currentIndex + direction;
-        if (newIndex < 0) newIndex = images.length - 1;
-        if (newIndex >= images.length) newIndex = 0;
-        
-        const currentImage = images[currentIndex];
-        const newImage = images[newIndex];
-        
-        // Добавляем классы для анимации
-        if (direction > 0) {
-            // Свайп влево - текущее изображение уходит влево, новое приходит справа
-            currentImage.classList.add('slide-out-left');
-            newImage.classList.add('slide-in-left');
-        } else {
-            // Свайп вправо - текущее изображение уходит вправо, новое приходит слева
-            currentImage.classList.add('slide-out-right');
-            newImage.classList.add('slide-in-right');
-        }
-        
-        // Показываем новое изображение
-        newImage.style.display = 'block';
-        newImage.classList.add('active');
-        indicators[newIndex].classList.add('active');
-        
-        // Сбрасываем таймер скрытия кнопок
-        resetCarouselHideTimer();
-        
-        // Убираем классы анимации после завершения
-        setTimeout(() => {
-            currentImage.classList.remove('active', 'slide-out-left', 'slide-out-right');
-            currentImage.style.display = 'none';
-            indicators[currentIndex].classList.remove('active');
-            newImage.classList.remove('slide-in-left', 'slide-in-right');
-        }, 400);
-    }
-    
-    // Переход к конкретному изображению экрана товара (индикаторы)
-    function goToProductScreenImage(imageIndex) {
-        const carousel = document.querySelector('.product-screen-carousel');
-        if (!carousel) return;
-        
-        const images = carousel.querySelectorAll('.product-screen-image');
-        const indicators = carousel.querySelectorAll('.carousel-indicator');
-        
-        if (imageIndex < 0 || imageIndex >= images.length) return;
-        
-        let currentIndex = 0;
-        images.forEach((img, index) => {
-            if (img.classList.contains('active')) {
-                currentIndex = index;
-            }
-        });
-        
-        if (currentIndex === imageIndex) return;
-        
-        const currentImage = images[currentIndex];
-        const newImage = images[imageIndex];
-        
-        // Определяем направление анимации
-        const direction = imageIndex > currentIndex ? 1 : -1;
-        
-        // Добавляем классы для анимации
-        if (direction > 0) {
-            currentImage.classList.add('slide-out-left');
-            newImage.classList.add('slide-in-left');
-        } else {
-            currentImage.classList.add('slide-out-right');
-            newImage.classList.add('slide-in-right');
-        }
-        
-        // Показываем новое изображение
-        newImage.style.display = 'block';
-        newImage.classList.add('active');
-        indicators[imageIndex].classList.add('active');
-        
-        // Сбрасываем таймер скрытия кнопок
-        resetCarouselHideTimer();
-        
-        // Убираем классы анимации после завершения
-        setTimeout(() => {
-            currentImage.classList.remove('active', 'slide-out-left', 'slide-out-right');
-            currentImage.style.display = 'none';
-            indicators[currentIndex].classList.remove('active');
-            newImage.classList.remove('slide-in-left', 'slide-in-right');
-        }, 400);
-    }
-    
-    // Добавляем функции в глобальную область видимости
-    // Переменные для свайпа
-    let productScreenTouchStartX = 0;
-    let productScreenTouchStartY = 0;
-    let productScreenTouchEndX = 0;
-    let productScreenTouchEndY = 0;
-
-    // Обработчики свайпа для экрана товара
-    function handleProductScreenTouchStart(event) {
-        productScreenTouchStartX = event.touches[0].clientX;
-        productScreenTouchStartY = event.touches[0].clientY;
-    }
-
-    function handleProductScreenTouchMove(event) {
-        // Предотвращаем скролл страницы при свайпе
-        event.preventDefault();
-    }
-
-    function handleProductScreenTouchEnd(event) {
-        productScreenTouchEndX = event.changedTouches[0].clientX;
-        productScreenTouchEndY = event.changedTouches[0].clientY;
-        
-        const deltaX = productScreenTouchEndX - productScreenTouchStartX;
-        const deltaY = productScreenTouchEndY - productScreenTouchStartY;
-        
-        // Проверяем, что это горизонтальный свайп (не вертикальный скролл)
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-            if (deltaX > 0) {
-                // Свайп вправо - предыдущее изображение
-                navigateProductScreenCarousel(-1);
-            } else {
-                // Свайп влево - следующее изображение
-                navigateProductScreenCarousel(1);
-            }
-        } else {
-            // Если это не свайп, но было касание - сбрасываем таймер
-            resetCarouselHideTimer();
-        }
-    }
-
-    window.navigateProductScreenCarousel = navigateProductScreenCarousel;
-    window.goToProductScreenImage = goToProductScreenImage;
-    window.handleProductScreenTouchStart = handleProductScreenTouchStart;
-    window.handleProductScreenTouchMove = handleProductScreenTouchMove;
-    window.handleProductScreenTouchEnd = handleProductScreenTouchEnd;
+    // Swiper сам управляет свайпом - старые функции удалены
 
 });
