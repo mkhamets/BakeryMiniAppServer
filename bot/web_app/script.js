@@ -3400,18 +3400,26 @@ function addErrorClearingListeners() {
         // Формируем HTML для экрана продукта
         let screenHTML = `
             <div class="product-screen-image-container">
-                <img src="${product.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
-                     alt="${product.name}" 
-                     class="product-screen-image" 
-                     id="product-screen-main-image"
-                     onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
-                
-                <!-- Стрелки навигации для множественных изображений -->
-                <button class="image-nav prev" id="product-screen-prev" style="display: none;">‹</button>
-                <button class="image-nav next" id="product-screen-next" style="display: none;">›</button>
-                
-                <!-- Индикаторы точек -->
-                <div class="image-indicators" id="product-screen-indicators" style="display: none;"></div>
+                ${product.images && Array.isArray(product.images) && product.images.length > 1 ? `
+                    <div class="swiper product-screen-swiper" id="product-swiper-${product.id}">
+                        <div class="swiper-wrapper">
+                            ${product.images.map((img, index) => `
+                                <div class="swiper-slide">
+                                    <img src="${img}" 
+                                         alt="${product.name}" 
+                                         onerror="this.onerror=null;this.src='images/logo-dark.svg';">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="product-screen-single-image">
+                        <img src="${(product.images && product.images[0]) || product.image || 'images/logo-dark.svg'}" 
+                             alt="${product.name}" 
+                             class="product-screen-image"
+                             onerror="this.onerror=null;this.src='images/logo-dark.svg';">
+                    </div>
+                `}
             </div>
 
             <div class="product-screen-name">${product.name}</div>
@@ -3511,9 +3519,41 @@ function addErrorClearingListeners() {
 
         screenBody.innerHTML = screenHTML;
 
-        // Инициализируем множественные изображения для экрана товара
-        if (product.images && product.images.length > 1) {
-            initProductScreenImages(product.id, product.images);
+        // Инициализируем Swiper для множественных изображений
+        if (product.images && Array.isArray(product.images) && product.images.length > 1) {
+            setTimeout(() => {
+                const swiperElement = document.getElementById(`product-swiper-${product.id}`);
+                if (swiperElement && typeof Swiper !== 'undefined') {
+                    new Swiper(swiperElement, {
+                        effect: "cards",
+                        grabCursor: true,
+                        cardsEffect: {
+                            perSlideOffset: 9,
+                            perSlideRotate: 0,
+                            rotate: false,
+                            slideShadows: true,
+                            transformEl: '.swiper-slide',
+                        },
+                        autoplay: false,
+                        loop: false,
+                        speed: 300,
+                        allowTouchMove: true,
+                        resistance: true,
+                        resistanceRatio: 0.25,
+                        watchSlidesProgress: true,
+                        watchSlidesVisibility: true,
+                        threshold: 10,
+                        touchRatio: 1,
+                        touchAngle: 45,
+                        simulateTouch: true,
+                        shortSwipes: true,
+                        longSwipes: true,
+                        longSwipesRatio: 0.5,
+                        longSwipesMs: 300,
+                        followFinger: true
+                    });
+                }
+            }, 100);
         }
 
         // Обновляем счетчик количества в экране продукта
@@ -3882,121 +3922,5 @@ function addErrorClearingListeners() {
     // Функции для страницы категорий удалены - там показывается только первое изображение
 
     // ===== ФУНКЦИИ ДЛЯ ЭКРАНА ТОВАРА =====
-    
-    // Инициализация множественных изображений для экрана товара
-    function initProductScreenImages(productId, images) {
-        const productImage = document.getElementById('product-screen-main-image');
-        const prevButton = document.getElementById('product-screen-prev');
-        const nextButton = document.getElementById('product-screen-next');
-        const indicators = document.getElementById('product-screen-indicators');
-        
-        if (!productImage) return;
-        
-        // Показываем элементы навигации
-        if (prevButton) prevButton.style.display = 'block';
-        if (nextButton) nextButton.style.display = 'block';
-        if (indicators) indicators.style.display = 'flex';
-        
-        // Создаем индикаторы
-        if (indicators) {
-            indicators.innerHTML = '';
-            for (let i = 0; i < images.length; i++) {
-                const dot = document.createElement('span');
-                dot.className = `image-dot ${i === 0 ? 'active' : ''}`;
-                dot.onclick = () => showProductScreenImage(productId, i);
-                indicators.appendChild(dot);
-            }
-        }
-        
-        // Добавляем обработчики для кнопок
-        if (prevButton) {
-            prevButton.onclick = () => showPrevProductScreenImage(productId);
-        }
-        if (nextButton) {
-            nextButton.onclick = () => showNextProductScreenImage(productId);
-        }
-        
-        // Добавляем обработчики свайпа для экрана товара
-        addProductScreenSwipeHandlers(productId);
-        
-        // Сохраняем данные о изображениях
-        window.currentProductImages = images;
-        window.currentProductImageIndex = 0;
-    }
-    
-    // Показать конкретное изображение в экране товара
-    function showProductScreenImage(productId, index) {
-        if (!window.currentProductImages || index < 0 || index >= window.currentProductImages.length) return;
-        
-        const productImage = document.getElementById('product-screen-main-image');
-        const indicators = document.getElementById('product-screen-indicators');
-        
-        if (productImage) {
-            productImage.src = window.currentProductImages[index];
-            productImage.alt = `Изображение ${index + 1}`;
-        }
-        
-        // Обновляем индикаторы
-        if (indicators) {
-            const dots = indicators.querySelectorAll('.image-dot');
-            dots.forEach((dot, i) => {
-                dot.classList.toggle('active', i === index);
-            });
-        }
-        
-        window.currentProductImageIndex = index;
-    }
-    
-    // Следующее изображение в экране товара
-    function showNextProductScreenImage(productId) {
-        if (!window.currentProductImages) return;
-        const nextIndex = (window.currentProductImageIndex + 1) % window.currentProductImages.length;
-        showProductScreenImage(productId, nextIndex);
-    }
-    
-    // Предыдущее изображение в экране товара
-    function showPrevProductScreenImage(productId) {
-        if (!window.currentProductImages) return;
-        const prevIndex = window.currentProductImageIndex === 0 ? window.currentProductImages.length - 1 : window.currentProductImageIndex - 1;
-        showProductScreenImage(productId, prevIndex);
-    }
-    
-    // Добавление обработчиков свайпа для экрана товара
-    function addProductScreenSwipeHandlers(productId) {
-        const productImage = document.getElementById('product-screen-main-image');
-        if (!productImage) return;
-        
-        let startX = 0;
-        let startY = 0;
-        
-        productImage.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-        });
-        
-        productImage.addEventListener('touchend', (e) => {
-            if (!startX || !startY) return;
-            
-            const endX = e.changedTouches[0].clientX;
-            const endY = e.changedTouches[0].clientY;
-            
-            const diffX = startX - endX;
-            const diffY = startY - endY;
-            
-            // Проверяем, что это горизонтальный свайп
-            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-                if (diffX > 0) {
-                    // Свайп влево - следующее изображение
-                    showNextProductScreenImage(productId);
-                } else {
-                    // Свайп вправо - предыдущее изображение
-                    showPrevProductScreenImage(productId);
-                }
-            }
-            
-            startX = 0;
-            startY = 0;
-        });
-    }
 
 });
