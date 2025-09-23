@@ -247,7 +247,7 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 .product-screen-image-container {
     position: relative;
     width: 100%;
-    height: 300px;
+    height: 400px;
     overflow: hidden;
     border-radius: 12px;
     margin-bottom: 20px;
@@ -270,6 +270,78 @@ button, a, input, select, textarea, .clickable-image, .details-text {
 
 .product-screen-image:hover {
     transform: scale(1.02);
+}
+
+/* Навигационные стрелки для экрана товара */
+.product-screen-carousel .carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.product-screen-image-container:hover .carousel-nav {
+    opacity: 1;
+    visibility: visible;
+}
+
+.product-screen-carousel .carousel-nav:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.product-screen-carousel .carousel-nav.prev {
+    left: 15px;
+}
+
+.product-screen-carousel .carousel-nav.next {
+    right: 15px;
+}
+
+/* Индикаторы карусели для экрана товара */
+.product-screen-carousel .carousel-indicators {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.product-screen-carousel .carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.product-screen-carousel .carousel-indicator.active {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.3);
+}
+
+.product-screen-carousel .carousel-indicator:hover {
+    background: rgba(255, 255, 255, 0.7);
 }
 
 .product-info {

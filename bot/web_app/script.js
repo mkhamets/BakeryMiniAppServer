@@ -3518,16 +3518,8 @@ function addErrorClearingListeners() {
                     `).join('')}
                     
                     ${productImages.length > 1 ? `
-                        <button class="carousel-nav prev" onclick="navigateProductScreenCarousel(-1)">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                            </svg>
-                        </button>
-                        <button class="carousel-nav next" onclick="navigateProductScreenCarousel(1)">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
-                            </svg>
-                        </button>
+                        <button class="carousel-nav prev" onclick="navigateProductScreenCarousel(-1)">‹</button>
+                        <button class="carousel-nav next" onclick="navigateProductScreenCarousel(1)">›</button>
                         <div class="carousel-indicators">
                             ${productImages.map((_, index) => `
                                 <div class="carousel-indicator ${index === 0 ? 'active' : ''}" 
