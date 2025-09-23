@@ -2135,7 +2135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <img src="${categoryImageUrl}"
                          alt="${categoryDisplayName}"
                          class="category-image"
-                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                         onerror="this.onerror=null;this.src='images/logo-dark.svg';"
                          onload="console.log('Изображение категории загружено:', this.src);">
                     <div class="category-text-wrapper">
                         <h3 class="category-title-text">${categoryDisplayName}</h3>
@@ -2221,7 +2221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          class="product-image clickable-image" 
                          data-product-id="${product.id}"
                          loading="lazy" decoding="async"
-                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
+                         onerror="this.onerror=null;this.src='images/logo-dark.svg';"
                          onload="console.log('Изображение загружено:', this.src);">
                     <div class="product-vegan-icon" style="display: ${product.for_vegans && product.for_vegans !== 'N/A' ? 'block' : 'none'};">
                         <svg class="svg svg-vegan">
@@ -2475,9 +2475,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="cart-item-image-container" 
                      style="cursor: ${isAvailable ? 'pointer' : 'default'};" 
                      onclick="${isAvailable ? `showProductScreen('${item.id}', '${productCategory}')` : 'return false;'}">
-                    <img src="${item.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
+                    <img src="${item.image || 'images/logo-dark.svg'}" 
                          alt="${item.name}" class="cart-item-image"
-                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
+                         onerror="this.onerror=null;this.src='images/logo-dark.svg';">
                     ${!isAvailable ? '<div class="unavailable-label">Недоступен</div>' : ''}
                 </div>
                 <div class="cart-item-details">
@@ -3502,7 +3502,7 @@ function addErrorClearingListeners() {
         // Подготавливаем изображения для карусели (используем только массив images)
         const productImages = product.images && Array.isArray(product.images) && product.images.length > 0 
             ? product.images 
-            : ['images/logo.svg?v=1.3.109&t=1758518052'];
+            : ['images/logo-dark.svg'];
 
         // Формируем HTML для экрана продукта с Swiper
         let screenHTML = `
@@ -3514,7 +3514,7 @@ function addErrorClearingListeners() {
                                 <div class="swiper-slide">
                                     <img src="${img}" 
                                          alt="${product.name}" 
-                                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
+                                         onerror="this.onerror=null;this.src='images/logo-dark.svg';">
                                 </div>
                             `).join('')}
                         </div>
@@ -3524,7 +3524,7 @@ function addErrorClearingListeners() {
                         <img src="${productImages[0]}" 
                              alt="${product.name}" 
                              class="product-screen-image"
-                             onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
+                             onerror="this.onerror=null;this.src='images/logo-dark.svg';">
                     </div>
                 `}
             </div>
