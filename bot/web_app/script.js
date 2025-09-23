@@ -71,7 +71,6 @@ async function getAuthToken() {
         authToken = tokenData.token;
         tokenExpiry = now + tokenData.expires_in;
         
-        console.log('✅ Auth token obtained');
         return authToken;
     } catch (error) {
         console.error('❌ Failed to get auth token:', error);
@@ -255,7 +254,6 @@ async function clearBrowserCache() {
             await Promise.all(
                 cacheNames.map(cacheName => caches.delete(cacheName))
             );
-            console.log('🧹 Browser cache cleared successfully');
         }
         
         // SMART CLEAR: Preserve cart data and essential app data
@@ -283,7 +281,6 @@ async function clearBrowserCache() {
         // Restore essential data if accidentally cleared
         if (cartData && !localStorage.getItem('cart')) {
             localStorage.setItem('cart', cartData);
-            console.log('🛒 Cart data preserved during cache clear');
         }
         if (cartVersion && !localStorage.getItem('cart_version')) {
             localStorage.setItem('cart_version', cartVersion);
@@ -295,10 +292,8 @@ async function clearBrowserCache() {
         // Preserve customer data during cache clear
         const customerData = localStorage.getItem(CUSTOMER_DATA_KEY);
         if (customerData) {
-            console.log('👤 Customer data preserved during cache clear');
         }
         
-        console.log('🧹 Smart cache clear completed - cart preserved');
         return true;
     } catch (error) {
         console.error('❌ Error clearing browser cache:', error);
@@ -314,7 +309,6 @@ async function invalidateCacheOnUpdate() {
         if (isMobileDevice && isTelegramWebView) {
             
             if (storedVersion !== CACHE_VERSION) {
-                console.log(`🔄 Mobile: App version changed from ${storedVersion} to ${CACHE_VERSION}`);
                 
                 // Smart clear that preserves cart
                 await clearBrowserCache();
@@ -406,7 +400,6 @@ async function forceMobileResourceReload() {
 function forceTelegramCacheClear() {
     try {
         if (isTelegramWebView && isMobileDevice) {
-            if (DEBUG) console.log('📱 Telegram WebView detected - implementing aggressive cache clear');
             
             // Preserve cart data before any operations
             const cartData = localStorage.getItem('cart');
@@ -427,7 +420,6 @@ function forceTelegramCacheClear() {
             // Restore cart data immediately
             if (cartData) {
                 localStorage.setItem('cart', cartData);
-                if (DEBUG) console.log('🛒 Cart data preserved in Telegram WebView');
             }
             if (cartVersion) {
                 localStorage.setItem('cart_version', cartVersion);
@@ -498,7 +490,6 @@ async function initializeCacheManagement() {
         setInterval(() => {
             const cartExpired = checkCartExpiration();
             if (cartExpired) {
-                console.log('⏰ Periodic check: Cart expired, clearing...');
                 cart = {};
                 renderCart();
                 updateMainButtonCartInfo();
@@ -549,7 +540,6 @@ function loadCartWithExpiration() {
     try {
         const cartItem = localStorage.getItem('cart');
         if (!cartItem) {
-            console.log('📦 No cart found in localStorage');
             return {};
         }
 
@@ -564,31 +554,25 @@ function loadCartWithExpiration() {
 
         // Check if this is the new format with metadata
         if (cartData && typeof cartData === 'object' && cartData.version && cartData.timestamp) {
-            console.log('📦 Cart data version:', cartData.version);
             
             // Check expiration
             if (Date.now() > cartData.expiresAt) {
-                console.log('⏰ Cart expired, clearing...');
                 localStorage.removeItem('cart');
                 return {};
             }
             
             // Check if version needs migration
             if (cartData.version !== CART_DATA_VERSION) {
-                console.log(`🔄 Cart version ${cartData.version} needs migration to ${CART_DATA_VERSION}`);
                 // For now, just clear and start fresh (can be enhanced later)
                 localStorage.removeItem('cart');
                 return {};
             }
             
-            console.log('✅ Cart loaded successfully with metadata');
             return cartData.data;
         } else {
             // Legacy cart format - migrate to new format
-            console.log('🔄 Migrating legacy cart to new format');
             const migratedCart = createCartWithMetadata(cartData);
             localStorage.setItem('cart', JSON.stringify(migratedCart));
-            console.log('✅ Cart migrated successfully');
             return cartData;
         }
     } catch (error) {
@@ -618,7 +602,6 @@ function checkCartExpiration() {
         
         const cartData = JSON.parse(cartItem);
         if (cartData && cartData.expiresAt && Date.now() > cartData.expiresAt) {
-            console.log('⏰ Cart expired, cleaning up...');
             localStorage.removeItem('cart');
             return true;
         }
@@ -673,7 +656,6 @@ function loadCustomerDataWithExpiration() {
     try {
         const customerDataItem = localStorage.getItem(CUSTOMER_DATA_KEY);
         if (!customerDataItem) {
-            console.log('👤 No customer data found in localStorage');
             return {};
         }
 
@@ -688,31 +670,25 @@ function loadCustomerDataWithExpiration() {
 
         // Check if this is the new format with metadata
         if (customerData && typeof customerData === 'object' && customerData.version && customerData.timestamp) {
-            console.log('👤 Customer data version:', customerData.version);
             
             // Check expiration
             if (Date.now() > customerData.expiresAt) {
-                console.log('⏰ Customer data expired, clearing...');
                 localStorage.removeItem(CUSTOMER_DATA_KEY);
                 return {};
             }
             
             // Check if version needs migration
             if (customerData.version !== CUSTOMER_DATA_VERSION) {
-                console.log(`🔄 Customer data version ${customerData.version} needs migration to ${CUSTOMER_DATA_VERSION}`);
                 // For now, just clear and start fresh (can be enhanced later)
                 localStorage.removeItem(CUSTOMER_DATA_KEY);
                 return {};
             }
             
-            console.log('✅ Customer data loaded successfully with metadata');
             return customerData.data;
         } else {
             // Legacy customer data format - migrate to new format
-            console.log('🔄 Migrating legacy customer data to new format');
             const migratedCustomerData = createCustomerDataWithMetadata(customerData);
             localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(migratedCustomerData));
-            console.log('✅ Customer data migrated successfully');
             return customerData;
         }
     } catch (error) {
@@ -726,7 +702,6 @@ function saveCustomerDataWithMetadata(customerData) {
     try {
         const customerDataWithMetadata = createCustomerDataWithMetadata(customerData);
         localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(customerDataWithMetadata));
-        console.log('💾 Customer data saved with metadata');
         return true;
     } catch (error) {
         console.error('❌ Error saving customer data:', error);
@@ -763,11 +738,9 @@ function extractCustomerDataFromForm() {
 function populateFormWithCustomerData(customerData) {
     try {
         if (!customerData || Object.keys(customerData).length === 0) {
-            console.log('👤 No customer data to populate');
             return;
         }
 
-        console.log('👤 Populating form with customer data:', customerData);
 
         // Populate each field if data exists
         const fieldMappings = {
@@ -785,7 +758,6 @@ function populateFormWithCustomerData(customerData) {
                 const element = document.getElementById(elementId);
                 if (element) {
                     element.value = customerData[dataKey];
-                    console.log(`👤 Populated ${elementId} with: ${customerData[dataKey]}`);
                     // Clear any stale validation error for prefilled fields
                     const errorIdMap = {
                         firstName: 'first-name-error',
@@ -807,7 +779,6 @@ function populateFormWithCustomerData(customerData) {
             }
         }
 
-        console.log('✅ Form populated with customer data');
     } catch (error) {
         console.error('❌ Error populating form with customer data:', error);
     }
@@ -817,7 +788,6 @@ function populateFormWithCustomerData(customerData) {
 function clearCustomerData() {
     try {
         localStorage.removeItem(CUSTOMER_DATA_KEY);
-        console.log('🗑️ Customer data cleared successfully');
         return true;
     } catch (error) {
         console.error('❌ Error clearing customer data:', error);
@@ -833,7 +803,6 @@ function checkCustomerDataExpiration() {
         
         const customerData = JSON.parse(customerDataItem);
         if (customerData && customerData.expiresAt && Date.now() > customerData.expiresAt) {
-            console.log('⏰ Customer data expired, cleaning up...');
             localStorage.removeItem(CUSTOMER_DATA_KEY);
             return true;
         }
@@ -1066,25 +1035,10 @@ function clearFieldError(fieldName) {
 }
 
 function showValidationErrors(errorFields, errorMessages) {
-    console.log('🎯 === SHOW VALIDATION ERRORS CALLED ===');
-    console.log('📝 Error fields to process:', errorFields.length);
-    console.log('📝 Error messages to show:', errorMessages.length);
     
     // Clear previous errors first
     clearAllErrors();
     
-    // Debug: Check if error message elements exist
-    console.log('🔍 === ERROR VALIDATION DEBUG ===');
-    console.log('Error fields:', errorFields);
-    console.log('Error messages:', errorMessages);
-    
-    // Test if error message elements exist
-    const testErrorElements = ['lastName-error', 'firstName-error', 'paymentMethod-error', 'pickupAddress-error'];
-    testErrorElements.forEach(id => {
-        const element = document.getElementById(id);
-        console.log(`Error element ${id}:`, element);
-    });
-    console.log('=== END DEBUG ===');
     
     // Show error messages and highlight error fields
     errorFields.forEach((errorField, index) => {
@@ -1094,11 +1048,9 @@ function showValidationErrors(errorFields, errorMessages) {
             if (errorField.elementType === 'radio' && errorField.errorContainer) {
                 // Add visual indicator to radio group container
                 errorField.errorContainer.classList.add('form-field-error');
-                console.log(`Added error styling to radio container for: ${errorField.field}`);
             } else if (errorField.elementType === 'checkbox' && errorField.errorContainer) {
                 // For checkboxes, style the container
                 errorField.errorContainer.classList.add('error');
-                console.log(`Added error styling to checkbox container for: ${errorField.field}`);
             } else if (errorField.element && !['paymentMethod', 'paymentMethodPickup', 'pickupAddress', 'deliveryMethod'].includes(errorField.field)) {
                 // For regular inputs, add error class
                 errorField.element.classList.add('form-field-error');
@@ -1107,18 +1059,15 @@ function showValidationErrors(errorFields, errorMessages) {
             // Show corresponding error message
             const errorMessageId = errorField.field + '-error';
             const errorMessageElement = document.getElementById(errorMessageId);
-            console.log(`Looking for error message with ID: ${errorMessageId}`, errorMessageElement);
             if (errorMessageElement) {
                 errorMessageElement.classList.add('show');
                 errorMessageElement.style.display = 'block';  // Force display
                 errorMessageElement.style.color = '#ff4444';  // Force red color
-                console.log(`Error message shown for: ${errorField.field}`);
             } else {
                 console.error(`Error message element not found for: ${errorField.field}`);
                 // Try alternative selectors
                 const alternativeElement = document.querySelector(`[id*="${errorField.field}"][id*="error"]`);
                 if (alternativeElement) {
-                    console.log(`Found alternative error element:`, alternativeElement);
                     alternativeElement.classList.add('show');
                     alternativeElement.style.display = 'block';
                     alternativeElement.style.color = '#ff4444';
@@ -1127,34 +1076,24 @@ function showValidationErrors(errorFields, errorMessages) {
             
             // Focus behavior for the first error field
             if (index === 0 && errorField.element) {
-                console.log('🎯 === HANDLE FIRST ERROR FIELD ===');
-                console.log('🎯 Field name:', errorField.field);
-                console.log('🎯 Field element:', errorField.element);
-                console.log('🎯 Field element ID:', errorField.element ? errorField.element.id : 'none');
-                console.log('🎯 Field element type:', errorField.element ? errorField.element.type : 'none');
 
                 // For deliveryDate: do NOT focus to avoid opening calendar; just scroll into view
                 if (errorField.field !== 'deliveryDate' && errorField.element.focus) {
                     try {
                         errorField.element.focus();
-                        console.log('🎯 Focus() called on:', errorField.field);
                     } catch (e) {
-                        console.log('🎯 Could not focus on:', errorField.field, e);
                     }
                 } else {
-                    console.log('🎯 Skipping focus on:', errorField.field);
                 }
 
                 // Ensure the field is visible - scroll to container for radio groups
                 const scrollTarget = errorField.errorContainer || errorField.element;
                 if (scrollTarget && scrollTarget.scrollIntoView) {
-                    console.log('🎯 Scrolling to:', errorField.field);
                     scrollTarget.scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'center' 
                     });
                 }
-                console.log('🎯 === FIRST ERROR HANDLED ===');
             }
         }
     });
@@ -1173,7 +1112,6 @@ function validateField(value, validation) {
         if (validation.customValidation) {
             const customResult = validation.customValidation(value);
             if (!customResult) {
-                console.log(`❌ ${validation.field} validation FAILED - custom validation`);
             }
             return customResult;
         }
@@ -1182,13 +1120,11 @@ function validateField(value, validation) {
 
     // Empty check for non-checkbox fields
     if (!value || value.trim() === '') {
-        console.log(`❌ ${validation.field} validation FAILED - empty value`);
         return false;
     }
 
     // Regex validation
     if (validation.regex && !validation.regex.test(value)) {
-        console.log(`❌ ${validation.field} validation FAILED - regex mismatch`);
         return false;
     }
 
@@ -1196,7 +1132,6 @@ function validateField(value, validation) {
     if (validation.customValidation) {
         const customResult = validation.customValidation(value);
         if (!customResult) {
-            console.log(`❌ ${validation.field} validation FAILED - custom validation`);
         }
         return customResult;
     }
@@ -1282,7 +1217,6 @@ function validateAddressField(value) {
 function validatePickupAddressField(value) {
     // Fix: Ensure proper validation for pickup address
     if (!value || value.trim() === '') {
-        console.log('❌ pickupAddress validation FAILED - empty value');
         return false;
     }
     return true;
@@ -1294,9 +1228,7 @@ function validatePaymentMethodField(value) {
 
 function validatePrivacyConsentField(value) {
     // For checkbox, value is boolean
-    console.log('🔍 Privacy consent validation - value:', value, 'type:', typeof value);
     const result = value === true;
-    console.log('🔍 Privacy consent validation result:', result);
     return result;
 }
 
@@ -1406,16 +1338,12 @@ function validateOrderForm(orderDetails) {
     const errors = [];
     const errorFields = [];
 
-    console.log('🔍 === VALIDATION STARTING ===');
-    console.log('OrderDetails received:', orderDetails);
 
     for (const validation of validationOrder) {
         const value = orderDetails[validation.field];
-        console.log(`🔍 Validating field '${validation.field}' with value: '${value}'`);
         
         // Check if field should be validated based on condition
         if (validation.condition && !validation.condition()) {
-            console.log(`⏭️ Skipping ${validation.field} - condition not met`);
             continue;
         }
 
@@ -1450,15 +1378,9 @@ function validateOrderForm(orderDetails) {
                 }
             }
             
-            console.log(`❌ Validation failed for ${validation.field}`);
-            console.log(`   - Looking for element with ID: '${validation.element}'`);
-            console.log(`   - Element found: ${elementRef ? 'YES' : 'NO'}`);
             if (elementRef) {
-                console.log(`   - Element type: ${elementRef.tagName}`);
-                console.log(`   - Element value: ${elementRef.value || 'N/A'}`);
             }
             if (errorContainer) {
-                console.log(`   - Error container found: ${errorContainer ? 'YES' : 'NO'}`);
             }
             
             errors.push(`Пожалуйста, введите ${validation.label}.`);
@@ -1472,9 +1394,6 @@ function validateOrderForm(orderDetails) {
     }
 
     if (errors.length > 0) {
-        console.log('❌ === VALIDATION FAILED ===');
-        console.log('📝 Error fields:', errorFields.map(f => f.field));
-        console.log('📝 Error messages:', errors);
     }
 
     return { isValid: errors.length === 0, errors, errorFields };
@@ -1501,7 +1420,6 @@ function collectFormData() {
         privacyConsent: (() => {
             const checkbox = document.getElementById('privacy-consent');
             const checked = checkbox?.checked || false;
-            console.log('🔍 Privacy consent checkbox found:', !!checkbox, 'checked:', checked);
             return checked;
         })()
     };
@@ -1528,7 +1446,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const regs = await navigator.serviceWorker.getRegistrations();
             regs.forEach(reg => reg.unregister());
             localStorage.setItem(flagKey, '1');
-            console.log('🧹 Service workers unregistered (one-time)');
         } catch (e) {
             console.warn('SW unregister failed:', e);
         }
@@ -1562,7 +1479,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 script.setAttribute('src', newSrc);
             });
             sessionStorage.setItem(bustFlag, '1');
-            console.log('🧨 iOS hard bust applied');
         } catch (e) {
             console.warn('iOS hard bust failed:', e);
         }
@@ -1726,9 +1642,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle page visibility changes to pause/resume auto-refresh
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-            console.log('📱 App hidden, pausing auto-refresh');
         } else {
-            console.log('📱 App visible, resuming auto-refresh');
             setupAutoRefresh(); // Restart interval when app becomes visible
         }
     });
@@ -1740,7 +1654,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cartExpired = checkCartExpiration();
     if (cartExpired) {
         cart = {};
-        console.log('⏰ Expired cart cleared on app start');
     }
     
     // Only initialize cart rendering after products data is loaded
@@ -1813,7 +1726,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     function displayView(viewName, categoryKey = null) {
         // Prevent multiple simultaneous view changes
         if (window.isChangingView) {
-            console.log('View change already in progress, skipping...');
             return;
         }
         window.isChangingView = true;
@@ -2018,7 +1930,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function fetchProductsData(categoryKey = null) {
-        console.log(`fetchProductsData called with categoryKey: ${categoryKey}`);
         try {
             // Get authentication token
             const token = await getAuthToken();
@@ -2032,9 +1943,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let fullPath = path;
             if (categoryKey) {
                 fullPath += `?category=${categoryKey}`;
-                console.log(`Making API request to: ${fullPath}`);
             } else {
-                console.log('Making API request for all products');
             }
             // Sign only the base path without query parameters
             const signature = await signRequest('GET', path, timestamp);
@@ -2053,7 +1962,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            console.log('API: Получены данные продуктов:', data);
             
             if (categoryKey) {
                 // Если запрашивается конкретная категория, сохраняем данные в специальном формате
@@ -2108,7 +2016,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const categoriesData = await response.json();
-            console.log('API: Получены данные категорий:', categoriesData);
 
             if (categoriesContainer) categoriesContainer.innerHTML = '';
 
@@ -2135,8 +2042,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <img src="${categoryImageUrl}"
                          alt="${categoryDisplayName}"
                          class="category-image"
-                         onerror="this.onerror=null;this.src='images/logo-dark.svg';"
-                         onload="console.log('Изображение категории загружено:', this.src);">
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
                     <div class="category-text-wrapper">
                         <h3 class="category-title-text">${categoryDisplayName}</h3>
                         <div class="category-link-text">
@@ -2164,9 +2070,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadProducts(categoryKey) {
-        console.log(`loadProducts called with categoryKey: ${categoryKey}`);
         // Всегда загружаем продукты для конкретной категории, чтобы получить информацию о категории
-        console.log(`Loading products for category: ${categoryKey}`);
         await fetchProductsData(categoryKey);
         if (!productsData[categoryKey]) {
             console.warn('No products found for this category.');
@@ -2175,18 +2079,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const products = productsData[categoryKey];
-        console.log(`API: Загружаем продукты для категории ${categoryKey}:`, products);
         
         // Update category title - используем информацию из API для названия, но SVG иконки из статического мапа
         if (mainCategoryTitle) {
             const apiCategoryInfo = productsData[`${categoryKey}_info`];
             const staticCategoryInfo = CATEGORY_DISPLAY_MAP[categoryKey];
-            console.log(`API Category info for ${categoryKey}:`, apiCategoryInfo);
-            console.log(`Static Category info for ${categoryKey}:`, staticCategoryInfo);
             
             if (apiCategoryInfo || staticCategoryInfo) {
                 const categoryName = apiCategoryInfo?.name || staticCategoryInfo?.name || 'Продукты';
-                console.log(`Setting category title to: ${categoryName}`);
                 
                 // Используем SVG иконку из статического мапа, если она есть
                 if (staticCategoryInfo && staticCategoryInfo.image) {
@@ -2201,7 +2101,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     mainCategoryTitle.textContent = categoryName;
                 }
             } else {
-                console.log('No category info found, using fallback "Продукты"');
                 mainCategoryTitle.textContent = 'Продукты';
             }
         }
@@ -2221,8 +2120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          class="product-image clickable-image" 
                          data-product-id="${product.id}"
                          loading="lazy" decoding="async"
-                         onerror="this.onerror=null;this.src='images/logo-dark.svg';"
-                         onload="console.log('Изображение загружено:', this.src);">
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';"
                     <div class="product-vegan-icon" style="display: ${product.for_vegans && product.for_vegans !== 'N/A' ? 'block' : 'none'};">
                         <svg class="svg svg-vegan">
                             <use xlink:href="sprite.svg#vegan"></use>
@@ -2475,9 +2373,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="cart-item-image-container" 
                      style="cursor: ${isAvailable ? 'pointer' : 'default'};" 
                      onclick="${isAvailable ? `showProductScreen('${item.id}', '${productCategory}')` : 'return false;'}">
-                    <img src="${item.image || 'images/logo-dark.svg'}" 
+                    <img src="${item.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
                          alt="${item.name}" class="cart-item-image"
-                         onerror="this.onerror=null;this.src='images/logo-dark.svg';">
+                         onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
                     ${!isAvailable ? '<div class="unavailable-label">Недоступен</div>' : ''}
                 </div>
                 <div class="cart-item-details">
@@ -3499,34 +3397,21 @@ function addErrorClearingListeners() {
             return;
         }
 
-        // Подготавливаем изображения для карусели (используем только массив images)
-        const productImages = product.images && Array.isArray(product.images) && product.images.length > 0 
-            ? product.images 
-            : ['images/logo-dark.svg'];
-
-        // Формируем HTML для экрана продукта с Swiper
+        // Формируем HTML для экрана продукта
         let screenHTML = `
             <div class="product-screen-image-container">
-                ${productImages.length > 1 ? `
-                    <div class="swiper product-screen-swiper" id="product-swiper-${product.id}">
-                        <div class="swiper-wrapper">
-                            ${productImages.map((img, index) => `
-                                <div class="swiper-slide">
-                                    <img src="${img}" 
-                                         alt="${product.name}" 
-                                         onerror="this.onerror=null;this.src='images/logo-dark.svg';">
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : `
-                    <div class="product-screen-single-image">
-                        <img src="${productImages[0]}" 
-                             alt="${product.name}" 
-                             class="product-screen-image"
-                             onerror="this.onerror=null;this.src='images/logo-dark.svg';">
-                    </div>
-                `}
+                <img src="${product.image || 'images/logo.svg?v=1.3.109&t=1758518052'}" 
+                     alt="${product.name}" 
+                     class="product-screen-image" 
+                     id="product-screen-main-image"
+                     onerror="this.onerror=null;this.src='images/logo.svg?v=1.3.109&t=1758518052';">
+                
+                <!-- Стрелки навигации для множественных изображений -->
+                <button class="image-nav prev" id="product-screen-prev" style="display: none;">‹</button>
+                <button class="image-nav next" id="product-screen-next" style="display: none;">›</button>
+                
+                <!-- Индикаторы точек -->
+                <div class="image-indicators" id="product-screen-indicators" style="display: none;"></div>
             </div>
 
             <div class="product-screen-name">${product.name}</div>
@@ -3626,54 +3511,9 @@ function addErrorClearingListeners() {
 
         screenBody.innerHTML = screenHTML;
 
-        // Инициализируем Swiper для множественных изображений
-        if (productImages.length > 1) {
-            setTimeout(() => {
-                const swiperElement = document.getElementById(`product-swiper-${product.id}`);
-                if (swiperElement && typeof Swiper !== 'undefined') {
-                    new Swiper(swiperElement, {
-                        effect: "cards",
-                        grabCursor: true,
-                        cardsEffect: {
-                            perSlideOffset: 9,         // Уменьшаем смещение на 3/4 (было 25, стало 6)
-                            perSlideRotate: 0,         // Убираем поворот полностью
-                            rotate: false,             // Отключаем поворот для предсказуемости
-                            slideShadows: true,        // Оставляем тени
-                            transformEl: '.swiper-slide', // Применяем трансформацию к слайду
-                        },
-                        autoplay: false,
-                        loop: false,                   // Отключаем loop для предсказуемой навигации
-                        speed: 300,
-                        allowTouchMove: true,
-                        resistance: true,
-                        resistanceRatio: 0.25,
-                        watchSlidesProgress: true,
-                        watchSlidesVisibility: true,
-                        // Настройки для лучшего контроля
-                        threshold: 10,                 // Минимальное расстояние для свайпа
-                        touchRatio: 1,
-                        touchAngle: 45,
-                        simulateTouch: true,
-                        shortSwipes: true,
-                        longSwipes: true,
-                        longSwipesRatio: 0.5,
-                        longSwipesMs: 300,
-                        followFinger: true,
-                        // Обработчики для отладки
-                        on: {
-                            slideChange: function() {
-                                console.log('Slide changed to:', this.activeIndex);
-                            },
-                            touchStart: function() {
-                                console.log('Touch start');
-                            },
-                            touchEnd: function() {
-                                console.log('Touch end');
-                            }
-                        }
-                    });
-                }
-            }, 100);
+        // Инициализируем множественные изображения для экрана товара
+        if (product.images && product.images.length > 1) {
+            initProductScreenImages(product.id, product.images);
         }
 
         // Обновляем счетчик количества в экране продукта
@@ -4001,7 +3841,6 @@ function addErrorClearingListeners() {
     function dbg_findCartElements() {
         const nodes = Array.from(document.querySelectorAll('button, a, span, div'));
         const found = nodes.filter(el => /\bКорзина\s*\(\d+\)/i.test((el.textContent||'').trim()));
-        console.log('Найдено элементов с текстом "Корзина (N)":', found.length);
         console.table(found.map(el => ({
             tag: el.tagName,
             id: el.id || '(no id)',
@@ -4020,14 +3859,12 @@ function addErrorClearingListeners() {
                 m.addedNodes.forEach(n => {
                     try {
                         if (n.nodeType===1 && /\bКорзина\s*\(\d+\)/i.test(n.textContent||'')) {
-                            console.log('Добавлен новый узел "Корзина":', n, 'visible=', n.offsetParent !== null);
                         }
                     } catch(e) {}
                 });
                 m.removedNodes.forEach(n => {
                     try {
                         if (n.nodeType===1 && /\bКорзина\s*\(\d+\)/i.test(n.textContent||'')) {
-                            console.log('Удалён узел "Корзина":', n);
                         }
                     } catch(e) {}
                 });
@@ -4161,14 +3998,5 @@ function addErrorClearingListeners() {
             startY = 0;
         });
     }
-
-    
-    // ===== ФУНКЦИИ SWIPER КАРУСЕЛИ ЭКРАНА ТОВАРА =====
-    
-    // Swiper теперь управляется автоматически через библиотеку
-    
-    // Старые функции карусели удалены - теперь используется Swiper
-    
-    // Swiper сам управляет свайпом - старые функции удалены
 
 });
