@@ -16,15 +16,15 @@ logger = logging.getLogger(__name__)
 async def security_headers_middleware(request: Request, handler: Callable[[Request], Awaitable[Response]]) -> Response:
     """Add security headers to all responses."""
     
-    # Content Security Policy - allows Telegram WebApp functionality and Google Fonts
+    # Content Security Policy - allows Telegram WebApp functionality, Google Fonts, and Swiper CDN
     csp_policy = (
         "default-src 'self' https://telegram.org; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org; "
-        "style-src 'self' 'unsafe-inline' https://telegram.org https://fonts.googleapis.com; "
-        "font-src 'self' https://telegram.org https://fonts.gstatic.com; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://telegram.org https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+        "font-src 'self' https://telegram.org https://fonts.gstatic.com https://cdn.jsdelivr.net; "
         "img-src 'self' data: https: http:; "
         "connect-src 'self' https://telegram.org; "
-        "frame-src 'none'; "
+        "frame-src 'self' https://*.telegram.org https://web.telegram.org https://t.me; "
         "object-src 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
