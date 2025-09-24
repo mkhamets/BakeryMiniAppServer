@@ -1958,9 +1958,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Show loading state immediately with same styles as category title
                         mainCategoryTitle.textContent = 'Загрузка...';
                     }
-                    if (productListElement) {
-                        productListElement.innerHTML = '<div class="loading-text">Загрузка продуктов...</div>';
-                    }
                     loadProducts(categoryKey);
                     // Show basket button for products view
                     if (Telegram.WebApp.MainButton) {
