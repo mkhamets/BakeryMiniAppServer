@@ -1958,6 +1958,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Show loading state immediately with same styles as category title
                         mainCategoryTitle.textContent = 'Загрузка...';
                     }
+                    // Clear product list to hide old cards
+                    if (productListElement) {
+                        productListElement.innerHTML = '';
+                    }
                     loadProducts(categoryKey);
                     // Show basket button for products view
                     if (Telegram.WebApp.MainButton) {
