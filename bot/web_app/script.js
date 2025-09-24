@@ -1530,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         "category_19": { name: "Десерты", icon: "images/cookie.svg?v=1.3.109&t=1758518052", image: "images/cookie.svg?v=1.3.109&t=1758518052" }
     };
 
-    await fetchProductsData();
+    // Products data will be loaded when user navigates to categories
     
     // 🔄 SETUP AUTOMATIC CART REFRESH EVERY MINUTE
     let autoRefreshInterval;
