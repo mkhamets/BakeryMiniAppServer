@@ -1634,12 +1634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return true; // First run or missing data, consider as changed
         }
         
-        console.log('🔄 Auto-refresh: Comparing products data structure:', {
-            previousDataKeys: Object.keys(previousData),
-            newDataKeys: Object.keys(newData),
-            previousDataType: Array.isArray(previousData) ? 'array' : 'object',
-            newDataType: Array.isArray(newData) ? 'array' : 'object'
-        });
+        // Structure logging removed for cleaner console output
         
         try {
             // Compare basic structure - exclude _info entries from comparison
@@ -1647,7 +1642,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const newKeys = Object.keys(newData).filter(key => !key.endsWith('_info'));
             
             if (previousKeys.length !== newKeys.length) {
-                console.log(`🔄 Auto-refresh: Different number of product categories: ${previousKeys.length} -> ${newKeys.length}`);
                 return true;
             }
             
@@ -1659,7 +1653,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 if (!previousData[categoryKey]) {
-                    console.log(`🔄 Auto-refresh: New category added: ${categoryKey}`);
                     return true; // New category added
                 }
                 
@@ -1712,18 +1705,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Handle arrays (like images) - deep comparison
                         if (Array.isArray(prevValue) && Array.isArray(newValue)) {
                             if (prevValue.length !== newValue.length) {
-                                console.log(`🔄 Auto-refresh: Product ${newProduct.id} - ${field} array length changed: ${prevValue.length} -> ${newValue.length}`);
                                 return true;
                             }
                             // Check each element in arrays
                             for (let j = 0; j < prevValue.length; j++) {
                                 if (prevValue[j] !== newValue[j]) {
-                                    console.log(`🔄 Auto-refresh: Product ${newProduct.id} - ${field}[${j}] changed: "${prevValue[j]}" -> "${newValue[j]}"`);
                                     return true;
                                 }
                             }
                         } else if (prevValue !== newValue) {
-                            console.log(`🔄 Auto-refresh: Product ${newProduct.id} - ${field} changed: "${prevValue}" -> "${newValue}"`);
                             return true;
                         }
                     }
@@ -1744,12 +1734,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return true; // First run or missing data, consider as changed
         }
         
-        console.log('🔄 Auto-refresh: Comparing categories data structure:', {
-            previousDataLength: previousData.length,
-            newDataLength: newData.length,
-            previousDataType: Array.isArray(previousData) ? 'array' : 'object',
-            newDataType: Array.isArray(newData) ? 'array' : 'object'
-        });
+        // Structure logging removed for cleaner console output
         
         try {
             // Compare basic structure
@@ -1787,7 +1772,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const newValue = newCategory[field];
                     
                     if (prevValue !== newValue) {
-                        console.log(`🔄 Auto-refresh: Category ${newCategory.id} - ${field} changed: "${prevValue}" -> "${newValue}"`);
                         return true;
                     }
                 }
