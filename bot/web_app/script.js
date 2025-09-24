@@ -1519,6 +1519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let productsData = {};
     let isSubmitting = false; // Флаг для предотвращения двойной отправки
     let currentProductCategory = null; // Для отслеживания категории продукта
+    let productsDataValid = false; // Флаг для отслеживания актуальности данных о продуктах
 
     const CATEGORY_DISPLAY_MAP = {
         "category_16": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.109&t=1758518052", image: "images/bread1.svg?v=1.3.109&t=1758518052" },
@@ -1557,7 +1558,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     // Skip comparison if we failed to fetch data (null means API error)
                     if (!newProductsData && !newCategoriesData) {
-                        console.log('🔄 Auto-refresh: Both API calls failed, skipping update');
+                        console.log('🔄 Auto-refresh: Both API calls failed, marking data as invalid');
+                        productsDataValid = false;
                         return;
                     }
                     
@@ -2102,9 +2104,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (data.category) {
                     productsData[`${categoryKey}_info`] = data.category;
                 }
+                // Mark data as valid for this category
+                productsDataValid = true;
             } else {
                 // Если запрашиваются все продукты, сохраняем как раньше
                 productsData = data;
+                // Mark data as valid
+                productsDataValid = true;
             }
             
             // 🔄 AUTO-REFRESH CART WHEN PRODUCTS CHANGE
@@ -2632,6 +2638,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // NEW: Function to check if a product is still available in the catalog
     function isProductAvailable(productId) {
+        // If productsData is not valid (API failed), consider all products as unavailable
+        if (!productsDataValid) {
+            return false;
+        }
+        
+        // If productsData is empty or null, consider all products as unavailable
+        if (!productsData || Object.keys(productsData).length === 0) {
+            return false;
+        }
+        
         const product = getProductById(productId);
         return product !== null;
     }
