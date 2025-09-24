@@ -1630,8 +1630,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Function to check if products data has changed
     function checkProductsDataChanges(previousData, newData) {
         if (!previousData || !newData) {
+            console.log('🔄 Auto-refresh: First run or missing data, considering as changed');
             return true; // First run or missing data, consider as changed
         }
+        
+        console.log('🔄 Auto-refresh: Comparing products data structure:', {
+            previousDataKeys: Object.keys(previousData),
+            newDataKeys: Object.keys(newData),
+            previousDataType: Array.isArray(previousData) ? 'array' : 'object',
+            newDataType: Array.isArray(newData) ? 'array' : 'object'
+        });
         
         try {
             // Compare basic structure
@@ -1722,8 +1730,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Function to check if categories data has changed
     function checkCategoriesDataChanges(previousData, newData) {
         if (!previousData || !newData) {
+            console.log('🔄 Auto-refresh: First run or missing categories data, considering as changed');
             return true; // First run or missing data, consider as changed
         }
+        
+        console.log('🔄 Auto-refresh: Comparing categories data structure:', {
+            previousDataLength: previousData.length,
+            newDataLength: newData.length,
+            previousDataType: Array.isArray(previousData) ? 'array' : 'object',
+            newDataType: Array.isArray(newData) ? 'array' : 'object'
+        });
         
         try {
             // Compare basic structure
