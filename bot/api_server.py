@@ -244,8 +244,13 @@ def get_modx_cache_categories():
 def get_modx_cache_metadata():
     """Возвращает метаданные MODX кэша."""
     # Перезагружаем кэш при каждом запросе
+    logger.info(f"API: Checking MODX cache file: {MODX_CACHE_FILE}")
     if os.path.exists(MODX_CACHE_FILE):
         try:
+            # Проверяем размер файла
+            file_size = os.path.getsize(MODX_CACHE_FILE)
+            logger.info(f"API: MODX cache file size: {file_size} bytes")
+            
             with open(MODX_CACHE_FILE, 'r', encoding='utf-8') as f:
                 current_cache = json.load(f)
                 metadata = current_cache.get('metadata', {})
