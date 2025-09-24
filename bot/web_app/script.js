@@ -1953,7 +1953,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (isAndroidDevice) mainPageContainer.style.display = 'block';
                     }
                     if (productsContainer) productsContainer.classList.remove('hidden');
-                    if (mainCategoryTitle) mainCategoryTitle.classList.remove('hidden');
+                    if (mainCategoryTitle) {
+                        mainCategoryTitle.classList.remove('hidden');
+                        // Show loading state immediately with same styles as category title
+                        mainCategoryTitle.textContent = 'Загрузка...';
+                    }
+                    if (productListElement) {
+                        productListElement.innerHTML = '<div class="loading-text">Загрузка продуктов...</div>';
+                    }
                     loadProducts(categoryKey);
                     // Show basket button for products view
                     if (Telegram.WebApp.MainButton) {
