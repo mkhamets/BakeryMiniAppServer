@@ -1667,7 +1667,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const newCategory = newData[categoryKey];
                 
                 if (!Array.isArray(previousCategory) || !Array.isArray(newCategory)) {
-                    continue;
+                    return true; // Data structure changed
                 }
                 
                 if (previousCategory.length !== newCategory.length) {
