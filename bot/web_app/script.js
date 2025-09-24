@@ -2278,7 +2278,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 mainCategoryTitle.textContent = 'Продукты';
             }
         }
-        if (productListElement) productListElement.innerHTML = '';
 
         products.forEach(product => {
             const productCard = document.createElement('div');
