@@ -652,7 +652,8 @@ async def setup_api_server():
     # await load_products_data_for_api()
     
     # Загружаем MODX кэш при настройке сервера
-    await load_modx_cache_data()
+    # MODX кэш будет загружаться при каждом запросе
+    # await load_modx_cache_data()  # Убрано - загружаем при каждом запросе
 
     # ДОБАВЛЕНО: Перенаправление с корневого пути на '/bot-app/'
     app.router.add_get('/', lambda r: web.HTTPFound('/bot-app/'))
