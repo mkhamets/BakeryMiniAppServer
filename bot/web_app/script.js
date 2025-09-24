@@ -1520,6 +1520,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isSubmitting = false; // Флаг для предотвращения двойной отправки
     let currentProductCategory = null; // Для отслеживания категории продукта
     let productsDataValid = false; // Флаг для отслеживания актуальности данных о продуктах
+    let previousProductsData = null; // Для сравнения данных продуктов в auto-refresh
+    let previousCategoriesData = null; // Для сравнения данных категорий в auto-refresh
 
     const CATEGORY_DISPLAY_MAP = {
         "category_16": { name: "Ремесленный хлеб", icon: "images/bread1.svg?v=1.3.109&t=1758518052", image: "images/bread1.svg?v=1.3.109&t=1758518052" },
@@ -1541,9 +1543,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearInterval(autoRefreshInterval);
         }
         
-        // Store previous data for comparison
-        let previousProductsData = null;
-        let previousCategoriesData = null;
+        // Use global variables for comparison (declared at module level)
         
         // Set up periodic refresh every minute (60000ms)
         autoRefreshInterval = setInterval(async () => {
@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const newProductsData = await fetchProductsData();
                     const newCategoriesData = await fetchCategoriesData();
                     
-                    console.log('🔄 Auto-refresh: Products data received:', newProductsData ? `${newProductsData.length} products` : 'null');
+                    console.log('🔄 Auto-refresh: Products data received:', newProductsData ? (Array.isArray(newProductsData) ? `${newProductsData.length} products` : `${Object.keys(newProductsData).length} categories`) : 'null');
                     console.log('🔄 Auto-refresh: Categories data received:', newCategoriesData ? `${newCategoriesData.length} categories` : 'null');
                     
                     // Skip comparison if we failed to fetch data (null means API error)
