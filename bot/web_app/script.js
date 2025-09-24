@@ -1555,9 +1555,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.log('🔄 Auto-refresh: Products data received:', newProductsData ? `${newProductsData.length} products` : 'null');
                     console.log('🔄 Auto-refresh: Categories data received:', newCategoriesData ? `${newCategoriesData.length} categories` : 'null');
                     
+                    // Skip comparison if we failed to fetch data (null means API error)
+                    if (!newProductsData && !newCategoriesData) {
+                        console.log('🔄 Auto-refresh: Both API calls failed, skipping update');
+                        return;
+                    }
+                    
                     // Check if products data has actually changed
-                    const hasProductsChanges = checkProductsDataChanges(previousProductsData, newProductsData);
-                    const hasCategoriesChanges = checkCategoriesDataChanges(previousCategoriesData, newCategoriesData);
+                    const hasProductsChanges = newProductsData ? checkProductsDataChanges(previousProductsData, newProductsData) : false;
+                    const hasCategoriesChanges = newCategoriesData ? checkCategoriesDataChanges(previousCategoriesData, newCategoriesData) : false;
                     
                     console.log('🔄 Auto-refresh: Products changes detected:', hasProductsChanges);
                     console.log('🔄 Auto-refresh: Categories changes detected:', hasCategoriesChanges);
@@ -1594,9 +1600,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                             renderCart();
                         }
                         
-                        // Update previous data
-                        previousProductsData = JSON.parse(JSON.stringify(newProductsData));
-                        previousCategoriesData = JSON.parse(JSON.stringify(newCategoriesData));
+                        // Update previous data only if we successfully fetched new data
+                        if (newProductsData) {
+                            previousProductsData = JSON.parse(JSON.stringify(newProductsData));
+                        }
+                        if (newCategoriesData) {
+                            previousCategoriesData = JSON.parse(JSON.stringify(newCategoriesData));
+                        }
                         
                         console.log('🔄 Auto-refresh: UI update completed');
                         // Reset flag after update is complete
