@@ -1694,15 +1694,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Handle arrays (like images) - deep comparison
                         if (Array.isArray(prevValue) && Array.isArray(newValue)) {
                             if (prevValue.length !== newValue.length) {
+                                console.log(`🔄 Auto-refresh: Product ${newProduct.id} - ${field} array length changed: ${prevValue.length} -> ${newValue.length}`);
                                 return true;
                             }
                             // Check each element in arrays
                             for (let j = 0; j < prevValue.length; j++) {
                                 if (prevValue[j] !== newValue[j]) {
+                                    console.log(`🔄 Auto-refresh: Product ${newProduct.id} - ${field}[${j}] changed: "${prevValue[j]}" -> "${newValue[j]}"`);
                                     return true;
                                 }
                             }
                         } else if (prevValue !== newValue) {
+                            console.log(`🔄 Auto-refresh: Product ${newProduct.id} - ${field} changed: "${prevValue}" -> "${newValue}"`);
                             return true;
                         }
                     }
@@ -1758,6 +1761,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const newValue = newCategory[field];
                     
                     if (prevValue !== newValue) {
+                        console.log(`🔄 Auto-refresh: Category ${newCategory.id} - ${field} changed: "${prevValue}" -> "${newValue}"`);
                         return true;
                     }
                 }
