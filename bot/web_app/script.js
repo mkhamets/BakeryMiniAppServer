@@ -2511,7 +2511,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Find the category for this product to pass to showProductScreen
             let productCategory = null;
             for (const catKey in productsData) {
-                if (productsData[catKey].find(p => p.id === item.id)) {
+                // Skip non-array entries (like category info) and entries ending with _info
+                if (Array.isArray(productsData[catKey]) && !catKey.endsWith('_info') && productsData[catKey].find(p => p.id === item.id)) {
                     productCategory = catKey;
                     break;
                 }
