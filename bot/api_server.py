@@ -248,9 +248,14 @@ def get_modx_cache_metadata():
         try:
             with open(MODX_CACHE_FILE, 'r', encoding='utf-8') as f:
                 current_cache = json.load(f)
-                return current_cache.get('metadata', {})
-        except json.JSONDecodeError:
+                metadata = current_cache.get('metadata', {})
+                logger.info(f"API: MODX cache metadata loaded - version {metadata.get('version', 'unknown')}")
+                return metadata
+        except json.JSONDecodeError as e:
+            logger.error(f"API: JSON decode error in MODX cache: {e}")
             return {}
+    else:
+        logger.warning(f"API: MODX cache file not found: {MODX_CACHE_FILE}")
     return {}
 
 async def check_api_rate_limit(request, action: str = "api_request") -> bool:
