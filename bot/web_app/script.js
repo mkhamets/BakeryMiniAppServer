@@ -1642,14 +1642,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
         try {
-            // Compare basic structure
-            if (Object.keys(previousData).length !== Object.keys(newData).length) {
+            // Compare basic structure - exclude _info entries from comparison
+            const previousKeys = Object.keys(previousData).filter(key => !key.endsWith('_info'));
+            const newKeys = Object.keys(newData).filter(key => !key.endsWith('_info'));
+            
+            if (previousKeys.length !== newKeys.length) {
+                console.log(`🔄 Auto-refresh: Different number of product categories: ${previousKeys.length} -> ${newKeys.length}`);
                 return true;
             }
             
-            // Compare each category
+            // Compare each category (skip _info entries)
             for (const categoryKey in newData) {
+                // Skip _info entries
+                if (categoryKey.endsWith('_info')) {
+                    continue;
+                }
+                
                 if (!previousData[categoryKey]) {
+                    console.log(`🔄 Auto-refresh: New category added: ${categoryKey}`);
                     return true; // New category added
                 }
                 
