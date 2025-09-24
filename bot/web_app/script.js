@@ -1531,6 +1531,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 🔄 SETUP AUTOMATIC CART REFRESH EVERY MINUTE
     let autoRefreshInterval;
+    let isUpdatingUI = false; // Flag to prevent multiple simultaneous updates
     
     // Function to check if app is active and refresh cart if needed
     function setupAutoRefresh() {
@@ -1539,21 +1540,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearInterval(autoRefreshInterval);
         }
         
-        // Store previous products data for comparison
+        // Store previous data for comparison
         let previousProductsData = null;
+        let previousCategoriesData = null;
         
         // Set up periodic refresh every minute (60000ms)
         autoRefreshInterval = setInterval(async () => {
-            // Only refresh if app is active
-            if (!document.hidden) {
+            // Only refresh if app is active and not currently updating
+            if (!document.hidden && !isUpdatingUI) {
                 try {
                     const newProductsData = await fetchProductsData();
+                    const newCategoriesData = await fetchCategoriesData();
                     
                     // Check if products data has actually changed
-                    const hasChanges = checkProductsDataChanges(previousProductsData, newProductsData);
+                    const hasProductsChanges = checkProductsDataChanges(previousProductsData, newProductsData);
+                    const hasCategoriesChanges = checkCategoriesDataChanges(previousCategoriesData, newCategoriesData);
                     
-                    if (hasChanges) {
-                        // Products data changed, refreshing product grid
+                    if (hasProductsChanges || hasCategoriesChanges) {
+                        // Set flag to prevent multiple simultaneous updates
+                        isUpdatingUI = true;
                         
                         // 🔄 REFRESH PRODUCT GRID IF ON CATEGORY SCREEN
                         const productsContainer = document.getElementById('products-container');
@@ -1566,13 +1571,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         }
                         
+                        // 🔄 REFRESH CATEGORIES IF ON CATEGORIES SCREEN AND CATEGORIES CHANGED
+                        const categoriesContainer = document.getElementById('categories-container');
+                        if (categoriesContainer && !categoriesContainer.classList.contains('hidden') && hasCategoriesChanges) {
+                            await loadCategories();
+                        }
+                        
+                        // 🔄 REFRESH CART IF ON CART SCREEN (for price/availability changes)
+                        const cartContainer = document.getElementById('cart-container');
+                        if (cartContainer && !cartContainer.classList.contains('hidden')) {
+                            // Update cart display to reflect any price or availability changes
+                            renderCart();
+                        }
+                        
                         // Update previous data
                         previousProductsData = JSON.parse(JSON.stringify(newProductsData));
+                        previousCategoriesData = JSON.parse(JSON.stringify(newCategoriesData));
                     } else {
                         // No changes in products data, skipping grid refresh
                     }
                 } catch (error) {
                     console.warn('Auto-refresh failed:', error);
+                    // Reset flag on error
+                    isUpdatingUI = false;
                 }
             }
         }, 60000); // 1 minute
@@ -1618,13 +1639,46 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return true;
                     }
                     
-                    // Compare key product properties
-                    if (previousProduct.id !== newProduct.id ||
-                        previousProduct.name !== newProduct.name ||
-                        previousProduct.price !== newProduct.price ||
-                        previousProduct.availability_days !== newProduct.availability_days ||
-                        previousProduct.weight !== newProduct.weight) {
-                        return true; // Product changed
+                    // Compare critical product properties that affect UI
+                    const criticalFields = [
+                        'id',           // Product ID
+                        'menuindex',    // Menu order
+                        'pagetitle',    // Product name/title
+                        'template',     // Template
+                        'published',    // Published status
+                        'parent_id',    // Parent category
+                        'price',        // Price
+                        'weight',       // Weight
+                        'source',       // Source
+                        'image',        // Main image
+                        'images',       // All images
+                        'product_description',  // Description
+                        'product_days_order',   // Order days
+                        'product_structure',    // Structure/ingredients
+                        'product_calories',     // Calories
+                        'product_bgu',          // BGU (БЖУ)
+                        'product_vegan'         // Vegan status
+                    ];
+                    
+                    // Check each critical field
+                    for (const field of criticalFields) {
+                        const prevValue = previousProduct[field];
+                        const newValue = newProduct[field];
+                        
+                        // Handle arrays (like images) - deep comparison
+                        if (Array.isArray(prevValue) && Array.isArray(newValue)) {
+                            if (prevValue.length !== newValue.length) {
+                                return true;
+                            }
+                            // Check each element in arrays
+                            for (let j = 0; j < prevValue.length; j++) {
+                                if (prevValue[j] !== newValue[j]) {
+                                    return true;
+                                }
+                            }
+                        } else if (prevValue !== newValue) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -1632,6 +1686,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             return false; // No changes detected
         } catch (error) {
             console.warn('Error comparing products data:', error);
+            return true; // On error, consider as changed for safety
+        }
+    }
+
+    // Function to check if categories data has changed
+    function checkCategoriesDataChanges(previousData, newData) {
+        if (!previousData || !newData) {
+            return true; // First run or missing data, consider as changed
+        }
+        
+        try {
+            // Compare basic structure
+            if (!Array.isArray(previousData) || !Array.isArray(newData)) {
+                return true;
+            }
+            
+            if (previousData.length !== newData.length) {
+                return true; // Different number of categories
+            }
+            
+            // Compare each category
+            for (let i = 0; i < newData.length; i++) {
+                const previousCategory = previousData[i];
+                const newCategory = newData[i];
+                
+                if (!previousCategory || !newCategory) {
+                    return true;
+                }
+                
+                // Compare critical category properties that affect UI
+                const criticalFields = [
+                    'id',           // Category ID
+                    'name',         // Category name
+                    'description',  // Category description
+                    'uri',          // Category URI
+                    'image',        // Category image
+                    'key',          // Category key
+                    'menuindex'     // Menu order
+                ];
+                
+                // Check each critical field
+                for (const field of criticalFields) {
+                    const prevValue = previousCategory[field];
+                    const newValue = newCategory[field];
+                    
+                    if (prevValue !== newValue) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false; // No changes detected
+        } catch (error) {
+            console.warn('Error comparing categories data:', error);
             return true; // On error, consider as changed for safety
         }
     }
@@ -1989,7 +2097,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function loadCategories() {
+    async function fetchCategoriesData() {
         try {
             // Get authentication token
             const token = await getAuthToken();
@@ -2015,7 +2123,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const categoriesData = await response.json();
+            const data = await response.json();
+            
+            return data.categories || data;
+        } catch (error) {
+            console.error('Failed to load categories data:', error);
+            return null;
+        }
+    }
+
+    async function loadCategories() {
+        try {
+            const categoriesData = await fetchCategoriesData();
+            if (!categoriesData) {
+                throw new Error('Failed to fetch categories data');
+            }
 
             if (categoriesContainer) categoriesContainer.innerHTML = '';
 
