@@ -217,16 +217,40 @@ async def load_modx_cache_data():
 
 def get_modx_cache_products():
     """Возвращает продукты из MODX кэша."""
+    # Перезагружаем кэш при каждом запросе
+    if os.path.exists(MODX_CACHE_FILE):
+        try:
+            with open(MODX_CACHE_FILE, 'r', encoding='utf-8') as f:
+                current_cache = json.load(f)
+                return current_cache.get('products', {})
+        except json.JSONDecodeError:
+            return modx_cache_data.get('products', {})
     return modx_cache_data.get('products', {})
 
 
 def get_modx_cache_categories():
     """Возвращает категории из MODX кэша."""
+    # Перезагружаем кэш при каждом запросе
+    if os.path.exists(MODX_CACHE_FILE):
+        try:
+            with open(MODX_CACHE_FILE, 'r', encoding='utf-8') as f:
+                current_cache = json.load(f)
+                return current_cache.get('categories', [])
+        except json.JSONDecodeError:
+            return modx_cache_data.get('categories', [])
     return modx_cache_data.get('categories', [])
 
 
 def get_modx_cache_metadata():
     """Возвращает метаданные MODX кэша."""
+    # Перезагружаем кэш при каждом запросе
+    if os.path.exists(MODX_CACHE_FILE):
+        try:
+            with open(MODX_CACHE_FILE, 'r', encoding='utf-8') as f:
+                current_cache = json.load(f)
+                return current_cache.get('metadata', {})
+        except json.JSONDecodeError:
+            return modx_cache_data.get('metadata', {})
     return modx_cache_data.get('metadata', {})
 
 async def check_api_rate_limit(request, action: str = "api_request") -> bool:
