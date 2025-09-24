@@ -1552,11 +1552,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const newProductsData = await fetchProductsData();
                     const newCategoriesData = await fetchCategoriesData();
                     
+                    console.log('🔄 Auto-refresh: Products data received:', newProductsData ? `${newProductsData.length} products` : 'null');
+                    console.log('🔄 Auto-refresh: Categories data received:', newCategoriesData ? `${newCategoriesData.length} categories` : 'null');
+                    
                     // Check if products data has actually changed
                     const hasProductsChanges = checkProductsDataChanges(previousProductsData, newProductsData);
                     const hasCategoriesChanges = checkCategoriesDataChanges(previousCategoriesData, newCategoriesData);
                     
+                    console.log('🔄 Auto-refresh: Products changes detected:', hasProductsChanges);
+                    console.log('🔄 Auto-refresh: Categories changes detected:', hasCategoriesChanges);
+                    
                     if (hasProductsChanges || hasCategoriesChanges) {
+                        console.log('🔄 Auto-refresh: Starting UI update...');
                         // Set flag to prevent multiple simultaneous updates
                         isUpdatingUI = true;
                         
@@ -1566,6 +1573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // User is on a category screen, refresh the product grid
                             const currentCategory = localStorage.getItem('lastProductCategory');
                             if (currentCategory) {
+                                console.log('🔄 Auto-refresh: Refreshing product grid for category:', currentCategory);
                                 // Refreshing product grid for category
                                 await loadProducts(currentCategory);
                             }
@@ -1574,12 +1582,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // 🔄 REFRESH CATEGORIES IF ON CATEGORIES SCREEN AND CATEGORIES CHANGED
                         const categoriesContainer = document.getElementById('categories-container');
                         if (categoriesContainer && !categoriesContainer.classList.contains('hidden') && hasCategoriesChanges) {
+                            console.log('🔄 Auto-refresh: Refreshing categories grid');
                             await loadCategories();
                         }
                         
                         // 🔄 REFRESH CART IF ON CART SCREEN (for price/availability changes)
                         const cartContainer = document.getElementById('cart-container');
                         if (cartContainer && !cartContainer.classList.contains('hidden')) {
+                            console.log('🔄 Auto-refresh: Refreshing cart display');
                             // Update cart display to reflect any price or availability changes
                             renderCart();
                         }
@@ -1587,8 +1597,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Update previous data
                         previousProductsData = JSON.parse(JSON.stringify(newProductsData));
                         previousCategoriesData = JSON.parse(JSON.stringify(newCategoriesData));
+                        
+                        console.log('🔄 Auto-refresh: UI update completed');
+                        // Reset flag after update is complete
+                        isUpdatingUI = false;
                     } else {
-                        // No changes in products data, skipping grid refresh
+                        console.log('🔄 Auto-refresh: No changes detected, skipping UI update');
                     }
                 } catch (error) {
                     console.warn('Auto-refresh failed:', error);
