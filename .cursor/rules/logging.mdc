@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+Add logging for critical functionalty. Do not add logging for not critical features before user ask about it. 

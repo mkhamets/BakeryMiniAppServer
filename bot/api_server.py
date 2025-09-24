@@ -10,6 +10,7 @@ import aiohttp
 from aiohttp import web
 import aiohttp_cors
 from collections import defaultdict
+from datetime import datetime
 
 from bot.config import config
 from bot.security_manager import security_manager
@@ -22,7 +23,8 @@ if not logger.handlers:
 
 # Путь к файлу с данными о продуктах
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PRODUCTS_DATA_FILE = os.path.join(BASE_DIR, 'data', 'products_scraped.json')
+PRODUCTS_DATA_FILE = os.path.join(BASE_DIR, 'data', 'products_scraped.json')  # Старый парсер (сохранен)
+MODX_CACHE_FILE = os.path.join(BASE_DIR, 'data', 'modx_cache.json')  # Новый MODX кэш
 
 # MODX API Configuration
 MODX_API_BASE_URL = os.environ.get('MODX_API_BASE_URL', 'https://drazhin.by')
@@ -170,11 +172,14 @@ WEB_APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web_app'
 # Глобальная переменная для хранения данных о продуктах
 products_data = {}
 
+# Глобальная переменная для хранения MODX кэша
+modx_cache_data = {}
+
 # API rate limiting store
 api_rate_limit_store = defaultdict(list)
 
 async def load_products_data_for_api():
-    """Загружает данные о продуктах из JSON-файла для API."""
+    """Загружает данные о продуктах из JSON-файла для API (старый парсер)."""
     global products_data
     if os.path.exists(PRODUCTS_DATA_FILE):
         try:
@@ -189,6 +194,40 @@ async def load_products_data_for_api():
     else:
         logger.warning(f"API: Файл '{PRODUCTS_DATA_FILE}' не найден. API не сможет отдавать данные о продуктах.")
         products_data = {}
+
+
+async def load_modx_cache_data():
+    """Загружает данные из MODX кэша."""
+    global modx_cache_data
+    if os.path.exists(MODX_CACHE_FILE):
+        try:
+            with open(MODX_CACHE_FILE, 'r', encoding='utf-8') as f:
+                modx_cache_data = json.load(f)
+            logger.info(f"API: MODX cache loaded successfully - version {modx_cache_data.get('metadata', {}).get('version', 'unknown')}")
+        except json.JSONDecodeError as e:
+            logger.error(f"API: Ошибка при чтении MODX кэша '{MODX_CACHE_FILE}': {e}")
+            modx_cache_data = {}
+        except Exception as e:
+            logger.error(f"API: Неизвестная ошибка при загрузке MODX кэша: {e}")
+            modx_cache_data = {}
+    else:
+        logger.warning(f"API: MODX кэш '{MODX_CACHE_FILE}' не найден. Используем fallback на MODX API.")
+        modx_cache_data = {}
+
+
+def get_modx_cache_products():
+    """Возвращает продукты из MODX кэша."""
+    return modx_cache_data.get('products', {})
+
+
+def get_modx_cache_categories():
+    """Возвращает категории из MODX кэша."""
+    return modx_cache_data.get('categories', [])
+
+
+def get_modx_cache_metadata():
+    """Возвращает метаданные MODX кэша."""
+    return modx_cache_data.get('metadata', {})
 
 async def check_api_rate_limit(request, action: str = "api_request") -> bool:
     """Check API rate limiting."""
@@ -275,14 +314,19 @@ async def get_products_for_webapp(request):
     
     requested_category = request.query.get('category')
 
-    # Загружаем данные из MODX API
+    # Пытаемся загрузить из MODX кэша
     try:
-        # Преобразуем requested_category в category_id для MODX API
-        category_id = None
-        if requested_category and requested_category.startswith('category_'):
-            category_id = requested_category.replace('category_', '')
+        products = get_modx_cache_products()
         
-        products = await load_products_from_modx_api(category_id)
+        if not products:
+            # Fallback на MODX API если кэш пустой
+            logger.warning("API: MODX cache products empty, falling back to MODX API")
+            # Преобразуем requested_category в category_id для MODX API
+            category_id = None
+            if requested_category and requested_category.startswith('category_'):
+                category_id = requested_category.replace('category_', '')
+            
+            products = await load_products_from_modx_api(category_id)
         
         if products:
             
@@ -423,6 +467,62 @@ async def get_products_for_webapp(request):
             'Expires': '0'
         })
 
+async def get_all_data_for_webapp(request):
+    """Отдает ВСЕ данные (продукты + категории) из MODX кэша."""
+    # Check rate limiting
+    if not await check_api_rate_limit(request, "get_all_data"):
+        return web.json_response({"error": "Rate limit exceeded"}, status=429, headers={
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        })
+    
+    # Пытаемся загрузить из MODX кэша
+    try:
+        products = get_modx_cache_products()
+        categories = get_modx_cache_categories()
+        metadata = get_modx_cache_metadata()
+        
+        if products or categories:
+            # Возвращаем данные из кэша
+            response_data = {
+                "products": products,
+                "categories": categories,
+                "metadata": metadata
+            }
+            
+            logger.info(f"API: All data served from MODX cache - version {metadata.get('version', 'unknown')}")
+            return web.json_response(response_data, headers={
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            })
+        else:
+            # Fallback на MODX API если кэш пустой
+            logger.warning("API: MODX cache is empty, falling back to MODX API")
+            products = await load_products_from_modx_api()
+            categories = await load_categories_from_modx_api()
+            
+            response_data = {
+                "products": products,
+                "categories": categories,
+                "metadata": {
+                    "source": "modx_api_fallback",
+                    "last_updated": datetime.now().isoformat()
+                }
+            }
+            
+            return web.json_response(response_data, headers={
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            })
+            
+    except Exception as e:
+        logger.error(f"API: Error serving all data: {e}")
+        return web.json_response({"error": "Internal server error"}, status=500)
+
+
 async def get_categories_for_webapp(request):
     """Отдает список категорий для Web App."""
     # Check rate limiting
@@ -433,43 +533,55 @@ async def get_categories_for_webapp(request):
             'Expires': '0'
         })
     
-    
-    # Загружаем категории из MODX API
+    # Пытаемся загрузить из MODX кэша
     try:
-        categories = await load_categories_from_modx_api()
+        categories = get_modx_cache_categories()
         
         if categories:
-            # Преобразуем формат для фронтенда
-            categories_list = []
-            for category in categories:
-                # Создаем ключ категории в формате парсера
-                category_key = f"category_{category['id']}"
-                
-                categories_list.append({
-                    "key": category_key,
-                    "name": category['name'],
-                    "image": category.get('image', ''),  # Используем изображение из MODX API
-                    "menuindex": category.get('menuindex', 0)  # Добавляем menuindex для сортировки
-                })
-            
-            # Логируем порядок до сортировки
-            before_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
-            
-            # Сортируем категории по menuindex
-            categories_list.sort(key=lambda x: x.get('menuindex', 0))
-            
-            # Логируем порядок после сортировки
-            after_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
-            
-            return web.json_response(categories_list, headers={
+            # Возвращаем категории из кэша
+            logger.info(f"API: Categories served from MODX cache - {len(categories)} categories")
+            return web.json_response(categories, headers={
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
                 'Expires': '0'
             })
         else:
-            logger.warning("API: MODX API не вернул данные о категориях.")
+            # Fallback на MODX API
+            logger.warning("API: MODX cache categories empty, falling back to MODX API")
+            categories = await load_categories_from_modx_api()
             
-            # FALLBACK: Парсер закомментирован - используем только MODX API
+            if categories:
+                # Преобразуем формат для фронтенда
+                categories_list = []
+                for category in categories:
+                    # Создаем ключ категории в формате парсера
+                    category_key = f"category_{category['id']}"
+                    
+                    categories_list.append({
+                        "key": category_key,
+                        "name": category['name'],
+                        "image": category.get('image', ''),  # Используем изображение из MODX API
+                        "menuindex": category.get('menuindex', 0)  # Добавляем menuindex для сортировки
+                    })
+            
+                # Логируем порядок до сортировки
+                before_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
+                
+                # Сортируем категории по menuindex
+                categories_list.sort(key=lambda x: x.get('menuindex', 0))
+                
+                # Логируем порядок после сортировки
+                after_sort = [f"{cat['name']}({cat['menuindex']})" for cat in categories_list]
+                
+                return web.json_response(categories_list, headers={
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                })
+            else:
+                logger.warning("API: MODX API не вернул данные о категориях.")
+                
+                # FALLBACK: Парсер закомментирован - используем только MODX API
             # if products_data:
             #     categories_list = []
             #     for key, products in products_data.items():
@@ -514,16 +626,20 @@ async def setup_api_server():
 
     # Загружаем данные о продуктах при настройке сервера (ПАРСЕР - ЗАКОММЕНТИРОВАН)
     # await load_products_data_for_api()
+    
+    # Загружаем MODX кэш при настройке сервера
+    await load_modx_cache_data()
 
     # ДОБАВЛЕНО: Перенаправление с корневого пути на '/bot-app/'
     app.router.add_get('/', lambda r: web.HTTPFound('/bot-app/'))
 
-    # 1. Маршрут для получения всех продуктов (или по категории)
-    # ИЗМЕНЕНО: Добавлен префикс '/bot-app'
+    # 1. Маршрут для получения ВСЕХ данных (продукты + категории)
+    app.router.add_get('/bot-app/api/all', get_all_data_for_webapp)
+
+    # 2. Маршрут для получения всех продуктов (или по категории) - СОХРАНЕН для совместимости
     app.router.add_get('/bot-app/api/products', get_products_for_webapp)
 
-    # 2. Маршрут для получения категорий
-    # ИЗМЕНЕНО: Добавлен префикс '/bot-app'
+    # 3. Маршрут для получения категорий - СОХРАНЕН для совместимости
     app.router.add_get('/bot-app/api/categories', get_categories_for_webapp)
     
     # 3. Маршрут для получения токена аутентификации

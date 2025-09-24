@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+Alaways verify sintaxis and errors in code af each logical code change before commit

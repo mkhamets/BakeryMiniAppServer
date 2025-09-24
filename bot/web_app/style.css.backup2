@@ -1,0 +1,3537 @@
+@import url('https://fonts.googleapis.com/css2?family=Yeseva+One&display=swap');
+
+html, body {
+    height: 100%; /* Устанавливаем 100% высоты для html и body */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Предотвращаем горизонтальную прокрутку */
+    touch-action: manipulation; /* Запрещает двойное нажатие для масштабирования */
+}
+
+/* Скрываем весь контент до загрузки стилей и JavaScript */
+body:not(.loaded) .container,
+body:not(.loaded) .welcome-container {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Показываем loading overlay по умолчанию */
+.loading-overlay {
+    display: flex !important;
+    visibility: visible !important;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #fff; /* Start with white background */
+    color: #333;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    flex-direction: column;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    position: relative; /* For loading overlay */
+    min-height: 100vh;
+}
+
+/* Add background only after loading */
+body.loaded {
+    background-image: url('/bot-app/images/Hleb.jpg?v=1.3.109&t=1758518052');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #f8f8f8;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 15px;
+    background-color: #fff; /* Фон контейнера, который будет скрыт на welcome screen */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    /* min-height: 100vh; Убрано, чтобы контейнер адаптировался к содержимому */
+    box-sizing: border-box; /* Учитываем padding в общей высоте */
+    flex-grow: 1; /* Позволяет контейнеру занимать доступное пространство в flex-контейнере body */
+    overflow-y: auto; /* Добавляем прокрутку для содержимого контейнера, если оно превышает высоту */
+    -webkit-overflow-scrolling: touch; /* Плавная прокрутка для iOS */
+}
+
+/* Main page logo container */
+.main-page-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.main-page-logo {
+    width: 33.333%;
+    height: auto;
+    max-width: 200px;
+    object-fit: contain;
+}
+
+h1 {
+    text-align: center;
+    color: #5a2d00;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+.category-title {
+    text-align: center;
+    color: #5a2d00;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+/* Category title with icon styling for category screens */
+.category-title-with-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.category-icon {
+    width: 1.5em;
+    height: 1.5em;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Скрытие элементов */
+.hidden {
+    display: none !important; /* !important для переопределения любых других стилей */
+    visibility: hidden !important; /* Дополнительно скрываем для скринридеров */
+    opacity: 0 !important; /* Для плавного скрытия, если нужно */
+    height: 0 !important; /* Чтобы не занимал место */
+    overflow: hidden !important; /* Скрываем содержимое */
+    margin: 0 !important; /* Убираем отступы */
+    padding: 0 !important; /* Убираем внутренние отступы */
+    border: none !important; /* Убираем рамки */
+}
+
+/* Запрет масштабирования на интерактивных элементах */
+button, a, input, select, textarea, .clickable-image, .details-text {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+
+/* Стили для сетки продуктов */
+.products-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Одна колонка на мобильных */
+    gap: 20px;
+    padding-bottom: 20px; /* Отступ снизу для прокрутки */
+}
+
+@media (min-width: 480px) {
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Горизонтальные карточки требуют больше места */
+    }
+}
+
+.product-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: row; /* Горизонтальная карточка */
+    height: 120px; /* Фиксированная высота для пропорции 1:4 или 1:5 */
+    transition: transform 0.2s ease-in-out;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.product-image-container {
+    width: 25%; /* 1/4 ширины для изображения */
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0; /* Изображение не сжимается */
+}
+
+
+
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Обрезка изображения для заполнения */
+    border-radius: 12px; /* Скругление всех углов */
+}
+
+/* Стили для кликабельного изображения */
+.clickable-image {
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.clickable-image:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* Стили для множественных изображений (только для экрана товара) */
+.image-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    transition: background 0.3s ease;
+    user-select: none;
+}
+
+.image-nav:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.image-nav.prev {
+    left: 8px;
+}
+
+.image-nav.next {
+    right: 8px;
+}
+
+.image-indicators {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.image-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.image-dot.active {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.image-dot:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Стили для контейнера изображений в экране товара */
+.product-screen-image-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.product-screen-carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.product-screen-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.product-screen-image.slide-out-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.product-screen-image.slide-out-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.product-screen-image.slide-in-left {
+    transform: translateX(-100%);
+    opacity: 0;
+    animation: slideInFromLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.product-screen-image.slide-in-right {
+    transform: translateX(100%);
+    opacity: 0;
+    animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.product-screen-image:hover {
+    transform: scale(1.02);
+}
+
+/* Swiper карточный эффект для экрана товара */
+.product-screen-swiper {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    border-radius: 12px;
+    padding: 20px 15px;
+    overflow: visible;
+}
+
+.product-screen-swiper .swiper-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8f9fa;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    width: 100%;
+    height: 100%;
+}
+
+.product-screen-swiper .swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Настройки для видимости краев карточек */
+.product-screen-swiper .swiper-slide-active {
+    z-index: 2;
+}
+
+.product-screen-swiper .swiper-slide-next,
+.product-screen-swiper .swiper-slide-prev {
+    z-index: 1;
+}
+
+/* Дополнительная видимость для следующих карточек */
+.product-screen-swiper .swiper-slide-next {
+    opacity: 0.8;
+}
+
+.product-screen-swiper .swiper-slide-prev {
+    opacity: 0.8;
+}
+
+/* Показываем края всех карточек */
+.product-screen-swiper .swiper-wrapper {
+    overflow: visible;
+}
+
+/* Стили для логотипа-заглушки */
+.product-image[src*="logo-dark.svg"],
+.product-screen-image[src*="logo-dark.svg"],
+.cart-item-image[src*="logo-dark.svg"],
+.category-image[src*="logo-dark.svg"],
+.swiper-slide img[src*="logo-dark.svg"] {
+    object-fit: contain !important;
+    object-position: center !important;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* Дополнительные стили для разных контейнеров */
+.product-image-container .product-image[src*="logo-dark.svg"] {
+    padding: 15px;
+}
+
+.product-screen-swiper .swiper-slide img[src*="logo-dark.svg"] {
+    padding: 25px;
+}
+
+.cart-item-image[src*="logo-dark.svg"] {
+    padding: 10px;
+}
+
+.category-image[src*="logo-dark.svg"] {
+    padding: 12px;
+}
+
+.product-screen-single-image {
+    width: 100%;
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.product-screen-single-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Навигационные стрелки для экрана товара */
+.product-screen-carousel .carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.6);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.product-screen-carousel .carousel-nav .svg {
+    width: 16px;
+    height: 16px;
+    fill: #333;
+}
+
+.product-screen-carousel .carousel-nav.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 4s ease-out, visibility 4s ease-out;
+}
+
+.product-screen-image-container:hover .carousel-nav {
+    opacity: 1;
+    visibility: visible;
+}
+
+.product-screen-carousel .carousel-nav:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.product-screen-carousel .carousel-nav.prev {
+    left: 15px;
+}
+
+.product-screen-carousel .carousel-nav.next {
+    right: 15px;
+}
+
+/* Индикаторы карусели для экрана товара */
+.product-screen-carousel .carousel-indicators {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.product-screen-carousel .carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.product-screen-carousel .carousel-indicator.active {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.3);
+}
+
+.product-screen-carousel .carousel-indicator:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.product-info {
+    flex: 1; /* Занимает оставшееся пространство */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px 15px;
+}
+
+.product-name {
+    font-weight: normal;
+    font-size: 1rem;
+    margin-bottom: 3px;
+    color: #000000;
+    overflow: hidden;
+    line-height: 1.2;
+    flex-shrink: 0; /* Не сжимается */
+    font-family: 'Yeseva One', serif;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    position: relative; /* Позиционирование относительно этого элемента */
+    max-height: 2.4em; /* Ограничиваем высоту двумя строками (line-height * 2) *//* Обеспечивает непрерывное обрезание текста, а не по словам */
+}
+  
+.product-name::after {
+    content: '';
+    position: absolute;
+    bottom: 0; /* Располагаем внизу контейнера .product-name */
+    right: 0; /* Выравниваем по правому краю .product-name */
+    width: 20px; /* Ширина градиента */
+    height: 1.2em; /* Высота, равная одной строке текста */
+    /* Используем цвет фона карточки */
+    background: linear-gradient(to left, #ffffff, transparent);
+    pointer-events: none; /* Гарантирует, что градиент не будет блокировать события мыши */
+}
+
+.product-name:hover {
+    color: #b76c4b;
+}
+
+/* Стиль для информации о доступности в скобках */
+.product-name .availability-info {
+    font-size: 0.9rem;
+    color: #fdfdfd;
+    background-color: #b76c4b;
+    font-weight: normal;
+    font-family: 'Arial', sans-serif;
+    border-radius: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 1px;
+}
+
+.product-price {
+    font-size: 1.1rem;
+    color: #b76c4b;
+    font-weight: normal;
+    flex-shrink: 0;
+    font-family: 'Yeseva One', serif;
+}
+
+.product-details {
+    font-size: 0.8em;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.product-details span {
+    display: block;
+    margin-bottom: 1px;
+}
+
+.product-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    gap: 10px;
+    padding-top: 2px;
+}
+
+.product-weight {
+    font-size: 0.8em;
+    color: #666;
+    flex-shrink: 0;
+    max-width: 33%; /* Не больше 1/3 расстояния */
+    margin-top: 4px;
+}
+
+.product-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.quantity-controls button {
+    background-color: #d7d7d7;
+    color: #333;
+    border: none;
+    border-radius: 50%;
+    padding: 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 28px;
+    height: 28px;
+    width: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.quantity-controls button:hover {
+    opacity: 0.8;
+}
+
+.quantity-display {
+    padding: 0 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+    min-width: 18px;
+    text-align: center;
+}
+
+.details-link {
+    display: block;
+    margin-top: 10px;
+    padding: 8px 15px;
+    background-color: #5bc0de; /* Голубой цвет */
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    font-weight: bold;
+    text-align: center;
+}
+
+.details-link:hover {
+    background-color: #31b0d5;
+}
+
+/* Стили для кликабельного текста "Подробнее" */
+.details-text {
+    display: inline-flex;
+    align-items: center;
+    color: #303030;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    width: fit-content;
+    margin-top: 6px;
+    margin-bottom: 4px;
+    margin-left: 0;
+    margin-right: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.details-text:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #303030;
+    transition: all 0.3s ease;
+}
+
+.details-text:hover {
+    color: #b76c4b;
+}
+
+.details-text:hover:before {
+    background-color: #b76c4b;
+}
+
+/* Override arrow styles for Подробнее button */
+.details-text .svg-arrow-right {
+    font-size: 1rem !important;
+    width: 2.25em !important;
+    margin-left: 0.5rem !important;
+    display: inline-block !important;
+    fill: currentColor !important;
+}
+
+/* Стили для корзины */
+.cart-container, .checkout-container {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%; /* Занимает всю доступную ширину */
+    box-sizing: border-box; /* Учитываем padding в ширине */
+}
+
+.cart-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding-bottom: 0px;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.cart-item-image-container {
+    position: relative;
+    margin-right: 15px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cart-item-image-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(183, 108, 75, 0.3);
+}
+
+.cart-item-image-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(183, 108, 75, 0.1);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.cart-item-image-container:hover::after {
+    opacity: 1;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+    .cart-item-image-container {
+        min-width: 80px;
+        min-height: 80px;
+    }
+    
+    .cart-item-name {
+        padding: 8px 0;
+        min-height: 44px; /* iOS recommended touch target size */
+        display: flex;
+        align-items: center;
+    }
+    
+    .cart-item-name::after {
+        margin-left: 8px;
+    }
+}
+
+
+
+.cart-item-image {
+    width: 80px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0; /* Изображение не сжимается */
+}
+
+.cart-item-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-item-name {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+    color: #5a3e2b;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+.cart-item-name:hover {
+    color: #b76c4b;
+}
+
+/* Arrow removed from cart item names */
+
+.cart-item-price {
+    margin: 0 0 10px 0;
+    color: #666;
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.cart-item-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.cart-item-controls .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cart-item-quantity {
+    padding: 0 10px;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.cart-item-total {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #000000;
+    margin: 0;
+    text-align: right;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+.price-per-unit {
+    text-align: left;
+}
+
+.quantity-button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    color: #333;
+}
+
+.quantity-button:hover {
+    background-color: #f5f5f5;
+    border-color: #ccc;
+}
+
+.remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 0;
+    transition: all 0.2s ease;
+    color: rgb(48, 48, 48);
+}
+
+.remove-btn:hover {
+    background-color: transparent;
+    opacity: 0.7;
+}
+
+.svg-as_close {
+    font-size: 2rem;
+    width: 1em;
+}
+
+.svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+}
+
+.fz-125 {
+    font-size: 1.25rem;
+}
+
+.cart-total {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+
+
+.cart-summary-row {
+    /* display: flex; */
+    justify-content: space-between;
+    /* margin: 20px 0; */
+    width: 100%;
+    flex-direction: row;
+}
+
+.clear-cart-container {
+    display: flex;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    flex-shrink: 0;
+    width: auto;
+}
+
+.cart-total-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0;
+    padding: 12px 15px;
+    background-color: white;
+    border-radius: 8px;
+    border: 2px solid white;
+    width: auto;
+    min-height: 48px; /* Match checkout button height */
+}
+
+.cart-total {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    font-family: 'Yeseva One', serif;
+}
+
+.clear-cart-button {
+    display: block;
+    width: auto;
+    padding: 6px 8px;
+    margin-top: 15px;
+    background-color: white;
+    color: #666;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clear-cart-button:hover {
+    background-color: #f8f9fa;
+    border-color: #000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cart-actions-bottom {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.checkout-button {
+    width: 100%;
+    padding: 12px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
+    color: white;
+    min-width: 200px;
+}
+
+.checkout-button:hover {
+    background-color: #a05a3a;
+    transform: translateY(-2px);
+}
+
+.menu-button {
+    display: block;
+    width: 100%;
+    padding: 12px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
+    color: white;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.menu-button:hover {
+    background-color: #a05a3a;
+    transform: translateY(-2px);
+}
+
+
+
+
+
+/* Стили для Welcome Screen */
+.welcome-container {
+    background-color: rgba(0, 0, 0, 0.6); /* Полупрозрачный черный фон, немного темнее */
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Равномерно распределяем контент */
+    align-items: center;
+    margin: 20px auto; /* Добавляем отступы для лучшего расположения */
+    text-align: center; /* Центрируем текст внутри контейнера */
+    flex-grow: 1; /* Позволяет welcome-container занимать доступное пространство */
+    min-height: 80vh; /* anchor content to near-full height */
+    padding-bottom: max(env(safe-area-inset-bottom), 20px); /* safe bottom padding */
+}
+
+.welcome-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    justify-content: center; /* Центрируем контент по вертикали */
+}
+
+.welcome-logo {
+    width: 200px;
+    height: auto;
+    margin: 0 auto 30px auto;
+    display: block;
+}
+
+.welcome-title {
+    color: white; /* Белый цвет для заголовка */
+    font-size: 2.2em;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Тень для текста */
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Применен новый шрифт */
+    font-weight: normal;
+}
+
+.welcome-text {
+    font-size: 1.2em;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    color: white; /* Белый цвет для текста */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Тень для текста */
+    font-weight: bold;
+}
+
+.start-shopping-button {
+    background-color: #b76c4b; /* Коричневый цвет */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 1.3em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    align-self: stretch; /* fill available width within container */
+    flex-shrink: 0; /* Не сжимаем кнопку */
+}
+
+.start-shopping-button:hover {
+    background-color: #a05a3a;
+    transform: translateY(-3px);
+}
+
+/* Стили для категорий */
+.categories-container-wrapper {
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Две колонки на больших экранах */
+    gap: 20px;
+    padding-bottom: 20px; /* Отступ снизу для прокрутки */
+}
+
+.category-card-item {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.category-card-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.category-image {
+    width: 100%;
+    height: 180px; /* Фиксированная высота для изображений категорий */
+    object-fit: cover;
+    border-radius: 12px;
+    transition: transform 0.3s ease; /* Плавное увеличение изображения */
+}
+
+.category-card-item:hover .category-image {
+    transform: scale(1.05); /* Небольшое увеличение при наведении */
+}
+
+.category-image-filter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Градиентная накладка, как на материнском сайте */
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%); /* ВОССТАНОВЛЕНО: Оригинальный градиент */
+    z-index: 1; /* Фильтр поверх изображения, но под текстом */
+    border-radius: 12px; /* Скругленные углы для фильтра */
+}
+
+.category-text-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px; /* Отступы для текста */
+    color: white;
+    z-index: 2; /* Текст поверх фильтра */
+    box-sizing: border-box;
+    text-align: left; /* Текст выровнен по левому краю */
+}
+
+.category-title-text {
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-size: 1.8em; /* Размер заголовка */
+    color: white;
+    font-family: 'Yeseva One', Arial, Helvetica, sans-serif; /* Шрифт из welcome screen */
+    font-weight: normal;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for better visibility */
+}
+
+.category-link-text {
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+    color: rgba(255, 255, 255, 0.922);
+    transition: color 0.2s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15); /* Subtle shadow for better visibility */
+}
+
+.category-card-item:hover .category-link-text {
+    color: white;
+}
+
+/* Category icon styling - only for category titles, not main menu */
+.category-title-with-icon .category-icon {
+    width: 1.5em;
+    height: 1.5em;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.category-arrow-svg {
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    color: white;
+    transition: transform 0.2s ease;
+}
+
+.category-card-item:hover .category-arrow-svg {
+    transform: translateX(5px);
+}
+
+/* Стили для формы оформления заказа */
+.checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Пространство между группами полей */
+}
+
+.form-group {
+    margin-bottom: 2px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.2rem;
+    font-weight: normal;
+    color: #5a3e2b;
+    text-align: left;
+}
+
+.required-star {
+    color: #dc3545;
+    font-weight: normal;
+}
+
+/* Yeseva One font for labels with asterisks and comment field */
+.form-group label:has(.required-star),
+.form-group label:has(.required-star) + input,
+.form-group label:has(.required-star) + select,
+.form-group label:has(.required-star) + textarea,
+.form-group label:has(.required-star) + .radio-group,
+.form-group label:has(.required-star) + .delivery-method-group,
+.form-group label:has(.required-star) + .pickup-addresses-list {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+/* Specific styling for comment field */
+.form-group label[for="comment"],
+.form-group label[for="comment-order"],
+.form-group label[for="comment-delivery"],
+.form-group label[for="comment-pickup"] {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+/* Ensure all labels with asterisks use Yeseva One */
+.form-group label:has(.required-star) {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+}
+
+/* Placeholder font styling */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+}
+
+/* Date field and dropdown font styling */
+.form-group input[type="date"],
+.form-group select,
+.form-group select option {
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+}
+
+/* All input fields font styling */
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group textarea {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Ensure select dropdowns also use Arial */
+.form-group select,
+.form-group select option {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* Учитываем padding в ширине */
+    font-size: 1em;
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #b76c4b;
+    outline: none;
+    box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
+}
+
+/* City form group - label and select on same line */
+.city-form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.city-form-group label {
+    display: inline-block;
+    margin-bottom: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.city-form-group select {
+    flex: 1;
+    min-width: 200px;
+    /* Match standard form input styling */
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1em;
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+    background-color: white;
+    color: #333;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    /* Maintain current height */
+    height: auto;
+    line-height: 1.4;
+}
+
+.city-form-group select:focus {
+    border-color: #b76c4b;
+    outline: none;
+    box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
+}
+
+.city-form-group select:hover {
+    border-color: #b76c4b;
+}
+
+/* Style select options */
+.city-form-group select option {
+    padding: 8px 12px;
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+    color: #333;
+    background-color: white;
+}
+
+.city-form-group select option:hover {
+    background-color: #faf5f3;
+    color: #b76c4b;
+}
+
+.city-form-group select option[value=""] {
+    color: #999;
+    font-style: italic;
+}
+
+/* Flatpickr removed - styles deleted */
+
+/* Ensure the date input is properly styled */
+#delivery-date {
+    cursor: pointer;
+    background-color: white;
+}
+
+#delivery-date:focus {
+    border-color: #b76c4b;
+    outline: none;
+    box-shadow: 0 0 5px rgba(183, 108, 75, 0.3);
+}
+
+.radio-group {
+    display: flex;
+    flex-wrap: wrap; /* Для переноса на новую строку на маленьких экранах */
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.radio-group input[type="radio"] {
+    display: none; /* Скрываем стандартные радио-кнопки */
+}
+
+.radio-group label {
+    background-color: #f0f0f0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    font-weight: normal; /* Переопределяем bold из .form-group label */
+    color: #333;
+    flex-grow: 1; /* Позволяет меткам занимать доступную ширину */
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.radio-group input[type="radio"]:checked + label {
+    background-color: #b76c4b; /* Цвет выбранной кнопки */
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-color: #b76c4b;
+}
+
+.radio-group label:hover {
+    background-color: #e0e0e0;
+}
+
+.radio-group input[type="radio"]:checked + label:hover {
+    background-color: #a05a3a;
+}
+
+.delivery-info-text {
+    background-color: #fff3cd; /* Светло-желтый фон */
+    border: 1px solid #ffeeba; /* Желтая рамка */
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 0px;
+    font-size: 1.1em;
+    line-height: 1.5;
+    color: #856404; /* Темно-желтый текст */
+}
+
+.courier-info-black {
+    color: #333; /* Черный текст для обычной информации */
+}
+
+.courier-info-red {
+    color: #dc3545; /* Красный текст для важной информации */
+    font-weight: normal;
+}
+
+.pickup-info-black {
+    color: #333;
+}
+
+.submit-order-button {
+    width: 100%;
+    padding: 12px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    background-color: #b76c4b; /* Коричневый цвет как у кнопок + и - */
+    color: white;
+    min-width: 200px;
+    margin-top: 5px;
+}
+
+.submit-order-button:hover {
+    background-color: #a05a3a;
+    transform: translateY(-2px);
+}
+
+.submit-order-button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.cart-actions-checkout {
+    text-align: left;
+    margin-top: 20px;
+}
+
+.back-from-checkout-button {
+    background-color: white; /* Match clear-cart-button */
+    color: #666; /* Match clear-cart-button */
+    border: 2px solid #ccc; /* Match clear-cart-button */
+    border-radius: 8px;
+    padding: 6px 8px; /* Match clear-cart-button */
+    font-size: 0.9em; /* Match clear-cart-button */
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease; /* Match clear-cart-button */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Match clear-cart-button */
+}
+
+.back-from-checkout-button:hover {
+    background-color: #f8f9fa; /* Match clear-cart-button */
+    border-color: #000; /* Match clear-cart-button */
+    transform: translateY(-1px); /* Match clear-cart-button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Match clear-cart-button */
+}
+
+.checkout-item-summary {
+    list-style: none; /* Убираем маркеры списка */
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee;
+    color: #333;
+    font-size: 1em;
+}
+
+.checkout-item-summary:last-child {
+    border-bottom: none;
+}
+
+.error-message {
+    color: red;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: none; /* Скрываем по умолчанию, будет показано JS при ошибке */
+}
+
+.error-message.show {
+    display: block !important;
+}
+
+.form-group.error input,
+.form-group.error textarea {
+    border-color: red;
+}
+
+/* Стили для экрана продукта (теперь внутри основного контейнера) */
+.product-screen {
+    background-color: #fff;
+    width: 100%;
+    padding: 15px; /* Reduced from 20px */
+    padding-top: 0px;
+    box-sizing: border-box;
+    /* Removed fixed positioning since it's now inside main container */
+}
+
+#product-screen-body {
+    padding: 0px 0; /* Reduced from 20px */
+}
+
+
+.product-screen-name {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.9em;
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px; /* Reduced from 15px */
+    line-height: 1.3;
+}
+
+.product-screen-price {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.6em;
+    color: #b76c4b;
+    text-align: center;
+    margin-bottom: 0px;
+}
+
+.product-screen-quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px; /* Reduced from 30px */
+    padding: 12px; /* Reduced from 15px */
+    background-color: #f8f8f8;
+    border-radius: 12px;
+}
+
+.product-screen-quantity-controls button {
+    background-color: #b76c4b;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px; /* Reduced from 12px 20px */
+    font-size: 1.8rem;
+    cursor: pointer;
+    min-width: 55px; /* Reduced from 60px */
+    height: 55px; /* Reduced from 60px */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.product-screen-quantity-controls button:hover {
+    background-color: #a05a3a;
+    transform: scale(1.05);
+}
+
+.product-screen-quantity-display {
+    padding: 0 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    min-width: 50px;
+    text-align: center;
+}
+
+.product-screen-info {
+    margin-bottom: 10px; /* Reduced from 15px */
+}
+
+.product-screen-info-item {
+    margin-bottom: 10px; /* Reduced from 15px */
+    padding: 15px; /* Reduced from 20px */
+    border-radius: 12px;
+}
+
+.product-screen-info-item-weight {
+    background-color: #f8f8f8;
+}
+
+.product-screen-info-item-availability {
+    background-color: #fff;
+    border: 2px solid #b76c4b;
+    border-bottom: 2px solid #b76c4b !important; /* Ensure bottom border is always visible */
+}
+
+.product-screen-info-item:last-child {
+    border-bottom: none;
+}
+
+.product-screen-info-label {
+    font-weight: normal;
+    color: #000000;
+    font-size: 1.1em;
+}
+
+.product-screen-info-value {
+    color: #000000;
+    font-size: 1.1em;
+    text-align: right;
+    max-width: 60%;
+}
+
+.product-screen-ingredients {
+    margin-bottom: 10px; /* Reduced from 15px */
+    padding: 15px; /* Reduced from 20px */
+    background-color: #f8f8f8;
+    border-radius: 12px;
+}
+
+.product-screen-ingredients-label {
+    font-weight: normal;
+    color: #000000;
+    margin-bottom: 8px; /* Reduced from 10px */
+    font-size: 1.1em;
+}
+
+.product-screen-ingredients-value {
+    color: #000000;
+    line-height: 1.5;
+    font-size: 1.1em;
+}
+
+.product-screen-nutrition {
+    margin-bottom: 10px; /* Reduced from 15px */
+    padding: 15px; /* Reduced from 20px */
+    background-color: #f0f8ff;
+    border-radius: 12px;
+}
+
+.product-screen-nutrition-label {
+    font-weight: normal;
+    color: #000000;
+    margin-bottom: 8px; /* Reduced from 10px */
+    font-size: 1.1em;
+}
+
+.product-screen-nutrition-value {
+    color: #000000;
+    line-height: 1.5;
+    font-size: 0.95em;
+}
+
+.product-screen-nutrition-value div {
+    margin-bottom: 3px; /* Reduced from 5px */
+}
+
+/* Ensure YesevaOne-ex font is available */
+@font-face {
+    font-family: 'YesevaOne-ex';
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+    src: url('../fonts/YesevaOne/YesevaOne-Regular.eot');
+    src: url('../fonts/YesevaOne/YesevaOne-Regular.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/YesevaOne/YesevaOne-Regular.woff2') format('woff2');
+}
+
+/* New product screen styling for labels and values */
+.product-screen .wight,
+.product-screen .availability,
+.product-screen .structure,
+.product-screen .calories,
+.product-screen .energy-value {
+    font-size: 1.1em;
+}
+
+
+
+/* Clean and simple approach - specific styles for each label */
+
+
+
+/* Simple approach - specific styles for each label */
+.product-screen .weight-label {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+}
+
+/* .product-screen .availability-label {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+} */
+
+.product-screen .ingredients-label {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+}
+
+.product-screen .calories-label {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+}
+
+.product-screen .energy-label {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+}
+
+/* Short description styling - matches weight and ingredients values */
+.product-screen .short-description {
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+/* Vegan label styling - matches weight label */
+.product-screen .vegan-label {
+    font-family: 'Yeseva One', serif;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #000000;
+}
+
+/* Product grid vegan icon styling */
+.product-vegan-icon {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+    pointer-events: none; /* Make icon non-clickable so image clicks work */
+}
+
+.product-vegan-icon .svg-vegan {
+    width: 30px; /* User requested size */
+    height: 30px; /* User requested size */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.product-screen .mr-25 {
+    margin-right: 5px;
+}
+
+.product-screen .fz-100 {
+    font-size: 1.1em;
+}
+
+/* Адаптивность для экрана продукта */
+@media (max-width: 480px) {
+    .product-screen {
+        padding: 15px;
+        padding-top: 0px;
+    }
+    
+    .product-screen-name {
+        font-size: 1.5em;
+    }
+    
+    .product-screen-price {
+        font-size: 1.4em;
+    }
+    
+    .product-screen-quantity-controls {
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .product-screen-quantity-controls button {
+        min-width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .product-screen-quantity-display {
+        font-size: 1.6rem;
+        min-width: 40px;
+    }
+}
+
+/* SVG Icon Styles */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    fill: currentColor;
+    overflow: hidden;
+}
+
+.icon--small {
+    width: 0.875em;
+    height: 0.875em;
+}
+
+.icon--large {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.icon--xl {
+    width: 2em;
+    height: 2em;
+}
+
+/* Icon colors */
+.icon--primary {
+    fill: #B76C4B;
+}
+
+.icon--white {
+    fill: #fff;
+}
+
+.icon--dark {
+    fill: #303030;
+}
+
+.icon--light {
+    fill: #888;
+}
+
+/* Icon usage examples */
+.cart-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+.close-icon {
+    width: 20px;
+    height: 20px;
+    fill: #303030;
+}
+
+.delivery-icon {
+    width: 32px;
+    height: 32px;
+    fill: #B76C4B;
+}
+
+.location-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+.money-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+.takeaway-icon {
+    width: 24px;
+    height: 24px;
+    fill: #B76C4B;
+}
+
+/* Button with icon */
+.btn-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-with-icon .icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Cart badge with icon */
+.cart-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cart-badge .icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Product card with icon */
+.product-card .icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+}
+
+/* Header with icon */
+.header-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+/* Footer with icon */
+.footer-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
+/* Core site quantity button styles */
+.h-200 {
+    height: 2rem;
+}
+
+.w-200 {
+    width: 2rem;
+}
+
+.cur-p {
+    cursor: pointer;
+}
+
+.pos-r {
+    position: relative;
+}
+
+.br-50p {
+    border-radius: 50%;
+}
+
+.align-items-center {
+    -webkit-box-align: center !important;
+    -webkit-align-items: center !important;
+    -ms-flex-align: center!important;
+    align-items: center !important;
+}
+
+.justify-content-center {
+    -webkit-box-pack: center !important;
+    -webkit-justify-content: center !important;
+    -ms-flex-pack: center!important;
+    justify-content: center !important;
+}
+
+.d-flex {
+    display: -webkit-box !important;
+    display: -webkit-flex !important;
+    display: -ms-flexbox!important;
+    display: flex !important;
+}
+
+.fc-1 {
+    color: #303030;
+}
+
+.fw-400 {
+    font-weight: 400;
+}
+
+.fz-150 {
+    font-size: 1.5rem;
+}
+
+.fz-175 {
+    font-size: 1.75rem;
+}
+
+.mb-25 {
+    margin-bottom: 0.25rem;
+}
+
+.mlr-50 {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.ptb-25 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mx-w-300 {
+    max-width: 3rem;
+}
+
+/* Form group and input group styles */
+.form-group {
+    position: relative;
+    color: #303030;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group-sm {
+    font-size: 0.875rem;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Quantity changer buttons */
+.changer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.changer:hover {
+    opacity: 0.8;
+}
+
+.count_minus, .count_plus {
+    background-color: #d7d7d7;
+}
+
+/* Override existing quantity button styles */
+.quantity-button {
+    display: none !important;
+}
+
+/* Product grid quantity controls - smaller size */
+.product-controls .input-group {
+    gap: 4px;
+}
+
+.product-controls .w-200 {
+    width: 1.5rem;
+}
+
+.product-controls .h-200 {
+    height: 1.5rem;
+}
+
+.product-controls .fz-150 {
+    font-size: 1.2rem;
+}
+
+.product-controls .fz-175 {
+    font-size: 1.3rem;
+}
+
+.product-controls .mx-w-300 {
+    max-width: 2rem;
+}
+
+/* Product screen quantity controls - medium size */
+.product-screen .w-200 {
+    width: 2.5rem;
+}
+
+.product-screen .h-200 {
+    height: 2.5rem;
+}
+
+.product-screen .fz-150 {
+    font-size: 1.8rem;
+}
+
+.product-screen .fz-175 {
+    font-size: 2rem;
+}
+
+.product-screen .mx-w-300 {
+    max-width: 3.5rem;
+}
+
+/* Continue Shopping Button Styles - from drazhin.by */
+.btn-arrow--left {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    font-size: .875rem;
+}
+
+.btn-arrow--left svg {
+    -webkit-transition: all .3s ease;
+    -o-transition: all .3s ease;
+    transition: all .3s ease;
+    margin-bottom: .175rem;
+}
+
+.mb-50 {
+    margin-bottom: .5rem;
+}
+
+.svg-arrow-left {
+    font-size: .5rem;
+    width: 2.25em;
+}
+
+.svg-arrow-back {
+    font-size: 1rem;
+    width: 2.25em;
+}
+
+.svg-arrow-right {
+    font-size: 1rem;
+    width: 2.25em;
+}
+
+.svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+}
+
+.h-fc {
+    -webkit-transition: all .3s ease;
+    -o-transition: all .3s ease;
+    transition: all .3s ease;
+}
+
+.fc-1 {
+    color: #303030;
+}
+
+.fz-75 {
+    font-size: .75rem;
+}
+
+.fz-sm-875 {
+    font-size: .875rem;
+}
+
+.pb-25 {
+    padding-bottom: .25rem;
+}
+
+.fw-500 {
+    font-weight: 500;
+}
+
+.tt-u {
+    text-transform: uppercase;
+}
+
+.ls-5 {
+    letter-spacing: .05em;
+}
+
+.d-inline-block {
+    display: inline-block !important;
+}
+
+.dec-line {
+    position: relative;
+    z-index: 1;
+}
+
+.dec-line-bottom-full:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #303030;
+}
+
+.dec-color-1:before {
+    background-color: #303030;
+}
+
+.svg-arrow-left {
+    font-size: .5rem;
+    width: 2.25em;
+}
+
+.svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+}
+
+.mb-50 {
+    margin-bottom: .5rem;
+}
+
+.ml-50 {
+    margin-left: .5rem;
+}
+
+body a {
+    color: #303030;
+    -webkit-transition: all .5s ease;
+    -o-transition: all .5s ease;
+    transition: all .5s ease;
+    text-decoration: none;
+}
+
+/* Button and color classes from main.min.css */
+.btn--noborder {
+    border: none;
+}
+
+.bgc-t {
+    background-color: transparent;
+}
+
+.h-fc-acc-1:hover, .h-fc-acc-1:focus, .h-fc-acc-1:active {
+    color: #b76c4b;
+}
+
+.h-fc-acc-1:hover svg, .h-fc-acc-1:focus svg, .h-fc-acc-1:active svg {
+    color: #b76c4b;
+    fill: #b76c4b;
+}
+
+.h-fc-acc-1:hover:before, .h-fc-acc-1:focus:before, .h-fc-acc-1:active:before {
+    background-color: #b76c4b;
+}
+
+.fz-125 {
+    font-size: 1.25rem;
+}
+
+.remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 0;
+    transition: all 0.2s ease;
+    color: rgb(48, 48, 48);
+}
+
+/* Additional CSS rules */
+/* Loading Logo Styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #fff;
+    z-index: 9999;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    visibility: visible !important;
+}
+
+.loading-overlay.hidden {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+.loading-logo-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 1vh;
+}
+
+.loading-logo {
+    width: 45vw; /* slightly smaller to reduce layout cost */
+    height: auto;
+    max-width: 280px;
+    max-height: 72px;
+    object-fit: contain;
+}
+
+body * {
+    outline: 0 !important;
+}
+
+*, ::after, ::before {
+    -webkit-box-sizing: inherit;
+    box-sizing: inherit;
+}
+
+*, ::after, ::before {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+/* iPhone-specific date input fixes */
+.form-group input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: white;
+    min-height: 44px; /* iOS minimum touch target */
+    line-height: 1.2;
+}
+
+/* Fix for iPhone date picker */
+.form-group input[type="date"]::-webkit-datetime-edit {
+    padding: 0;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+}
+
+/* Ensure proper display on iOS */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .form-group input[type="date"] {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+}
+
+/* Pickup address styles */
+.pickup-details {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px auto;
+    width: calc(100% - 30px);
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+.pickup-details p {
+    margin: 8px 0;
+    font-size: 1.1em;
+    line-height: 1.4;
+    color: #333;
+}
+
+.pickup-details .ff-2 {
+    font-family: 'Yeseva One', serif;
+    font-weight: 600;
+    color: #5a2d00;
+}
+
+.pickup-details strong {
+    font-weight: 600;
+    color: #5a2d00;
+}
+
+/* Delivery method styles */
+.delivery-method-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.delivery-method-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px 12px;
+    margin: 0 -2px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.delivery-method-item:hover {
+    background-color: #f8f8f8;
+}
+
+.delivery-method-item input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #b76c4b;
+    border-radius: 50%;
+    background-color: #b76c4b;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.delivery-method-item input[type="radio"]:checked {
+    background-color: #b76c4b;
+    border-color: #b76c4b;
+}
+
+.delivery-method-item input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.delivery-method-item label {
+    margin: 0;
+    padding: 0;
+    font-family: 'Yeseva One', serif;
+    font-size: 16px;
+    font-weight: normal;
+    color: #333;
+    cursor: pointer;
+    line-height: 1.4;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    flex: 1;
+}
+
+.delivery-method-item label:hover {
+    color: #b76c4b;
+}
+
+.delivery-method-item.selected {
+    background-color: white;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 0 -2px;
+}
+
+/* Form validation error styles */
+.form-field-error {
+    border: 2px solid #ff4444 !important;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
+    background-color: #fff5f5 !important;
+}
+
+.form-field-error:focus {
+    border-color: #ff4444 !important;
+    box-shadow: 0 0 12px rgba(255, 68, 68, 0.4) !important;
+}
+
+/* Error styles for radio/checkbox groups */
+.payment-method-group.form-field-error,
+.delivery-method-group.form-field-error,
+.pickup-addresses-list.form-field-error,
+#payment-method-section.form-field-error,
+#payment-method-section-pickup.form-field-error,
+#pickup-radio-group.form-field-error {
+    border: 2px solid #ff4444 !important;
+    border-radius: 8px;
+    padding: 10px !important;
+    background-color: #fff5f5 !important;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
+}
+
+/* Individual items in error state containers */
+.pickup-addresses-list.form-field-error .pickup-address-item {
+    background-color: #fff5f5 !important;
+    padding: 8px 12px !important;
+    margin: 0 -2px !important;
+}
+
+.pickup-addresses-list.form-field-error .pickup-address-item label {
+    background-color: #fff5f5 !important;
+}
+
+.payment-method-group.form-field-error .payment-method-item {
+    background-color: #fff5f5 !important;
+    padding: 4px 12px !important;
+    margin: 0 -2px !important;
+}
+
+.payment-method-group.form-field-error .payment-method-item label {
+    background-color: #fff5f5 !important;
+}
+
+.delivery-method-group.form-field-error .delivery-method-item {
+    background-color: #fff5f5 !important;
+    padding: 8px 12px !important;
+    margin: 0 -2px !important;
+}
+
+.delivery-method-group.form-field-error .delivery-method-item label {
+    background-color: #fff5f5 !important;
+}
+
+/* Specific error message styling */
+#pickupAddress-error {
+    font-family: 'Arial', sans-serif;
+    font-weight: normal;
+}
+
+
+
+
+
+/* Payment method styles */
+.payment-method-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.payment-method-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    cursor: pointer;
+    padding: 4px 12px;
+    margin: 0 -2px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.payment-method-item:hover {
+    background-color: transparent;
+}
+
+
+
+.payment-method-item input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #b76c4b;
+    border-radius: 50%;
+    background-color: #b76c4b;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.payment-method-item input[type="radio"]:checked {
+    background-color: #b76c4b;
+    border-color: #b76c4b;
+}
+
+.payment-method-item input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.payment-method-item label {
+    margin: 0;
+    padding: 0;
+    font-family: 'Yeseva One', serif;
+    font-size: 16px;
+    font-weight: normal;
+    color: #333;
+    cursor: pointer;
+    line-height: 1.4;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    flex: 1;
+}
+
+.payment-method-item label:hover {
+    color: #b76c4b;
+    background-color: transparent;
+}
+
+.payment-method-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.payment-description {
+    margin: 0 0 0 32px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    color: #000;
+    line-height: 1.4;
+}
+
+.payment-method-item.selected {
+    background-color: transparent;
+    border-radius: 4px;
+    padding: 4px 12px;
+    margin: 0 -2px;
+}
+
+/* Pickup addresses list styles */
+.pickup-addresses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Reduced by 1/3 from 15px to 10px */
+    margin-top: 15px;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.pickup-address-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px 12px;
+    margin: 0 -2px;
+    background-color: white;
+    border: none;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+
+.pickup-address-item:hover {
+    background-color: transparent;
+}
+
+.pickup-address-item input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #b76c4b;
+    border-radius: 50%;
+    background-color: #b76c4b;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.pickup-address-item input[type="radio"]:checked {
+    background-color: #b76c4b;
+    border-color: #b76c4b;
+}
+
+.pickup-address-item input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.pickup-address-item.selected {
+    background-color: transparent;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 0 -2px;
+}
+
+.pickup-address-item label {
+    margin: 0;
+    padding: 0;
+    font-family: 'Yeseva One', serif;
+    font-size: 16px;
+    font-weight: normal;
+    color: #333;
+    cursor: pointer;
+    line-height: 1.4;
+    background-color: white;
+    border: none;
+    border-radius: 0;
+    flex: 1;
+}
+
+.pickup-address-item label:hover {
+    color: #b76c4b;
+    background-color: transparent;
+}
+
+/* Utility classes for pickup addresses */
+.pl-250 {
+    padding-left: 250px;
+}
+
+.mb-100 {
+    margin-bottom: 100px;
+}
+
+.fz-100 {
+    font-size: 1rem;
+}
+
+/* General .ff-2 rule - but product screen overrides this */
+.ff-2 {
+    font-family: 'Yeseva One', serif;
+}
+
+.fw-400 {
+    font-weight: 400;
+}
+
+.col-form-label {
+    padding-top: calc(0.375rem + 1px);
+    margin-bottom: 0;
+    font-size: inherit;
+    line-height: 1.5;
+}
+
+.delivery {
+    color: #333;
+}
+
+.input-parent {
+    position: relative;
+}
+
+/* Responsive adjustments for pickup addresses */
+@media (max-width: 480px) {
+    .checkbox-container {
+        padding-left: 30px;
+        font-size: 14px;
+    }
+    
+    .checkbox-container .checkmark {
+        height: 20px;
+        width: 20px;
+    }
+    
+    .checkbox-container .checkmark:after {
+        top: 4px;
+        left: 4px;
+        width: 12px;
+        height: 12px;
+    }
+    
+    .pickup-details {
+        margin: 15px auto;
+        padding: 12px;
+        width: calc(100% - 20px);
+        max-width: 450px;
+        box-sizing: border-box;
+    }
+    
+    .pickup-details p {
+        font-size: 13px;
+    }
+}
+
+/* ==================== AVAILABILITY INFO CONTAINER ==================== */
+.availability-info-container {
+    background-color: white;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px auto; /* Центрируем контейнер */
+    max-width: 600px; /* Стандартизируем максимальную ширину */
+    width: calc(100% - 32px); /* Учитываем отступы */
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.availability-info-content {
+    margin: 0;
+}
+
+.availability-info-title {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    color: #333;
+    font-size: 17px;
+    line-height: 1.4;
+}
+
+.availability-info-list {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.availability-info-list li {
+    margin: 8px 0;
+    color: #555;
+    font-size: 17px;
+    line-height: 1.4;
+}
+
+.availability-info-list li strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Mobile-specific animation disabling to prevent iOS twitching */
+@media (max-width: 768px) {
+    /* Disable all transitions and transforms on mobile devices */
+    .product-card,
+    .category-card-item,
+    .category-image,
+    .category-text-wrapper,
+    .category-title-text,
+    .category-link-text,
+    .category-arrow-svg,
+    .clickable-image,
+    .details-text,
+    .checkout-button,
+    .menu-button,
+    .start-shopping-button,
+    .clear-cart-button,
+    .submit-order-button {
+        transition: none !important;
+        -webkit-transition: none !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+    }
+    
+    /* Disable hover effects on mobile */
+    .product-card:hover,
+    .category-card-item:hover,
+    .clickable-image:hover,
+    .checkout-button:hover,
+    .menu-button:hover,
+    .start-shopping-button:hover,
+    .clear-cart-button:hover,
+    .submit-order-button:hover {
+        transform: none !important;
+        -webkit-transform: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Disable hover effects on child elements */
+    .category-card-item:hover .category-image,
+    .category-card-item:hover .category-arrow-svg {
+        transform: none !important;
+        -webkit-transform: none !important;
+    }
+    
+    /* Force hardware acceleration on mobile without animations */
+    .category-card-item,
+    .product-card {
+        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+        will-change: auto !important;
+    }
+    /* Ensure welcome button stays near bottom on short screens */
+    .welcome-container {
+        min-height: 85vh;
+    }
+    .start-shopping-button {
+        font-size: 1.15em;
+        padding: 14px 24px;
+    }
+}
+
+/* Keep animations on desktop devices */
+@media (min-width: 769px) {
+    .product-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .clickable-image {
+        transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    
+    .checkout-button,
+    .menu-button,
+    .start-shopping-button,
+    .clear-cart-button,
+    .submit-order-button {
+        transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    .checkout-button:hover,
+    .menu-button:hover,
+    .start-shopping-button:hover,
+    .clear-cart-button:hover,
+    .submit-order-button:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* ===== CLASSICAL CALENDAR STYLES ===== */
+
+/* Date input with calendar icon */
+.date-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-container input {
+    flex: 1;
+    padding-right: 45px;
+}
+
+.calendar-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #b76c4b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.calendar-icon:hover {
+    background-color: rgba(183, 108, 75, 0.1);
+}
+
+.calendar-icon svg {
+    display: block;
+}
+
+/* Calendar overlay */
+.calendar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.calendar-overlay.active {
+    display: flex;
+}
+
+/* Calendar popup */
+.calendar-popup {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 350px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: calendarSlideIn 0.3s ease-out;
+    border: 2px solid #b76c4b;
+}
+
+@keyframes calendarSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Calendar header */
+.calendar-header {
+    background: #b76c4b;
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.calendar-month-year {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+}
+
+.calendar-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.calendar-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Calendar body */
+.calendar-body {
+    padding: 20px;
+    background: white;
+}
+
+/* Weekdays header */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.calendar-weekday {
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+/* Working days (Monday-Friday) */
+.calendar-weekday.workday {
+    color: #b76c4b;
+    background-color: #faf5f3;
+    border: 1px solid rgba(183, 108, 75, 0.2);
+}
+
+/* Weekend days (Saturday-Sunday) */
+.calendar-weekday.weekend {
+    color: #d32f2f;
+    background-color: #ffebee;
+    border: 1px solid rgba(211, 47, 47, 0.2);
+    font-weight: 700;
+}
+
+/* Calendar dates grid */
+.calendar-dates {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.calendar-date {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    background: white;
+    color: #333;
+    box-sizing: border-box;
+}
+
+.calendar-date:hover {
+    background-color: #faf5f3;
+    border-color: #b76c4b;
+    transform: scale(1.05);
+}
+
+.calendar-date.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+.calendar-date.disabled:hover {
+    background-color: #f5f5f5;
+    border-color: transparent;
+    transform: none;
+}
+
+.calendar-date.enabled {
+    background-color: #e8f4e8;
+    color: #2d5a2d;
+    font-weight: 600;
+    border-color: #4caf50;
+}
+
+.calendar-date.enabled:hover {
+    background-color: #d4e8d4;
+    border-color: #388e3c;
+    transform: scale(1.1);
+}
+
+.calendar-date.selected {
+    background-color: #b76c4b;
+    color: white;
+    border-color: #a0522d;
+    font-weight: bold;
+    transform: scale(1.05);
+}
+
+.calendar-date.selected:hover {
+    background-color: #a0522d;
+    transform: scale(1.1);
+}
+
+.calendar-date.other-month {
+    color: #ddd;
+    font-weight: normal;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .calendar-popup {
+        margin: 10px;
+        max-width: none;
+        width: calc(100% - 20px);
+        max-width: 340px;
+    }
+    
+    .calendar-header {
+        padding: 14px 16px;
+    }
+    
+    .calendar-month-year {
+        font-size: 1.05em;
+    }
+    
+    .calendar-body {
+        padding: 16px;
+    }
+    
+    .calendar-date {
+        font-size: 16px;
+        min-height: 40px;
+    }
+    
+    .calendar-weekday {
+        padding: 10px 4px;
+        font-size: 13px;
+    }
+    
+    .date-input-container input {
+        padding-right: 50px;
+    }
+    
+    .calendar-icon {
+        right: 15px;
+    }
+}
+
+/* iOS specific fixes */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+    .calendar-overlay {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .calendar-date {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+}
+
+/* ===== END CLASSICAL CALENDAR STYLES ===== */
+
+/* Telegram WebApp Main Button (Cart Button) Styles */
+.tgme_widget_login_button,
+.tgme_widget_login_button *,
+.tgme_widget_login_button::before,
+.tgme_widget_login_button::after {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Target the main button specifically */
+.tgme_widget_login_button {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Additional WebApp button targeting */
+[data-webapp-button],
+[class*="webapp"],
+[class*="tgme"] {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Target Telegram WebApp MainButton specifically */
+.tgme_widget_login_button,
+.tgme_widget_login_button *,
+.tgme_widget_login_button::before,
+.tgme_widget_login_button::after,
+.tgme_widget_login_button span,
+.tgme_widget_login_button div {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Target any element that might contain the cart button text */
+[class*="tgme"],
+[class*="webapp"],
+[class*="main-button"],
+[class*="cart-button"] {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* But preserve Yeseva One for specific elements */
+h1, .category-title, .category-title-with-icon {
+    font-family: 'Yeseva One', serif !important;
+}
+
+/* NEW: Styles for disabled products in cart */
+.disabled-product {
+    opacity: 0.6;
+    background-color: rgba(128, 128, 128, 0.1);
+    position: relative;
+    border-radius: 12px;
+}
+
+.disabled-product::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(128, 128, 128, 0.1);
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 12px;
+}
+
+.disabled-product .cart-item-image-container {
+    position: relative;
+}
+
+.unavailable-label {
+    position: absolute;
+    top: 8px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 0px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.disabled-product .cart-item-name {
+    color: #666;
+}
+
+.disabled-product .cart-item-price {
+    color: #888;
+}
+
+.disabled-product .cart-item-controls .changer {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.disabled-product .cart-item-controls input {
+    opacity: 0.5;
+}
+
+/* NEW: Error message for disabled products - Bootstrap Alert Style */
+.disabled-products-error {
+    margin: 20px 0;
+}
+
+.disabled-products-error .alert {
+    margin: 0;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.disabled-products-error .alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.disabled-products-error .bi {
+    color: #721c24;
+    flex-shrink: 0;
+    padding-left: 10px;
+    width: 34px;
+}
+
+.disabled-products-error .me-2 {
+    margin-right: 0.5rem !important;
+}
+
+.disabled-products-error .alert > div {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+/* NEW: Disabled checkout button styles */
+.checkout-button.disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.checkout-button.disabled:hover {
+    background-color: #ccc !important;
+    transform: none !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ===== CUSTOMIZED TELEGRAM MAINBUTTON ===== */
+/* Telegram MainButton теперь имеет коричневый цвет #b76c4b */
+/* Цвет настраивается через JavaScript в функции customizeMainButtonColor() */
+
+/* ===== PRIVACY CONSENT CHECKBOX STYLES ===== */
+.privacy-consent-group {
+    margin: 15px 0;
+    padding: 0;
+}
+
+.privacy-consent-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: nowrap;
+    margin: 0;
+    padding: 0;
+}
+
+.privacy-consent-container input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    accent-color: #b76c4b;
+}
+
+.privacy-consent-label {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    flex: 1;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+.required-star {
+    color: #e74c3c;
+    font-weight: bold;
+    margin-right: 2px;
+}
+
+/* Error state for privacy consent - matching other form fields */
+.privacy-consent-container.error {
+    border: 2px solid #ff4444 !important;
+    border-radius: 8px;
+    padding: 10px !important;
+    background-color: #fff5f5 !important;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
+}
+
+.privacy-consent-container.error input[type="checkbox"] {
+    border-color: #ff4444 !important;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
+}
+
+.privacy-consent-container.error .privacy-consent-label {
+    color: #ff4444 !important;
+}
+
+/* Error message for privacy consent */
+#privacyConsent-error {
+    color: #ff4444;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: none;
+    font-family: Arial, sans-serif;
+}
+
+#privacyConsent-error.show {
+    display: block !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .privacy-consent-container {
+        gap: 6px;
+    }
+    
+    .privacy-consent-label {
+        font-size: 13px;
+        line-height: 1.3;
+    }
+    
+    .privacy-consent-container input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .privacy-consent-container {
+        gap: 5px;
+    }
+    
+    .privacy-consent-label {
+        font-size: 12px;
+        line-height: 1.2;
+    }
+    
+    .privacy-consent-container input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+    }
+}

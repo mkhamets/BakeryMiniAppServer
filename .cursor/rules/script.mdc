@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+When you are working with new features be careful with main logic of critical functions and especially with displayView().
+При добавлении новых функций (как сохранение позиции скролла) нужно быть очень осторожным с изменением существующей логики, особенно в критических местах как displayView().

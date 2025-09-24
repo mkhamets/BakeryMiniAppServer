@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+Never switch on to main without user's approve
+Never add code to main without user's approve

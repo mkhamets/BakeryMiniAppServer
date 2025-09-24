@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+Always ask user is he agree to start agent code changes or fixing before implementing any code changes. Algorith: User's question -> Agent's research and explanation with examples from code base -> Approve or not approve for bug fix or code change.

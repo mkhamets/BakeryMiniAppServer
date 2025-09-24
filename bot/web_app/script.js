@@ -1550,22 +1550,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Only refresh if app is active and not currently updating
             if (!document.hidden && !isUpdatingUI) {
                 try {
-                    const newProductsData = await fetchProductsData();
-                    const newCategoriesData = await fetchCategoriesData();
+                    // Используем новый API для получения всех данных
+                    const newData = await fetchAllData();
                     
-                    console.log('🔄 Auto-refresh: Products data received:', newProductsData ? (Array.isArray(newProductsData) ? `${newProductsData.length} products` : `${Object.keys(newProductsData).length} categories`) : 'null');
-                    console.log('🔄 Auto-refresh: Categories data received:', newCategoriesData ? `${newCategoriesData.length} categories` : 'null');
-                    
-                    // Skip comparison if we failed to fetch data (null means API error)
-                    if (!newProductsData && !newCategoriesData) {
-                        console.log('🔄 Auto-refresh: Both API calls failed, marking data as invalid');
+                    if (!newData) {
+                        console.log('🔄 Auto-refresh: Failed to fetch data, marking as invalid');
                         productsDataValid = false;
                         return;
                     }
                     
+                    const newProductsData = newData.products || {};
+                    const newCategoriesData = newData.categories || [];
+                    
+                    console.log('🔄 Auto-refresh: All data received:', {
+                        products: Object.keys(newProductsData).length,
+                        categories: newCategoriesData.length,
+                        version: newData.metadata?.version || 'unknown'
+                    });
+                    
                     // Check if products data has actually changed
-                    const hasProductsChanges = newProductsData ? checkProductsDataChanges(previousProductsData, newProductsData) : false;
-                    const hasCategoriesChanges = newCategoriesData ? checkCategoriesDataChanges(previousCategoriesData, newCategoriesData) : false;
+                    const hasProductsChanges = checkProductsDataChanges(previousProductsData, newProductsData);
+                    const hasCategoriesChanges = checkCategoriesDataChanges(previousCategoriesData, newCategoriesData);
                     
                     console.log('🔄 Auto-refresh: Products changes detected:', hasProductsChanges);
                     console.log('🔄 Auto-refresh: Categories changes detected:', hasCategoriesChanges);
@@ -1602,13 +1607,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             renderCart();
                         }
                         
+                        // Update global data variables
+                        productsData = newProductsData;
+                        categoriesData = newCategoriesData;
+                        productsDataValid = true;
+                        
                         // Update previous data only if we successfully fetched new data
-                        if (newProductsData) {
-                            previousProductsData = JSON.parse(JSON.stringify(newProductsData));
-                        }
-                        if (newCategoriesData) {
-                            previousCategoriesData = JSON.parse(JSON.stringify(newCategoriesData));
-                        }
+                        previousProductsData = JSON.parse(JSON.stringify(newProductsData));
+                        previousCategoriesData = JSON.parse(JSON.stringify(newCategoriesData));
                         
                         console.log('🔄 Auto-refresh: UI update completed');
                         // Reset flag after update is complete
@@ -1871,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function displayView(viewName, categoryKey = null) {
+    async function displayView(viewName, categoryKey = null) {
         // Prevent multiple simultaneous view changes
         if (window.isChangingView) {
             return;
@@ -2085,6 +2091,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
+    // Новая функция для загрузки ВСЕХ данных сразу
+    async function fetchAllData() {
+        try {
+            // Get authentication token
+            const token = await getAuthToken();
+            if (!token) {
+                throw new Error('Failed to get authentication token');
+            }
+            
+            // Generate timestamp and signature
+            const timestamp = Math.floor(Date.now() / 1000);
+            const path = '/bot-app/api/all';
+            const signature = await signRequest('GET', path, timestamp);
+            
+            // Make signed request
+            const response = await fetch(path, {
+                method: 'GET',
+                headers: {
+                    'X-Signature': signature,
+                    'X-Timestamp': timestamp.toString(),
+                    'X-Telegram-Init-Data': Telegram.WebApp.initData || '',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Сохраняем все данные в глобальные переменные
+            productsData = data.products || {};
+            categoriesData = data.categories || [];
+            productsDataValid = true;
+            
+            // Инициализируем previous data для сравнения в auto-refresh
+            previousProductsData = JSON.parse(JSON.stringify(productsData));
+            previousCategoriesData = JSON.parse(JSON.stringify(categoriesData));
+            
+            console.log('All data loaded successfully:', {
+                products: Object.keys(productsData).length,
+                categories: categoriesData.length,
+                version: data.metadata?.version || 'unknown'
+            });
+            
+            return data;
+            
+        } catch (error) {
+            console.error('Error loading all data:', error);
+            productsDataValid = false;
+            throw error;
+        }
+    }
+
     async function fetchProductsData(categoryKey = null) {
         try {
             // Get authentication token
@@ -2186,9 +2247,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadCategories() {
         try {
-            const categoriesData = await fetchCategoriesData();
-            if (!categoriesData) {
-                throw new Error('Failed to fetch categories data');
+            // Данные уже загружены через fetchAllData, просто проверяем их наличие
+            if (!categoriesData || categoriesData.length === 0) {
+                throw new Error('No categories data available');
             }
 
             if (categoriesContainer) categoriesContainer.innerHTML = '';
@@ -2244,11 +2305,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadProducts(categoryKey) {
-        // Всегда загружаем продукты для конкретной категории, чтобы получить информацию о категории
-        await fetchProductsData(categoryKey);
+        // Данные уже загружены через fetchAllData, просто проверяем их наличие
         if (!productsData[categoryKey]) {
             console.warn('No products found for this category.');
-            displayView('categories');
+            await displayView('categories');
             return;
         }
 
@@ -2357,23 +2417,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Добавляем обработчики событий для текста "Подробнее"
             productListElement.querySelectorAll('.details-text').forEach(text => {
-                text.addEventListener('click', (e) => {
+                text.addEventListener('click', async (e) => {
                     const productId = e.target.dataset.productId;
-                    showProductScreen(productId, categoryKey);
+                    await showProductScreen(productId, categoryKey);
                 });
             });
 
             // Добавляем обработчики событий для кликабельных изображений
             productListElement.querySelectorAll('.clickable-image').forEach(image => {
-                image.addEventListener('click', (e) => {
+                image.addEventListener('click', async (e) => {
                     const productId = e.target.dataset.productId;
-                    showProductScreen(productId, categoryKey);
+                    await showProductScreen(productId, categoryKey);
                 });
             });
 
             // Добавляем обработчики событий для названий продуктов
             productListElement.querySelectorAll('.product-name').forEach(productName => {
-                productName.addEventListener('click', (e) => {
+                productName.addEventListener('click', async (e) => {
                     // Не обрабатываем клик если он на availability-info
                     if (e.target.classList.contains('availability-info')) {
                         return;
@@ -2381,7 +2441,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const productCard = e.target.closest('.product-card');
                     if (productCard) {
                         const productId = productCard.dataset.productId;
-                        showProductScreen(productId, categoryKey);
+                        await showProductScreen(productId, categoryKey);
                     }
                 });
             });
@@ -3453,7 +3513,17 @@ function addErrorClearingListeners() {
     }
 
     // Helper to proceed to initial view and hide loading overlay
-    function proceedToInitialView() {
+    async function proceedToInitialView() {
+        try {
+            // Загружаем ВСЕ данные сразу
+            console.log('Loading all data for initial view...');
+            await fetchAllData();
+            console.log('All data loaded successfully');
+        } catch (error) {
+            console.error('Failed to load all data:', error);
+            // Продолжаем с пустыми данными
+        }
+        
         // Add loaded class to body to show content and hide loading overlay
         document.body.classList.add('loaded');
         
@@ -3464,15 +3534,15 @@ function addErrorClearingListeners() {
         
         // Show appropriate view
         if (initialView === 'checkout') {
-            displayView('checkout');
+            await displayView('checkout');
         } else if (initialView === 'cart' || initialCategory === 'cart') {
-            displayView('cart');
+            await displayView('cart');
         } else if (initialView === 'categories') {
-            displayView('categories');
+            await displayView('categories');
         } else if (initialCategory) {
-            displayView('products', initialCategory);
+            await displayView('products', initialCategory);
         } else {
-            displayView('welcome');
+            await displayView('welcome');
         }
     }
 
@@ -3480,22 +3550,22 @@ function addErrorClearingListeners() {
     const img = new Image();
             img.src = '/bot-app/images/Hleb.jpg?v=1.3.109&t=1758518052';
     // Safety timeout in case onload never fires
-    const loadingSafetyTimeout = setTimeout(() => {
+    const loadingSafetyTimeout = setTimeout(async () => {
         console.warn('Loading safety timeout reached. Proceeding to initial view.');
-        proceedToInitialView();
+        await proceedToInitialView();
     }, 2500);
-    img.onload = () => {
+    img.onload = async () => {
         clearTimeout(loadingSafetyTimeout);
         // Hide loading overlay and show appropriate view after a short delay
-        setTimeout(() => {
-            proceedToInitialView();
+        setTimeout(async () => {
+            await proceedToInitialView();
         }, 400);
     };
     
     // Fallback in case image fails to load
-    img.onerror = () => {
+    img.onerror = async () => {
         clearTimeout(loadingSafetyTimeout);
-        proceedToInitialView();
+        await proceedToInitialView();
     };
 
     if (Telegram.WebApp.MainButton) {
@@ -3558,7 +3628,7 @@ function addErrorClearingListeners() {
     // Cart rendering is now initialized earlier after products data is loaded
 
     // Функция для показа экрана с информацией о продукте
-    function showProductScreen(productId, categoryKey) {
+    async function showProductScreen(productId, categoryKey) {
         let product = null;
 
         // Ищем продукт во всех категориях
@@ -3748,7 +3818,7 @@ function addErrorClearingListeners() {
         }
 
         // Показываем экран продукта
-        displayView('product');
+        await displayView('product');
 
         // Добавляем обработчики для кнопок управления количеством в экране продукта
         const decreaseButton = screenBody.querySelector('.screen-decrease-quantity');

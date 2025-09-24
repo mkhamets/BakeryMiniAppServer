@@ -1,0 +1,5 @@
+---
+description: when new chat started use this rule
+alwaysApply: false
+---
+only when new chat is started user will say "verify". it means agent needs to familarize with: project documentation, project structure, main features and critical functionality.
