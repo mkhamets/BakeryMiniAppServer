@@ -224,8 +224,8 @@ def get_modx_cache_products():
                 current_cache = json.load(f)
                 return current_cache.get('products', {})
         except json.JSONDecodeError:
-            return modx_cache_data.get('products', {})
-    return modx_cache_data.get('products', {})
+            return {}
+    return {}
 
 
 def get_modx_cache_categories():
@@ -237,8 +237,8 @@ def get_modx_cache_categories():
                 current_cache = json.load(f)
                 return current_cache.get('categories', [])
         except json.JSONDecodeError:
-            return modx_cache_data.get('categories', [])
-    return modx_cache_data.get('categories', [])
+            return []
+    return []
 
 
 def get_modx_cache_metadata():
@@ -250,8 +250,8 @@ def get_modx_cache_metadata():
                 current_cache = json.load(f)
                 return current_cache.get('metadata', {})
         except json.JSONDecodeError:
-            return modx_cache_data.get('metadata', {})
-    return modx_cache_data.get('metadata', {})
+            return {}
+    return {}
 
 async def check_api_rate_limit(request, action: str = "api_request") -> bool:
     """Check API rate limiting."""
